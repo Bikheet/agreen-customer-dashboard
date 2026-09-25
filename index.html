@@ -3,194 +3,248 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة تحليل وتصنيف العملاء ونسب الخصم - مجموعة البنا</title>
+    <title>لوحة تحليل وتصنيف العملاء - مجموعة البنا</title>
     <!-- Bootstrap 5 CSS RTL -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css.rtl.min.css">
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts Cairo -->
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root {
-            --primary-gradient: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
-            --card-bg: #ffffff;
-            --body-bg: #f4f6f9;
-        }
         body {
             font-family: 'Cairo', sans-serif;
-            background-color: var(--body-bg);
+            background-color: #f4f6f9;
             color: #2c3e50;
         }
-        .header-section {
-            background: var(--primary-gradient);
-            color: white;
+        /* Login Screen Styles */
+        #loginOverlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        .login-card {
+            background: #ffffff;
+            padding: 40px;
             border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        .header-section {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
         .kpi-card {
-            background: var(--card-bg);
+            background: #ffffff;
             border: none;
-            border-radius: 14px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.04);
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            padding: 20px;
+            transition: transform 0.2s;
         }
         .kpi-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+            transform: translateY(-3px);
         }
-        .kpi-card::after {
-            content: '';
-            position: absolute;
-            top: 0; right: 0; width: 5px; height: 100%;
+        .filter-box {
+            background: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            padding: 20px;
         }
-        .kpi-primary::after { background: #0d6efd; }
-        .kpi-success::after { background: #198754; }
-        .kpi-warning::after { background: #ffc107; }
-        .kpi-danger::after { background: #dc3545; }
-
-        .filter-container {
-            background: var(--card-bg);
-            border-radius: 14px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+        .chart-container {
+            background: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            padding: 15px;
+            height: 320px; /* تحجيم الرسوم البيانية لتكون ملمومة ومنسقة */
+            position: relative;
         }
-        .badge-a { background-color: #198754; color: #fff; padding: 6px 12px; border-radius: 8px; font-weight: 600;}
-        .badge-b { background-color: #0dcaf0; color: #000; padding: 6px 12px; border-radius: 8px; font-weight: 600;}
-        .badge-c { background-color: #ffc107; color: #000; padding: 6px 12px; border-radius: 8px; font-weight: 600;}
-        .badge-d { background-color: #dc3545; color: #fff; padding: 6px 12px; border-radius: 8px; font-weight: 600;}
-        .table-container {
-            background: var(--card-bg);
-            border-radius: 14px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+        .table-box {
+            background: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            padding: 20px;
         }
-        .table-hover tbody tr:hover {
-            background-color: rgba(44, 83, 100, 0.04);
-        }
+        .badge-a { background-color: #198754; color: #fff; padding: 5px 10px; border-radius: 6px; font-size: 0.85rem; }
+        .badge-b { background-color: #0dcaf0; color: #000; padding: 5px 10px; border-radius: 6px; font-size: 0.85rem; }
+        .badge-c { background-color: #ffc107; color: #000; padding: 5px 10px; border-radius: 6px; font-size: 0.85rem; }
+        .badge-d { background-color: #dc3545; color: #fff; padding: 5px 10px; border-radius: 6px; font-size: 0.85rem; }
+        .table th { background-color: #2c3e50 !important; color: white; text-align: center; }
+        .table td { text-align: center; vertical-align: middle; }
     </style>
 </head>
 <body>
 
-<div class="container-fluid py-4 px-4">
-    <!-- Header -->
-    <div class="header-section p-4 mb-4 d-flex justify-content-between align-items-center">
-        <div>
-            <h2 class="fw-black mb-1"><i class="fas fa-crown me-2 text-warning"></i> لوحة الإدارة العليا - تحليل وتصنيف عملاء الموالح</h2>
-            <p class="mb-0 text-white-50">مجموعة البنا للتجارة والتصدير | نظام تصفية العملاء ونسب الخصم (موسم 2025-2026)</p>
-        </div>
-        <div>
-            <span class="badge bg-light text-dark fs-6 px-3 py-2 shadow-sm"><i class="fas fa-sync-alt text-success me-1"></i> مباشر ومتزامن</span>
+    <!-- شاشة تسجيل الدخول -->
+    <div id="loginOverlay">
+        <div class="login-card">
+            <h3 class="fw-bold text-primary mb-3"><i class="fas fa-lock me-2"></i> تسجيل الدخول</h3>
+            <p class="text-muted small mb-4">مجموعة البنا للتجارة والتصدير - لوحة التحكم</p>
+            <div id="loginError" class="alert alert-danger d-none py-2 small">اسم المستخدم أو كلمة المرور غير صحيحة</div>
+            <div class="mb-3 text-end">
+                <label class="form-label fw-bold small">اسم المستخدم:</label>
+                <input type="text" id="username" class="form-control" placeholder="أدخل اسم المستخدم">
+            </div>
+            <div class="mb-4 text-end">
+                <label class="form-label fw-bold small">كلمة المرور:</label>
+                <input type="password" id="password" class="form-control" placeholder="أدخل كلمة المرور">
+            </div>
+            <button class="btn btn-primary w-100 fw-bold py-2" onclick="checkLogin()">دخول النظام</button>
         </div>
     </div>
 
-    <!-- Filters Bar -->
-    <div class="filter-container p-4 mb-4">
-        <h5 class="fw-bold text-dark mb-3"><i class="fas fa-sliders-h text-primary me-2"></i> فلاتر التحكم والتحليل المتقدم</h5>
-        <div class="row g-3">
+    <!-- محتوى لوحة التحكم الأساسي -->
+    <div id="dashboardContent" class="container-fluid py-4 px-4 d-none">
+        <!-- Header -->
+        <div class="header-section p-3 mb-4 d-flex justify-content-between align-items-center">
+            <div>
+                <h4 class="fw-bold mb-1"><i class="fas fa-chart-line me-2 text-warning"></i> لوحة تحليل وتصنيف عملاء الموالح</h4>
+                <p class="mb-0 text-white-50 small">مجموعة البنا للتجارة والتصدير | نظام تصفية العملاء ونسب الخصم (موسم 2025-2026)</p>
+            </div>
+            <div>
+                <button class="btn btn-light btn-sm fw-bold text-danger" onclick="logout()"><i class="fas fa-sign-out-alt me-1"></i> خروج</button>
+            </div>
+        </div>
+
+        <!-- Filters Bar -->
+        <div class="filter-box mb-4">
+            <h6 class="fw-bold text-primary mb-3"><i class="fas fa-filter me-2"></i> فلاتر التحكم والتحليل المتقدم</h6>
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold text-muted">فئة العميل (ABC / D):</label>
+                    <select id="filterSegment" class="form-select form-select-sm" onchange="filterData()">
+                        <option value="">كل الفئات</option>
+                        <option value="A">الفئة A (ممتاز)</option>
+                        <option value="B">الفئة B (جيد)</option>
+                        <option value="C">الفئة C (مقبول)</option>
+                        <option value="D (Blacklist)">الفئة D (القائمة السوداء)</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold text-muted">الصنف الزراعي:</label>
+                    <select id="filterItem" class="form-select form-select-sm" onchange="filterData()">
+                        <option value="">كل الأصناف</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold text-muted">شريحة نسبة الخصم:</label>
+                    <select id="filterDiscount" class="form-select form-select-sm" onchange="filterData()">
+                        <option value="">كل نسب الخصم</option>
+                        <option value="zero">بدون خصم (0%)</option>
+                        <option value="low">خصم منخفض (< 10%)</option>
+                        <option value="medium">خصم متوسط (10% - 25%)</option>
+                        <option value="high">خصم مرتفع (> 25%)</option>
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button class="btn btn-outline-secondary btn-sm w-100 fw-bold" onclick="resetFilters()"><i class="fas fa-redo me-1"></i> إعادة ضبط</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- KPI Cards -->
+        <div class="row g-3 mb-4">
             <div class="col-md-3">
-                <label class="form-label fw-bold small text-muted">فئة العميل (ABC / D):</label>
-                <select id="filterSegment" class="form-select border-2" onchange="filterData()">
-                    <option value="">كل الفئات</option>
-                    <option value="A">الفئة A (ممتاز)</option>
-                    <option value="B">الفئة B (جيد)</option>
-                    <option value="C">الفئة C (مقبول)</option>
-                    <option value="D (Blacklist)">الفئة D (القائمة السوداء)</option>
-                </select>
+                <div class="kpi-card border-start border-4 border-primary">
+                    <div class="text-muted small fw-bold">إجمالي الصفقات</div>
+                    <div class="fs-4 fw-bold text-dark mt-1" id="kpiTotalTrans">0</div>
+                </div>
             </div>
             <div class="col-md-3">
-                <label class="form-label fw-bold small text-muted">الصنف الزراعي:</label>
-                <select id="filterItem" class="form-select border-2" onchange="filterData()">
-                    <option value="">كل الأصناف</option>
-                </select>
+                <div class="kpi-card border-start border-4 border-success">
+                    <div class="text-muted small fw-bold">إجمالي قيم FOB ($)</div>
+                    <div class="fs-4 fw-bold text-success mt-1" id="kpiTotalVal">0</div>
+                </div>
             </div>
             <div class="col-md-3">
-                <label class="form-label fw-bold small text-muted">شريحة نسبة الخصم:</label>
-                <select id="filterDiscount" class="form-select border-2" onchange="filterData()">
-                    <option value="">كل نسب الخصم</option>
-                    <option value="zero">بدون خصم (0%)</option>
-                    <option value="low">خصم منخفض (أقل من 10%)</option>
-                    <option value="medium">خصم متوسط (10% - 25%)</option>
-                    <option value="high">خصم مرتفع (أكثر من 25%)</option>
-                </select>
+                <div class="kpi-card border-start border-4 border-warning">
+                    <div class="text-muted small fw-bold">متوسط نسبة الخصم</div>
+                    <div class="fs-4 fw-bold text-warning mt-1" id="kpiAvgDiscount">0%</div>
+                </div>
             </div>
-            <div class="col-md-3 d-flex align-items-end">
-                <button class="btn btn-outline-secondary w-100 fw-bold border-2" onclick="resetFilters()"><i class="fas fa-redo me-1"></i> إعادة ضبط الفلاتر</button>
+            <div class="col-md-3">
+                <div class="kpi-card border-start border-4 border-danger">
+                    <div class="text-muted small fw-bold">عملاء القائمة السوداء (D)</div>
+                    <div class="fs-4 fw-bold text-danger mt-1" id="kpiBlacklist">0</div>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- KPI Cards -->
-    <div class="row g-4 mb-4">
-        <div class="col-md-3">
-            <div class="kpi-card kpi-primary p-4">
-                <div class="text-muted small fw-bold">إجمالي الصفقات</div>
-                <div class="fs-2 fw-black text-dark mt-2" id="kpiTotalTrans">0</div>
+        <!-- Charts Row (ملمومة ومنسقة) -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <h6 class="fw-bold text-secondary mb-2"><i class="fas fa-chart-bar text-primary me-2"></i> توزيع القيم حسب تصنيف العملاء</h6>
+                    <div style="height: 250px; position: relative;">
+                        <canvas id="segmentChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <h6 class="fw-bold text-secondary mb-2"><i class="fas fa-percentage text-primary me-2"></i> تحليل شرائح نسب الخصم الممنوحة</h6>
+                    <div style="height: 250px; position: relative;">
+                        <canvas id="discountChart"></canvas>
+                    </div>
+                </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="kpi-card kpi-success p-4">
-                <div class="text-muted small fw-bold">إجمالي قيم FOB ($)</div>
-                <div class="fs-2 fw-black text-success mt-2" id="kpiTotalVal">0</div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="kpi-card kpi-warning p-4">
-                <div class="text-muted small fw-bold">متوسط نسبة الخصم</div>
-                <div class="fs-2 fw-black text-warning mt-2" id="kpiAvgDiscount">0%</div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="kpi-card kpi-danger p-4">
-                <div class="text-muted small fw-bold">عملاء القائمة السوداء (D)</div>
-                <div class="fs-2 fw-black text-danger mt-2" id="kpiBlacklist">0</div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Charts Row -->
-    <div class="row g-4 mb-4">
-        <div class="col-md-6">
-            <div class="card shadow-sm border-0 rounded-4 h-100 p-3">
-                <h5 class="fw-bold text-secondary mb-3"><i class="fas fa-chart-bar text-primary me-2"></i> توزيع القيم حسب تصنيف العملاء</h5>
-                <canvas id="segmentChart" height="230"></canvas>
+        <!-- Data Table Section (تصميم بروفيشنال) -->
+        <div class="table-box">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-bold text-secondary mb-0"><i class="fas fa-table text-primary me-2"></i> جدول تفاصيل العملاء ونسب الخصم</h6>
+                <input type="text" id="searchBox" class="form-control form-control-sm w-25" placeholder="بحث برقم العميل أو الصنف..." onkeyup="filterData()">
             </div>
-        </div>
-        <div class="col-md-6">
-            <div class="card shadow-sm border-0 rounded-4 h-100 p-3">
-                <h5 class="fw-bold text-secondary mb-3"><i class="fas fa-percentage text-primary me-2"></i> تحليل شرائح نسب الخصم الممنوحة</h5>
-                <canvas id="discountChart" height="230"></canvas>
+            <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                <table class="table table-hover table-bordered align-middle small">
+                    <thead>
+                        <tr>
+                            <th>كود العميل</th>
+                            <th>الصنف</th>
+                            <th>الدرجة</th>
+                            <th>FOB TON $ بعد الخصم</th>
+                            <th>نسبة الخصم</th>
+                            <th>تصنيف العميل</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
-
-    <!-- Data Table Section -->
-    <div class="table-container p-4 mb-4">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h5 class="fw-bold text-secondary mb-0"><i class="fas fa-table text-primary me-2"></i> جدول تفاصيل العملاء ونسب الخصم</h5>
-            <input type="text" id="searchBox" class="form-control w-25 border-2" placeholder="بحث برقم العميل أو الصنف..." onkeyup="filterData()">
-        </div>
-        <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
-            <table class="table table-hover align-middle">
-                <thead class="table-dark sticky-top">
-                    <tr>
-                        <th>كود العميل</th>
-                        <th>الصنف</th>
-                        <th>الدرجة</th>
-                        <th>FOB TON $ بعد الخصم</th>
-                        <th>نسبة الخصم</th>
-                        <th>تصنيف العميل</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBody">
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
 
 <script>
+    // التحقق من تسجيل الدخول
+    function checkLogin() {
+        const u = document.getElementById('username').value.trim();
+        const p = document.getElementById('password').value.trim();
+        if(u === 'khaled' && p === 'elbanna') {
+            document.getElementById('loginOverlay').style.display = 'none';
+            document.getElementById('dashboardContent').classList.remove('d-none');
+            filterData();
+        } else {
+            document.getElementById('loginError').classList.remove('d-none');
+        }
+    }
+
+    function logout() {
+        document.getElementById('loginOverlay').style.display = 'flex';
+        document.getElementById('dashboardContent').classList.add('d-none');
+        document.getElementById('username').value = '';
+        document.getElementById('password').value = '';
+    }
+
     const rawData = [
         {"Customer_Code": 101200, "Item": "بسره", "Grade": "D", "FOB_After_Discount": 410.27, "Discount_Rate": 0.0, "Segment": "D (Blacklist)"},
         {"Customer_Code": 101430, "Item": "بسره", "Grade": "B", "FOB_After_Discount": 675.12, "Discount_Rate": 0.0, "Segment": "A"},
@@ -296,7 +350,6 @@
     }
 
     function updateCharts(data) {
-        // Segment Bar Chart
         const segs = ['A', 'B', 'C', 'D (Blacklist)'];
         const segVals = segs.map(s => data.filter(d => d.Segment === s).reduce((sum, d) => sum + (parseFloat(d.FOB_After_Discount) || 0), 0));
 
@@ -307,20 +360,20 @@
             data: {
                 labels: ['الفئة A', 'الفئة B', 'الفئة C', 'القائمة السوداء D'],
                 datasets: [{
-                    label: 'إجمالي قيم الصفقات ($)',
+                    label: 'إجمالي القيم ($)',
                     data: segVals,
                     backgroundColor: ['#198754', '#0dcaf0', '#ffc107', '#dc3545'],
-                    borderRadius: 8
+                    borderRadius: 6
                 }]
             },
             options: {
                 responsive: true,
+                maintainAspectRatio: false,
                 plugins: { legend: { display: false } },
                 scales: { y: { beginAtZero: true } }
             }
         });
 
-        // Discount Distribution Chart
         const zeroDisc = data.filter(d => d.Discount_Rate === 0).length;
         const lowDisc = data.filter(d => d.Discount_Rate > 0 && d.Discount_Rate < 0.10).length;
         const medDisc = data.filter(d => d.Discount_Rate >= 0.10 && d.Discount_Rate <= 0.25).length;
@@ -339,13 +392,13 @@
             },
             options: {
                 responsive: true,
-                plugins: { legend: { position: 'bottom' } }
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } }
             }
         });
     }
 
     initDropdowns();
-    filterData();
 </script>
 
 </body>
