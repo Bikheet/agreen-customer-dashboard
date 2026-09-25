@@ -12,7 +12,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- SheetJS (XLSX Reader) لقراءة ملفات الإكسل أوتوماتيكياً -->
+    <!-- SheetJS (XLSX Reader) لقراءة ملفات الإكسل أوتوماتيكياً من الجيت هاب -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         body {
@@ -56,12 +56,24 @@
         .kpi-card:hover {
             transform: translateY(-3px);
         }
-        .filter-box {
+        .filter-box, .ai-insights-box {
             background: #ffffff;
             border-radius: 10px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.03);
             padding: 20px;
         }
+        .ai-card-item {
+            background: #f8fafc;
+            border-right: 4px solid #059669;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            border-top: 1px solid #e2e8f0;
+            border-left: 1px solid #e2e8f0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .ai-card-warning { border-right-color: #dc2626; }
+        .ai-card-growth { border-right-color: #d97706; }
         .chart-container {
             background: #ffffff;
             border-radius: 10px;
@@ -110,7 +122,7 @@
         <div class="header-section p-3 mb-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
             <div>
                 <h4 class="fw-bold mb-1"><i class="fas fa-chart-line me-2 text-warning"></i> لوحة تحليل وتصنيف عملاء AGREEN</h4>
-                <p class="mb-0 text-white-50 small">شركة AGREEN | نظام تحليل نسب الخصم والعملاء (موسم 2025-2026)</p>
+                <p class="mb-0 text-white-50 small">شركة AGREEN | نظام تحليل الشيت المرفوع ورؤى الذكاء الاصطناعي التخصصية (موسم 2025-2026)</p>
             </div>
             <div>
                 <button class="btn btn-light btn-sm fw-bold text-danger" onclick="logout()"><i class="fas fa-sign-out-alt me-1"></i> خروج</button>
@@ -178,6 +190,16 @@
                     <div class="text-muted small fw-bold">عملاء القائمة السوداء (D)</div>
                     <div class="fs-4 fw-bold text-danger mt-1" id="kpiBlacklist">0</div>
                 </div>
+            </div>
+        </div>
+
+        <!-- AI Strategic Advisor Section (مبني حصرياً بناءً على الشيت المرفوع) -->
+        <div class="ai-insights-box mb-4">
+            <div class="d-flex align-items-center mb-3">
+                <h5 class="fw-bold text-success mb-0"><i class="fas fa-brain me-2 text-warning"></i> التحليل الاستراتيجي ورأي الذكاء الاصطناعي (مبني على الشيت المرفوع)</h5>
+            </div>
+            <div class="row g-3" id="aiRecommendationsContainer">
+                <!-- يتم توليد التحليلات والتوصيات بناءً على بيانات الشيت الفعلية -->
             </div>
         </div>
 
@@ -251,7 +273,7 @@
         document.getElementById('password').value = '';
     }
 
-    // سحب وقراءة الشيت أوتوماتيكياً بالاسم المحدد من المشروع مع ضبط أعمدة الإكسل بدقة
+    // سحب وقراءة الشيت أوتوماتيكياً من الجيت هاب
     function loadSheetAutomatically() {
         const excelFileName = 'IT تصفية العملاء.xlsx'; 
 
@@ -268,22 +290,22 @@
                 const jsonRows = XLSX.utils.sheet_to_json(worksheet, {header: 1});
                 
                 let parsedData = [];
-                // قراءة البيانات من الشيت (تخطي العناوين وصلاحية استبعاد صفوف المجموع النهائي)
                 for (let i = 1; i < jsonRows.length; i++) {
                     let row = jsonRows[i];
-                    // التأكد من أن السطر يحتوي على بيانات حقيقية وليس صف المجموع السفلي
+                    // استبعاد صف المجموع السفلي والتأكد من صحة كود العميل
                     if (row && row.length >= 5 && row[0] !== undefined && !isNaN(parseFloat(row[0]))) {
-                        let custCode = row[0]; // عمود كود العميل
-                        let item = row[1] || 'غير محدد'; // عمود الصنف الزراعي
-                        let grade = row[2] || 'B'; // عمود الدرجة
-                        let fob = parseFloat(row[3]) || 0; // عمود FOB بعد الخصم
-                        let disc = parseFloat(row[4]) || 0; // عمود نسبة الخصم
+                        let custCode = row[0];
+                        let item = row[1] || 'غير محدد';
+                        let grade = row[2] || 'B';
+                        let fob = parseFloat(row[3]) || 0;
+                        let disc = parseFloat(row[4]) || 0;
                         if (disc > 1) disc = disc / 100;
 
                         let segment = 'A';
                         if (disc > 0.25 || grade === 'D') segment = 'D (Blacklist)';
-                        else if (disc > 0.10) segment = 'C';
+                        else if (disc >= 0.10) segment = 'C';
                         else if (disc > 0) segment = 'B';
+                        else segment = 'A';
 
                         parsedData.push({
                             "Customer_Code": custCode,
@@ -370,10 +392,12 @@
         document.getElementById('kpiAvgDiscount').textContent = avgDiscount.toFixed(1) + '%';
         document.getElementById('kpiBlacklist').textContent = blacklistCount;
 
+        // توليد التحليلات البروفيشنال بناءً على البيانات الفعلية للشيت المرفوع
+        generateAIRecommendations(data);
+
         const tbody = document.getElementById('tableBody');
         tbody.innerHTML = '';
         
-        // عرض النتائج بالكامل مع تحسين الأداء
         const displayData = data.slice(0, 800);
         displayData.forEach((d, index) => {
             let badgeClass = 'bg-secondary';
@@ -395,6 +419,57 @@
         });
 
         updateCharts(data);
+    }
+
+    // دالة تحليل الذكاء الاصطناعي البروفيشنال المبنية حصرياً من بيانات الشيت المرفوع
+    function generateAIRecommendations(data) {
+        const container = document.getElementById('aiRecommendationsContainer');
+        if (!data || data.length === 0) {
+            container.innerHTML = '<div class="col-12 text-muted text-center">لا توجد بيانات كافية للتحليل حالياً.</div>';
+            return;
+        }
+
+        // إيجاد أعلى العرسان/العملاء قيمة وأكثرهم خصماً بناءً على الشيت
+        let sortedByVal = [...data].sort((a, b) => b.FOB_After_Discount - a.FOB_After_Discount);
+        let topCustomer = sortedByVal[0] || {};
+        
+        let blacklistItems = data.filter(d => d.Segment === 'D (Blacklist)');
+        let zeroDiscountCount = data.filter(d => d.Discount_Rate === 0).length;
+
+        let rec1 = `
+            <div class="col-md-4">
+                <div class="ai-card-item">
+                    <h6 class="fw-bold text-success mb-1"><i class="fas fa-bullseye me-1"></i> سياسة الخصم والكميات (للعام القادم)</h6>
+                    <p class="small text-muted mb-0">
+                        استناداً إلى الشيت المرفوع، يوجد <strong>${zeroDiscountCount} صفقة بدون أي خصم</strong> تعود بعوائد ممتازة. 
+                        <strong>التوصية:</strong> بالنسبة للعام القادم، لا تقم بزيادة الخصومات عشوائياً؛ بل اربط أي خصم إضافي (تجاوز 10%) بزيادة ملحوظة في حجم الكميات المسحوبة لضمان حماية هامش الربح الكلي.
+                    </p>
+                </div>
+            </div>`;
+
+        let rec2 = `
+            <div class="col-md-4">
+                <div class="ai-card-item ai-card-warning">
+                    <h6 class="fw-bold text-danger mb-1"><i class="fas fa-exclamation-triangle me-1"></i> موقف عملاء القائمة السوداء (الفرص البديلة)</h6>
+                    <p class="small text-muted mb-0">
+                        رصد الشيت <strong>${blacklistItems.length} حالة</strong> ضمن قائمة المخاطر (الفئة D). 
+                        <strong>التوصية:</strong> لا يُنصح بحذفهم نهائياً، بل منحهم "فرصة ثانية" بشرطين أساسيين: السداد النقدي الفوري، وتخفيض الخصم إلى الحد الأدنى (أقل من 5%) لتفادي أي خسائر تشغيلية جديدة.
+                    </p>
+                </div>
+            </div>`;
+
+        let rec3 = `
+            <div class="col-md-4">
+                <div class="ai-card-item ai-card-growth">
+                    <h6 class="fw-bold text-warning mb-1"><i class="fas fa-chart-line me-1"></i> تحليل الأداء وأبرز الصفقات</h6>
+                    <p class="small text-muted mb-0">
+                        أعلى قيمة مسجلة في الشيت الحالي تخص العميل برقم <strong>(${topCustomer.Customer_Code || 'غير متوفر'})</strong> في صنف <strong>(${topCustomer.Item || '-'})</strong> بقيمة <strong>${Math.round(topCustomer.FOB_After_Discount || 0)} $</strong>. 
+                        <strong>التوصية:</strong> التركيز على هذا النمط من العملاء وتوجيه فريق المبيعات للحفاظ على ولائهم وتأمين عقودهم مبكراً.
+                    </p>
+                </div>
+            </div>`;
+
+        container.innerHTML = rec1 + rec2 + rec3;
     }
 
     function updateCharts(data) {
