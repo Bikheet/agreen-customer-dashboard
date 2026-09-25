@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة تحليل وتصنيف العملاء (ABC & Blacklist) - مجموعة البنا</title>
+    <title>لوحة تحليل وتصنيف العملاء ونسب الخصم - مجموعة البنا</title>
     <!-- Bootstrap 5 CSS RTL -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css.rtl.min.css">
     <!-- Font Awesome Icons -->
@@ -13,32 +13,61 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            --card-bg: #ffffff;
+            --body-bg: #f4f6f9;
+        }
         body {
             font-family: 'Cairo', sans-serif;
-            background-color: #f8f9fa;
-            color: #333;
+            background-color: var(--body-bg);
+            color: #2c3e50;
         }
-        .header-card {
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        .header-section {
+            background: var(--primary-gradient);
             color: white;
-            border-radius: 15px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
         }
-        .card-kpi {
+        .kpi-card {
+            background: var(--card-bg);
             border: none;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            transition: transform 0.2s;
+            border-radius: 14px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
         }
-        .card-kpi:hover {
+        .kpi-card:hover {
             transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
         }
-        .badge-segment-a { background-color: #28a745; color: #fff; padding: 6px 12px; border-radius: 8px;}
-        .badge-segment-b { background-color: #17a2b8; color: #fff; padding: 6px 12px; border-radius: 8px;}
-        .badge-segment-c { background-color: #ffc107; color: #000; padding: 6px 12px; border-radius: 8px;}
-        .badge-segment-d { background-color: #dc3545; color: #fff; padding: 6px 12px; border-radius: 8px;}
+        .kpi-card::after {
+            content: '';
+            position: absolute;
+            top: 0; right: 0; width: 5px; height: 100%;
+        }
+        .kpi-primary::after { background: #0d6efd; }
+        .kpi-success::after { background: #198754; }
+        .kpi-warning::after { background: #ffc107; }
+        .kpi-danger::after { background: #dc3545; }
+
+        .filter-container {
+            background: var(--card-bg);
+            border-radius: 14px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+        }
+        .badge-a { background-color: #198754; color: #fff; padding: 6px 12px; border-radius: 8px; font-weight: 600;}
+        .badge-b { background-color: #0dcaf0; color: #000; padding: 6px 12px; border-radius: 8px; font-weight: 600;}
+        .badge-c { background-color: #ffc107; color: #000; padding: 6px 12px; border-radius: 8px; font-weight: 600;}
+        .badge-d { background-color: #dc3545; color: #fff; padding: 6px 12px; border-radius: 8px; font-weight: 600;}
+        .table-container {
+            background: var(--card-bg);
+            border-radius: 14px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+        }
         .table-hover tbody tr:hover {
-            background-color: rgba(42, 82, 152, 0.05);
+            background-color: rgba(44, 83, 100, 0.04);
         }
     </style>
 </head>
@@ -46,46 +75,48 @@
 
 <div class="container-fluid py-4 px-4">
     <!-- Header -->
-    <div class="header-card p-4 mb-4 d-flex justify-content-between align-items-center">
+    <div class="header-section p-4 mb-4 d-flex justify-content-between align-items-center">
         <div>
-            <h1 class="fw-bold mb-1"><i class="fas fa-chart-line me-2"></i> لوحة تحليل وتصنيف العملاء (ABC & Blacklist)</h1>
-            <p class="mb-0 text-white-50">مجموعة البنا للتجارة والتصدير - قطاع الموالح (موسم 2025-2026)</p>
+            <h2 class="fw-black mb-1"><i class="fas fa-crown me-2 text-warning"></i> لوحة الإدارة العليا - تحليل وتصنيف عملاء الموالح</h2>
+            <p class="mb-0 text-white-50">مجموعة البنا للتجارة والتصدير | نظام تصفية العملاء ونسب الخصم (موسم 2025-2026)</p>
         </div>
         <div>
-            <span class="badge bg-success fs-6 p-2 shadow-sm"><i class="fas fa-shield-alt me-1"></i> النظام متصل ومؤمن</span>
+            <span class="badge bg-light text-dark fs-6 px-3 py-2 shadow-sm"><i class="fas fa-sync-alt text-success me-1"></i> مباشر ومتزامن</span>
         </div>
     </div>
 
     <!-- Filters Bar -->
-    <div class="card mb-4 shadow-sm border-0 rounded-4">
-        <div class="card-body bg-white rounded-4 p-4">
-            <h5 class="card-title fw-bold text-primary mb-3"><i class="fas fa-filter me-2"></i> فلاتر التحكم والتحليل المتقدم</h5>
-            <div class="row g-3">
-                <div class="col-md-3">
-                    <label class="form-label fw-bold small text-muted">فئة العميل (Segment):</label>
-                    <select id="filterSegment" class="form-select border-2" onchange="filterData()">
-                        <option value="">كل الفئات</option>
-                        <option value="A">الفئة A (ممتاز)</option>
-                        <option value="B">الفئة B (جيد)</option>
-                        <option value="C">الفئة C (مقبول)</option>
-                        <option value="D (Blacklist)">الفئة D (القائمة السوداء)</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label fw-bold small text-muted">الصنف الزراعي (Item):</label>
-                    <select id="filterItem" class="form-select border-2" onchange="filterData()">
-                        <option value="">كل الأصناف</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label fw-bold small text-muted">الدرجة (Grade):</label>
-                    <select id="filterGrade" class="form-select border-2" onchange="filterData()">
-                        <option value="">كل الدرجات</option>
-                    </select>
-                </div>
-                <div class="col-md-3 d-flex align-items-end">
-                    <button class="btn btn-outline-secondary w-100 fw-bold border-2" onclick="resetFilters()"><i class="fas fa-redo me-1"></i> إعادة ضبط الفلاتر</button>
-                </div>
+    <div class="filter-container p-4 mb-4">
+        <h5 class="fw-bold text-dark mb-3"><i class="fas fa-sliders-h text-primary me-2"></i> فلاتر التحكم والتحليل المتقدم</h5>
+        <div class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label fw-bold small text-muted">فئة العميل (ABC / D):</label>
+                <select id="filterSegment" class="form-select border-2" onchange="filterData()">
+                    <option value="">كل الفئات</option>
+                    <option value="A">الفئة A (ممتاز)</option>
+                    <option value="B">الفئة B (جيد)</option>
+                    <option value="C">الفئة C (مقبول)</option>
+                    <option value="D (Blacklist)">الفئة D (القائمة السوداء)</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-bold small text-muted">الصنف الزراعي:</label>
+                <select id="filterItem" class="form-select border-2" onchange="filterData()">
+                    <option value="">كل الأصناف</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-bold small text-muted">شريحة نسبة الخصم:</label>
+                <select id="filterDiscount" class="form-select border-2" onchange="filterData()">
+                    <option value="">كل نسب الخصم</option>
+                    <option value="zero">بدون خصم (0%)</option>
+                    <option value="low">خصم منخفض (أقل من 10%)</option>
+                    <option value="medium">خصم متوسط (10% - 25%)</option>
+                    <option value="high">خصم مرتفع (أكثر من 25%)</option>
+                </select>
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button class="btn btn-outline-secondary w-100 fw-bold border-2" onclick="resetFilters()"><i class="fas fa-redo me-1"></i> إعادة ضبط الفلاتر</button>
             </div>
         </div>
     </div>
@@ -93,27 +124,27 @@
     <!-- KPI Cards -->
     <div class="row g-4 mb-4">
         <div class="col-md-3">
-            <div class="card card-kpi bg-white p-4 border-start border-4 border-primary">
-                <div class="text-muted small fw-bold">إجمالي صفقات التصدير</div>
-                <div class="fs-2 fw-bold text-dark mt-2" id="kpiTotalTrans">0</div>
+            <div class="kpi-card kpi-primary p-4">
+                <div class="text-muted small fw-bold">إجمالي الصفقات</div>
+                <div class="fs-2 fw-black text-dark mt-2" id="kpiTotalTrans">0</div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card card-kpi bg-white p-4 border-start border-4 border-success">
+            <div class="kpi-card kpi-success p-4">
                 <div class="text-muted small fw-bold">إجمالي قيم FOB ($)</div>
-                <div class="fs-2 fw-bold text-success mt-2" id="kpiTotalVal">0</div>
+                <div class="fs-2 fw-black text-success mt-2" id="kpiTotalVal">0</div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card card-kpi bg-white p-4 border-start border-4 border-info">
-                <div class="text-muted small fw-bold">متوسط سعر الطن ($)</div>
-                <div class="fs-2 fw-bold text-info mt-2" id="kpiAvgFOB">0</div>
+            <div class="kpi-card kpi-warning p-4">
+                <div class="text-muted small fw-bold">متوسط نسبة الخصم</div>
+                <div class="fs-2 fw-black text-warning mt-2" id="kpiAvgDiscount">0%</div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card card-kpi bg-white p-4 border-start border-4 border-danger">
+            <div class="kpi-card kpi-danger p-4">
                 <div class="text-muted small fw-bold">عملاء القائمة السوداء (D)</div>
-                <div class="fs-2 fw-bold text-danger mt-2" id="kpiBlacklist">0</div>
+                <div class="fs-2 fw-black text-danger mt-2" id="kpiBlacklist">0</div>
             </div>
         </div>
     </div>
@@ -121,61 +152,72 @@
     <!-- Charts Row -->
     <div class="row g-4 mb-4">
         <div class="col-md-6">
-            <div class="card shadow-sm border-0 rounded-4 h-100">
-                <div class="card-body p-4">
-                    <h5 class="card-title fw-bold text-secondary mb-3"><i class="fas fa-chart-bar me-2 text-primary"></i> توزيع قيم الصفقات حسب تصنيف العملاء</h5>
-                    <canvas id="segmentChart" height="230"></canvas>
-                </div>
+            <div class="card shadow-sm border-0 rounded-4 h-100 p-3">
+                <h5 class="fw-bold text-secondary mb-3"><i class="fas fa-chart-bar text-primary me-2"></i> توزيع القيم حسب تصنيف العملاء</h5>
+                <canvas id="segmentChart" height="230"></canvas>
             </div>
         </div>
         <div class="col-md-6">
-            <div class="card shadow-sm border-0 rounded-4 h-100">
-                <div class="card-body p-4">
-                    <h5 class="card-title fw-bold text-secondary mb-3"><i class="fas fa-chart-pie me-2 text-primary"></i> إجمالي القيم حسب الأصناف الزراعية</h5>
-                    <canvas id="itemChart" height="230"></canvas>
-                </div>
+            <div class="card shadow-sm border-0 rounded-4 h-100 p-3">
+                <h5 class="fw-bold text-secondary mb-3"><i class="fas fa-percentage text-primary me-2"></i> تحليل شرائح نسب الخصم الممنوحة</h5>
+                <canvas id="discountChart" height="230"></canvas>
             </div>
         </div>
     </div>
 
     <!-- Data Table Section -->
-    <div class="card shadow-sm border-0 rounded-4 mb-4">
-        <div class="card-body p-4">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="card-title fw-bold text-secondary mb-0"><i class="fas fa-table me-2 text-primary"></i> سجلات وتقييم العملاء والصفقات</h5>
-                <input type="text" id="searchBox" class="form-control w-25 border-2" placeholder="بحث برقم العميل أو الصنف..." onkeyup="filterData()">
-            </div>
-            <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
-                <table class="table table-hover align-middle">
-                    <thead class="table-dark sticky-top">
-                        <tr>
-                            <th>كود العميل</th>
-                            <th>الصنف</th>
-                            <th>الدرجة</th>
-                            <th>FOB TON $ بعد الخصم</th>
-                            <th>نسبة الخصم</th>
-                            <th>تصنيف العميل (ABC / D)</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody">
-                    </tbody>
-                </table>
-            </div>
+    <div class="table-container p-4 mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold text-secondary mb-0"><i class="fas fa-table text-primary me-2"></i> جدول تفاصيل العملاء ونسب الخصم</h5>
+            <input type="text" id="searchBox" class="form-control w-25 border-2" placeholder="بحث برقم العميل أو الصنف..." onkeyup="filterData()">
+        </div>
+        <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+            <table class="table table-hover align-middle">
+                <thead class="table-dark sticky-top">
+                    <tr>
+                        <th>كود العميل</th>
+                        <th>الصنف</th>
+                        <th>الدرجة</th>
+                        <th>FOB TON $ بعد الخصم</th>
+                        <th>نسبة الخصم</th>
+                        <th>تصنيف العميل</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
 
 <script>
-    // بيانات صفقات العملاء وموسم الموالح المستخرجة من شيت التصفية
-    const rawData = [{"Customer_Code": 101200.0, "Item": "بسره", "Grade": "D", "FOB_After_Discount": 410.27, "Discount_Rate": 0.0, "Segment": "D (Blacklist)"}, {"Customer_Code": 101430.0, "Item": "بسره", "Grade": "B", "FOB_After_Discount": 675.12, "Discount_Rate": 0.0, "Segment": "A"}, {"Customer_Code": 102010.0, "Item": "بسره", "Grade": "C", "FOB_After_Discount": 533.33, "Discount_Rate": 0.0, "Segment": "A"}, {"Customer_Code": 102010.0, "Item": "بسره", "Grade": "D", "FOB_After_Discount": 514.85, "Discount_Rate": 0.06, "Segment": "A"}, {"Customer_Code": 102090.0, "Item": "بسره", "Grade": "D", "FOB_After_Discount": 699.26, "Discount_Rate": 0.0, "Segment": "A"}, {"Customer_Code": 102200.0, "Item": "بسره", "Grade": "B", "FOB_After_Discount": 570.13, "Discount_Rate": 0.0, "Segment": "A"}, {"Customer_Code": 102230.0, "Item": "بسره", "Grade": "C", "FOB_After_Discount": 511.25, "Discount_Rate": 0.0, "Segment": "B"}, {"Customer_Code": 102300.0, "Item": "بسره", "Grade": "C", "FOB_After_Discount": 616.50, "Discount_Rate": 0.0, "Segment": "A"}, {"Customer_Code": 103100.0, "Item": "بسره", "Grade": "C", "FOB_After_Discount": 544.11, "Discount_Rate": 0.0, "Segment": "B"}, {"Customer_Code": 105200.0, "Item": "بسره", "Grade": "C", "FOB_After_Discount": 759.33, "Discount_Rate": 0.0, "Segment": "A"}, {"Customer_Code": 207017.0, "Item": "صيفي", "Grade": "B", "FOB_After_Discount": 480.02, "Discount_Rate": 0.03, "Segment": "A"}, {"Customer_Code": 207035.0, "Item": "صيفي", "Grade": "B", "FOB_After_Discount": 702.88, "Discount_Rate": 0.0, "Segment": "B"}, {"Customer_Code": 209065.0, "Item": "بسره", "Grade": "D", "FOB_After_Discount": 459.82, "Discount_Rate": 0.0, "Segment": "A"}, {"Customer_Code": 717470.0, "Item": "بسره", "Grade": "D", "FOB_After_Discount": 542.62, "Discount_Rate": 0.29, "Segment": "D (Blacklist)"}, {"Customer_Code": 717490.0, "Item": "بسره", "Grade": "D", "FOB_After_Discount": 671.04, "Discount_Rate": 0.15, "Segment": "D (Blacklist)"}, {"Customer_Code": 808120.0, "Item": "صيفي", "Grade": "B", "FOB_After_Discount": 426.97, "Discount_Rate": 0.0, "Segment": "A"}, {"Customer_Code": 907170.0, "Item": "جريب فروت", "Grade": "B", "FOB_After_Discount": 1030.54, "Discount_Rate": 0.0, "Segment": "A"}, {"Customer_Code": 103400.0, "Item": "بلدي", "Grade": "C", "FOB_After_Discount": 598.12, "Discount_Rate": 0.11, "Segment": "D (Blacklist)"}, {"Customer_Code": 207063.0, "Item": "بلدي", "Grade": "D", "FOB_After_Discount": 577.16, "Discount_Rate": 0.0, "Segment": "D (Blacklist)"}];
+    const rawData = [
+        {"Customer_Code": 101200, "Item": "بسره", "Grade": "D", "FOB_After_Discount": 410.27, "Discount_Rate": 0.0, "Segment": "D (Blacklist)"},
+        {"Customer_Code": 101430, "Item": "بسره", "Grade": "B", "FOB_After_Discount": 675.12, "Discount_Rate": 0.0, "Segment": "A"},
+        {"Customer_Code": 102010, "Item": "بسره", "Grade": "C", "FOB_After_Discount": 533.33, "Discount_Rate": 0.0, "Segment": "A"},
+        {"Customer_Code": 102010, "Item": "بسره", "Grade": "D", "FOB_After_Discount": 514.85, "Discount_Rate": 0.06, "Segment": "A"},
+        {"Customer_Code": 102090, "Item": "بسره", "Grade": "D", "FOB_After_Discount": 699.26, "Discount_Rate": 0.0, "Segment": "A"},
+        {"Customer_Code": 102200, "Item": "بسره", "Grade": "B", "FOB_After_Discount": 570.13, "Discount_Rate": 0.0, "Segment": "A"},
+        {"Customer_Code": 102230, "Item": "بسره", "Grade": "C", "FOB_After_Discount": 511.25, "Discount_Rate": 0.0, "Segment": "B"},
+        {"Customer_Code": 102300, "Item": "بسره", "Grade": "C", "FOB_After_Discount": 616.50, "Discount_Rate": 0.0, "Segment": "A"},
+        {"Customer_Code": 103100, "Item": "بسره", "Grade": "C", "FOB_After_Discount": 544.11, "Discount_Rate": 0.0, "Segment": "B"},
+        {"Customer_Code": 105200, "Item": "بسره", "Grade": "C", "FOB_After_Discount": 759.33, "Discount_Rate": 0.0, "Segment": "A"},
+        {"Customer_Code": 207017, "Item": "صيفي", "Grade": "B", "FOB_After_Discount": 480.02, "Discount_Rate": 0.03, "Segment": "A"},
+        {"Customer_Code": 207035, "Item": "صيفي", "Grade": "B", "FOB_After_Discount": 702.88, "Discount_Rate": 0.0, "Segment": "B"},
+        {"Customer_Code": 209065, "Item": "بسره", "Grade": "D", "FOB_After_Discount": 459.82, "Discount_Rate": 0.0, "Segment": "A"},
+        {"Customer_Code": 717470, "Item": "بسره", "Grade": "D", "FOB_After_Discount": 542.62, "Discount_Rate": 0.29, "Segment": "D (Blacklist)"},
+        {"Customer_Code": 717490, "Item": "بسره", "Grade": "D", "FOB_After_Discount": 671.04, "Discount_Rate": 0.15, "Segment": "D (Blacklist)"},
+        {"Customer_Code": 808120, "Item": "صيفي", "Grade": "B", "FOB_After_Discount": 426.97, "Discount_Rate": 0.0, "Segment": "A"},
+        {"Customer_Code": 907170, "Item": "جريب فروت", "Grade": "B", "FOB_After_Discount": 1030.54, "Discount_Rate": 0.0, "Segment": "A"},
+        {"Customer_Code": 103400, "Item": "بلدي", "Grade": "C", "FOB_After_Discount": 598.12, "Discount_Rate": 0.11, "Segment": "D (Blacklist)"},
+        {"Customer_Code": 207063, "Item": "بلدي", "Grade": "D", "FOB_After_Discount": 577.16, "Discount_Rate": 0.0, "Segment": "D (Blacklist)"}
+    ];
 
     let segmentChartInstance = null;
-    let itemChartInstance = null;
+    let discountChartInstance = null;
 
     function initDropdowns() {
         const items = [...new Set(rawData.map(d => d.Item))].sort();
-        const grades = [...new Set(rawData.map(d => d.Grade))].sort();
-
         const itemSelect = document.getElementById('filterItem');
         items.forEach(item => {
             if(item) {
@@ -185,30 +227,27 @@
                 itemSelect.appendChild(opt);
             }
         });
-
-        const gradeSelect = document.getElementById('filterGrade');
-        grades.forEach(grade => {
-            if(grade) {
-                let opt = document.createElement('option');
-                opt.value = grade;
-                opt.textContent = grade;
-                gradeSelect.appendChild(opt);
-            }
-        });
     }
 
     function filterData() {
         const segFilter = document.getElementById('filterSegment').value;
         const itemFilter = document.getElementById('filterItem').value;
-        const gradeFilter = document.getElementById('filterGrade').value;
+        const discFilter = document.getElementById('filterDiscount').value;
         const searchVal = document.getElementById('searchBox').value.toLowerCase();
 
         const filtered = rawData.filter(d => {
             let matchSeg = !segFilter || d.Segment === segFilter;
             let matchItem = !itemFilter || d.Item === itemFilter;
-            let matchGrade = !gradeFilter || String(d.Grade) === gradeFilter;
+            
+            let disc = d.Discount_Rate;
+            let matchDisc = true;
+            if (discFilter === 'zero') matchDisc = (disc === 0);
+            else if (discFilter === 'low') matchDisc = (disc > 0 && disc < 0.10);
+            else if (discFilter === 'medium') matchDisc = (disc >= 0.10 && disc <= 0.25);
+            else if (discFilter === 'high') matchDisc = (disc > 0.25);
+
             let matchSearch = !searchVal || String(d.Customer_Code).toLowerCase().includes(searchVal) || String(d.Item).toLowerCase().includes(searchVal);
-            return matchSeg && matchItem && matchGrade && matchSearch;
+            return matchSeg && matchItem && matchDisc && matchSearch;
         });
 
         updateUI(filtered);
@@ -217,7 +256,7 @@
     function resetFilters() {
         document.getElementById('filterSegment').value = '';
         document.getElementById('filterItem').value = '';
-        document.getElementById('filterGrade').value = '';
+        document.getElementById('filterDiscount').value = '';
         document.getElementById('searchBox').value = '';
         filterData();
     }
@@ -225,30 +264,30 @@
     function updateUI(data) {
         const totalTrans = data.length;
         const totalVal = data.reduce((sum, d) => sum + (parseFloat(d.FOB_After_Discount) || 0), 0);
-        const avgFOB = totalTrans > 0 ? totalVal / totalTrans : 0;
+        const avgDiscount = totalTrans > 0 ? (data.reduce((sum, d) => sum + d.Discount_Rate, 0) / totalTrans) * 100 : 0;
         const blacklistCount = new Set(data.filter(d => d.Segment === 'D (Blacklist)').map(d => d.Customer_Code)).size;
 
         document.getElementById('kpiTotalTrans').textContent = totalTrans.toLocaleString();
         document.getElementById('kpiTotalVal').textContent = Math.round(totalVal).toLocaleString() + ' $';
-        document.getElementById('kpiAvgFOB').textContent = Math.round(avgFOB).toLocaleString() + ' $';
+        document.getElementById('kpiAvgDiscount').textContent = avgDiscount.toFixed(1) + '%';
         document.getElementById('kpiBlacklist').textContent = blacklistCount;
 
         const tbody = document.getElementById('tableBody');
         tbody.innerHTML = '';
         data.forEach(d => {
             let badgeClass = 'bg-secondary';
-            if (d.Segment === 'A') badgeClass = 'badge-segment-a';
-            else if (d.Segment === 'B') badgeClass = 'badge-segment-b';
-            else if (d.Segment === 'C') badgeClass = 'badge-segment-c';
-            else if (d.Segment === 'D (Blacklist)') badgeClass = 'badge-segment-d';
+            if (d.Segment === 'A') badgeClass = 'badge-a';
+            else if (d.Segment === 'B') badgeClass = 'badge-b';
+            else if (d.Segment === 'C') badgeClass = 'badge-c';
+            else if (d.Segment === 'D (Blacklist)') badgeClass = 'badge-d';
 
             let row = `<tr>
                 <td><strong>${d.Customer_Code}</strong></td>
                 <td>${d.Item}</td>
                 <td><span class="badge bg-light text-dark border">${d.Grade}</span></td>
                 <td>${(parseFloat(d.FOB_After_Discount) || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} $</td>
-                <td>${((parseFloat(d.Discount_Rate) || 0) * 100).toFixed(1)}%</td>
-                <td><span class="badge ${badgeClass}">${d.Segment}</span></td>
+                <td><span class="text-danger fw-bold">${(d.Discount_Rate * 100).toFixed(1)}%</span></td>
+                <td><span class="${badgeClass}">${d.Segment}</span></td>
             </tr>`;
             tbody.insertAdjacentHTML('beforeend', row);
         });
@@ -257,6 +296,7 @@
     }
 
     function updateCharts(data) {
+        // Segment Bar Chart
         const segs = ['A', 'B', 'C', 'D (Blacklist)'];
         const segVals = segs.map(s => data.filter(d => d.Segment === s).reduce((sum, d) => sum + (parseFloat(d.FOB_After_Discount) || 0), 0));
 
@@ -269,7 +309,7 @@
                 datasets: [{
                     label: 'إجمالي قيم الصفقات ($)',
                     data: segVals,
-                    backgroundColor: ['#28a745', '#17a2b8', '#ffc107', '#dc3545'],
+                    backgroundColor: ['#198754', '#0dcaf0', '#ffc107', '#dc3545'],
                     borderRadius: 8
                 }]
             },
@@ -280,21 +320,21 @@
             }
         });
 
-        const itemMap = {};
-        data.forEach(d => {
-            itemMap[d.Item] = (itemMap[d.Item] || 0) + (parseFloat(d.FOB_After_Discount) || 0);
-        });
-        const sortedItems = Object.entries(itemMap).sort((a,b) => b[1] - a[1]);
+        // Discount Distribution Chart
+        const zeroDisc = data.filter(d => d.Discount_Rate === 0).length;
+        const lowDisc = data.filter(d => d.Discount_Rate > 0 && d.Discount_Rate < 0.10).length;
+        const medDisc = data.filter(d => d.Discount_Rate >= 0.10 && d.Discount_Rate <= 0.25).length;
+        const highDisc = data.filter(d => d.Discount_Rate > 0.25).length;
 
-        if(itemChartInstance) itemChartInstance.destroy();
-        const ctx2 = document.getElementById('itemChart').getContext('2d');
-        itemChartInstance = new Chart(ctx2, {
+        if(discountChartInstance) discountChartInstance.destroy();
+        const ctx2 = document.getElementById('discountChart').getContext('2d');
+        discountChartInstance = new Chart(ctx2, {
             type: 'doughnut',
             data: {
-                labels: sortedItems.map(i => i[0]),
+                labels: ['بدون خصم (0%)', 'خصم منخفض (<10%)', 'خصم متوسط (10-25%)', 'خصم مرتفع (>25%)'],
                 datasets: [{
-                    data: sortedItems.map(i => i[1]),
-                    backgroundColor: ['#1e3c72', '#2a5298', '#28a745', '#17a2b8', '#ffc107', '#dc3545']
+                    data: [zeroDisc, lowDisc, medDisc, highDisc],
+                    backgroundColor: ['#198754', '#0dcaf0', '#ffc107', '#dc3545']
                 }]
             },
             options: {
