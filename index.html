@@ -251,7 +251,7 @@
         document.getElementById('password').value = '';
     }
 
-    // سحب وقراءة الشيت أوتوماتيكياً بالاسم المحدد من المشروع على GitHub
+    // سحب وقراءة الشيت أوتوماتيكياً بالاسم المحدد من المشروع مع ضبط أعمدة الإكسل بدقة
     function loadSheetAutomatically() {
         const excelFileName = 'IT تصفية العملاء.xlsx'; 
 
@@ -268,14 +268,16 @@
                 const jsonRows = XLSX.utils.sheet_to_json(worksheet, {header: 1});
                 
                 let parsedData = [];
+                // قراءة البيانات من الشيت (تخطي العناوين وصلاحية استبعاد صفوف المجموع النهائي)
                 for (let i = 1; i < jsonRows.length; i++) {
                     let row = jsonRows[i];
-                    if (row && row.length >= 5) {
-                        let custCode = row[0] || row[4] || '-';
-                        let item = row[1] || row[3] || 'أصناف متنوعة';
-                        let grade = row[2] || 'B';
-                        let fob = parseFloat(row[3] || row[2]) || 500;
-                        let disc = parseFloat(row[4] || row[1]) || 0;
+                    // التأكد من أن السطر يحتوي على بيانات حقيقية وليس صف المجموع السفلي
+                    if (row && row.length >= 5 && row[0] !== undefined && !isNaN(parseFloat(row[0]))) {
+                        let custCode = row[0]; // عمود كود العميل
+                        let item = row[1] || 'غير محدد'; // عمود الصنف الزراعي
+                        let grade = row[2] || 'B'; // عمود الدرجة
+                        let fob = parseFloat(row[3]) || 0; // عمود FOB بعد الخصم
+                        let disc = parseFloat(row[4]) || 0; // عمود نسبة الخصم
                         if (disc > 1) disc = disc / 100;
 
                         let segment = 'A';
@@ -285,8 +287,8 @@
 
                         parsedData.push({
                             "Customer_Code": custCode,
-                            "Item": String(item),
-                            "Grade": String(grade),
+                            "Item": String(item).trim(),
+                            "Grade": String(grade).trim(),
                             "FOB_After_Discount": fob,
                             "Discount_Rate": disc,
                             "Segment": segment
@@ -316,7 +318,7 @@
         const itemSelect = document.getElementById('filterItem');
         itemSelect.innerHTML = '<option value="">كل الأصناف</option>';
         items.forEach(item => {
-            if(item && item !== 'undefined') {
+            if(item && item !== 'undefined' && item !== '0') {
                 let opt = document.createElement('option');
                 opt.value = item;
                 opt.textContent = item;
@@ -371,7 +373,7 @@
         const tbody = document.getElementById('tableBody');
         tbody.innerHTML = '';
         
-        // عرض النتائج بالكامل (حتى 740+ عميل) مع الحفاظ على سرعة الأداء
+        // عرض النتائج بالكامل مع تحسين الأداء
         const displayData = data.slice(0, 800);
         displayData.forEach((d, index) => {
             let badgeClass = 'bg-secondary';
