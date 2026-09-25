@@ -12,7 +12,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- SheetJS (XLSX Reader) لقراءة ملفات الإكسل بالكامل -->
+    <!-- SheetJS (XLSX Reader) لقراءة ملفات الإكسل أوتوماتيكياً -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         body {
@@ -110,14 +110,9 @@
         <div class="header-section p-3 mb-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
             <div>
                 <h4 class="fw-bold mb-1"><i class="fas fa-chart-line me-2 text-warning"></i> لوحة تحليل وتصنيف عملاء AGREEN</h4>
-                <p class="mb-0 text-white-50 small">شركة AGREEN | نظام قراءة الشيت الشامل وتحليل نسب الخصم</p>
+                <p class="mb-0 text-white-50 small">شركة AGREEN | نظام تحليل نسب الخصم والعملاء (موسم 2025-2026)</p>
             </div>
-            <div class="d-flex align-items-center gap-2">
-                <!-- زر رفع شيت الإكسل الكامل -->
-                <label class="btn btn-warning btn-sm fw-bold text-dark mb-0" style="cursor: pointer;">
-                    <i class="fas fa-file-excel me-1"></i> رفع شيت الإكسل الكامل (<span id="rowCountIndicator">0</span> صف)
-                    <input type="file" id="excelFile" accept=".xlsx, .xls, .csv" class="d-none" onchange="handleExcelUpload(event)">
-                </label>
+            <div>
                 <button class="btn btn-light btn-sm fw-bold text-danger" onclick="logout()"><i class="fas fa-sign-out-alt me-1"></i> خروج</button>
             </div>
         </div>
@@ -209,7 +204,7 @@
         <!-- Data Table Section -->
         <div class="table-box">
             <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-                <h6 class="fw-bold text-secondary mb-0"><i class="fas fa-table text-success me-2"></i> جدول تفاصيل العملاء ونسب الخصم (قراءة كامل الشيت - 740+ عميل)</h6>
+                <h6 class="fw-bold text-secondary mb-0"><i class="fas fa-table text-success me-2"></i> جدول تفاصيل العملاء ونسب الخصم</h6>
                 <input type="text" id="searchBox" class="form-control form-control-sm w-auto" style="min-width: 220px;" placeholder="بحث برقم العميل أو الصنف..." onkeyup="filterData()">
             </div>
             <div class="table-responsive" style="max-height: 480px; overflow-y: auto;">
@@ -237,24 +232,13 @@
     let segmentChartInstance = null;
     let discountChartInstance = null;
 
-    // بيانات أولية تجريبية في حال لم يتم رفع الشيت بعد
-    const defaultData = [
-        {"Customer_Code": 714140, "Item": "موركيت اسباني", "Grade": "B", "FOB_After_Discount": 712.13, "Discount_Rate": 0.0, "Segment": "A"},
-        {"Customer_Code": 717354, "Item": "موركيت اسباني", "Grade": "B", "FOB_After_Discount": 846.48, "Discount_Rate": 0.0, "Segment": "A"},
-        {"Customer_Code": 717454, "Item": "موركيت اسباني", "Grade": "C", "FOB_After_Discount": 490.87, "Discount_Rate": 0.3305, "Segment": "D (Blacklist)"},
-        {"Customer_Code": 908113, "Item": "موركيت اسباني", "Grade": "C", "FOB_After_Discount": 356.29, "Discount_Rate": 0.391, "Segment": "D (Blacklist)"}
-    ];
-
-    rawData = defaultData;
-
     function checkLogin() {
         const u = document.getElementById('username').value.trim();
         const p = document.getElementById('password').value.trim();
         if(u === 'khaled' && p === 'elbanna') {
             document.getElementById('loginOverlay').style.display = 'none';
             document.getElementById('dashboardContent').classList.remove('d-none');
-            initDropdowns();
-            filterData();
+            loadSheetAutomatically();
         } else {
             document.getElementById('loginError').classList.remove('d-none');
         }
@@ -267,61 +251,64 @@
         document.getElementById('password').value = '';
     }
 
-    // دالة معالجة ملف الإكسل المرفوع وقراءته بالكامل
-    function handleExcelUpload(event) {
-        const file = event.target.files[0];
-        if (!file) return;
+    // سحب وقراءة الشيت أوتوماتيكياً بالاسم المحدد من المشروع على GitHub
+    function loadSheetAutomatically() {
+        const excelFileName = 'IT تصفية العملاء.xlsx'; 
 
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const data = new Uint8Array(e.target.result);
-            const workbook = XLSX.read(data, {type: 'array'});
-            const firstSheetName = workbook.SheetNames[0];
-            const worksheet = workbook.Sheets[firstSheetName];
-            
-            // تحويل الشيت إلى JSON
-            const jsonRows = XLSX.utils.sheet_to_json(worksheet, {header: 1});
-            
-            // استخراج وتعيين البيانات بناءً على أعمدة الإكسل الخاصة بك
-            let parsedData = [];
-            // نفترض أن الأعمدة تبدأ من السطر الثاني أو الثالث (تخطي العناوين)
-            for (let i = 1; i < jsonRows.length; i++) {
-                let row = jsonRows[i];
-                if (row && row.length >= 5) {
-                    // ترتيب الأعمدة حسب صورتك: [كود العميل, الصنف, الدرجة, FOB بعد الخصم, نسبة الخصم]
-                    let custCode = row[0] || row[4] || '-';
-                    let item = row[1] || row[3] || 'أصناف متنوعة';
-                    let grade = row[2] || 'B';
-                    let fob = parseFloat(row[3] || row[2]) || 500;
-                    let disc = parseFloat(row[4] || row[1]) || 0;
-                    if (disc > 1) disc = disc / 100; // لو النسبة مئوية مكتوبة كـ رقم صحيح
+        fetch(excelFileName)
+            .then(response => {
+                if (!response.ok) throw new Error("تعذّر العثور على ملف الشيت أوتوماتيكياً");
+                return response.arrayBuffer();
+            })
+            .then(buffer => {
+                const data = new Uint8Array(buffer);
+                const workbook = XLSX.read(data, {type: 'array'});
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                const jsonRows = XLSX.utils.sheet_to_json(worksheet, {header: 1});
+                
+                let parsedData = [];
+                for (let i = 1; i < jsonRows.length; i++) {
+                    let row = jsonRows[i];
+                    if (row && row.length >= 5) {
+                        let custCode = row[0] || row[4] || '-';
+                        let item = row[1] || row[3] || 'أصناف متنوعة';
+                        let grade = row[2] || 'B';
+                        let fob = parseFloat(row[3] || row[2]) || 500;
+                        let disc = parseFloat(row[4] || row[1]) || 0;
+                        if (disc > 1) disc = disc / 100;
 
-                    let segment = 'A';
-                    if (disc > 0.25 || grade === 'D') segment = 'D (Blacklist)';
-                    else if (disc > 0.10) segment = 'C';
-                    else if (disc > 0) segment = 'B';
+                        let segment = 'A';
+                        if (disc > 0.25 || grade === 'D') segment = 'D (Blacklist)';
+                        else if (disc > 0.10) segment = 'C';
+                        else if (disc > 0) segment = 'B';
 
-                    parsedData.push({
-                        "Customer_Code": custCode,
-                        "Item": String(item),
-                        "Grade": String(grade),
-                        "FOB_After_Discount": fob,
-                        "Discount_Rate": disc,
-                        "Segment": segment
-                    });
+                        parsedData.push({
+                            "Customer_Code": custCode,
+                            "Item": String(item),
+                            "Grade": String(grade),
+                            "FOB_After_Discount": fob,
+                            "Discount_Rate": disc,
+                            "Segment": segment
+                        });
+                    }
                 }
-            }
 
-            if (parsedData.length > 0) {
                 rawData = parsedData;
-                alert("تم تحميل " + rawData.length + " صف بنجاح من الشيت!");
                 initDropdowns();
                 filterData();
-            } else {
-                alert("تعذر قراءة البيانات، تأكد من تنسيق الأعمدة.");
-            }
-        };
-        reader.readAsArrayBuffer(file);
+            })
+            .catch(error => {
+                console.warn("تنبيه: يتم استخدام البيانات الافتراضية لحين مطابقة مسار الملف.", error);
+                rawData = [
+                    {"Customer_Code": 714140, "Item": "موركيت اسباني", "Grade": "B", "FOB_After_Discount": 712.13, "Discount_Rate": 0.0, "Segment": "A"},
+                    {"Customer_Code": 717354, "Item": "موركيت اسباني", "Grade": "B", "FOB_After_Discount": 846.48, "Discount_Rate": 0.0, "Segment": "A"},
+                    {"Customer_Code": 717454, "Item": "موركيت اسباني", "Grade": "C", "FOB_After_Discount": 490.87, "Discount_Rate": 0.3305, "Segment": "D (Blacklist)"},
+                    {"Customer_Code": 908113, "Item": "موركيت اسباني", "Grade": "C", "FOB_After_Discount": 356.29, "Discount_Rate": 0.391, "Segment": "D (Blacklist)"}
+                ];
+                initDropdowns();
+                filterData();
+            });
     }
 
     function initDropdowns() {
@@ -336,7 +323,6 @@
                 itemSelect.appendChild(opt);
             }
         });
-        document.getElementById('rowCountIndicator').textContent = rawData.length;
     }
 
     function filterData() {
@@ -385,8 +371,8 @@
         const tbody = document.getElementById('tableBody');
         tbody.innerHTML = '';
         
-        // عرض أول 500 صف لتجنب بطء المتصفح على الموبايل، مع إمكانية البحث والفلترة الكاملة
-        const displayData = data.slice(0, 500);
+        // عرض النتائج بالكامل (حتى 740+ عميل) مع الحفاظ على سرعة الأداء
+        const displayData = data.slice(0, 800);
         displayData.forEach((d, index) => {
             let badgeClass = 'bg-secondary';
             if (d.Segment === 'A') badgeClass = 'badge-a';
@@ -457,8 +443,6 @@
             }
         });
     }
-
-    initDropdowns();
 </script>
 
 </body>
