@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحليل وتصنيف العملاء (ABC & Blacklist) - مجموعة البنا</title>
+    <!-- Bootstrap 5 CSS RTL -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css.rtl.min.css">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Cairo -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+        .header-card {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        .card-kpi {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+        }
+        .card-kpi:hover {
+            transform: translateY(-5px);
+        }
+        .badge-segment-a { background-color: #28a745; color: #fff; padding: 6px 12px; border-radius: 8px;}
+        .badge-segment-b { background-color: #17a2b8; color: #fff; padding: 6px 12px; border-radius: 8px;}
+        .badge-segment-c { background-color: #ffc107; color: #000; padding: 6px 12px; border-radius: 8px;}
+        .badge-segment-d { background-color: #dc3545; color: #fff; padding: 6px 12px; border-radius: 8px;}
+        .table-hover tbody tr:hover {
+            background-color: rgba(42, 82, 152, 0.05);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid py-4 px-4">
+    <!-- Header -->
+    <div class="header-card p-4 mb-4 d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="fw-bold mb-1"><i class="fas fa-chart-line me-2"></i> لوحة تحليل وتصنيف العملاء (ABC & Blacklist)</h1>
+            <p class="mb-0 text-white-50">مجموعة البنا للتجارة والتصدير - قطاع الموالح (موسم 2025-2026)</p>
+        </div>
+        <div>
+            <span class="badge bg-success fs-6 p-2 shadow-sm"><i class="fas fa-shield-alt me-1"></i> النظام متصل ومؤمن</span>
+        </div>
+    </div>
+
+    <!-- Filters Bar -->
+    <div class="card mb-4 shadow-sm border-0 rounded-4">
+        <div class="card-body bg-white rounded-4 p-4">
+            <h5 class="card-title fw-bold text-primary mb-3"><i class="fas fa-filter me-2"></i> فلاتر التحكم والتحليل المتقدم</h5>
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label fw-bold small text-muted">فئة العميل (Segment):</label>
+                    <select id="filterSegment" class="form-select border-2" onchange="filterData()">
+                        <option value="">كل الفئات</option>
+                        <option value="A">الفئة A (ممتاز)</option>
+                        <option value="B">الفئة B (جيد)</option>
+                        <option value="C">الفئة C (مقبول)</option>
+                        <option value="D (Blacklist)">الفئة D (القائمة السوداء)</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold small text-muted">الصنف الزراعي (Item):</label>
+                    <select id="filterItem" class="form-select border-2" onchange="filterData()">
+                        <option value="">كل الأصناف</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold small text-muted">الدرجة (Grade):</label>
+                    <select id="filterGrade" class="form-select border-2" onchange="filterData()">
+                        <option value="">كل الدرجات</option>
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button class="btn btn-outline-secondary w-100 fw-bold border-2" onclick="resetFilters()"><i class="fas fa-redo me-1"></i> إعادة ضبط الفلاتر</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card card-kpi bg-white p-4 border-start border-4 border-primary">
+                <div class="text-muted small fw-bold">إجمالي صفقات التصدير</div>
+                <div class="fs-2 fw-bold text-dark mt-2" id="kpiTotalTrans">0</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card card-kpi bg-white p-4 border-start border-4 border-success">
+                <div class="text-muted small fw-bold">إجمالي قيم FOB ($)</div>
+                <div class="fs-2 fw-bold text-success mt-2" id="kpiTotalVal">0</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card card-kpi bg-white p-4 border-start border-4 border-info">
+                <div class="text-muted small fw-bold">متوسط سعر الطن ($)</div>
+                <div class="fs-2 fw-bold text-info mt-2" id="kpiAvgFOB">0</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card card-kpi bg-white p-4 border-start border-4 border-danger">
+                <div class="text-muted small fw-bold">عملاء القائمة السوداء (D)</div>
+                <div class="fs-2 fw-bold text-danger mt-2" id="kpiBlacklist">0</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 rounded-4 h-100">
+                <div class="card-body p-4">
+                    <h5 class="card-title fw-bold text-secondary mb-3"><i class="fas fa-chart-bar me-2 text-primary"></i> توزيع قيم الصفقات حسب تصنيف العملاء</h5>
+                    <canvas id="segmentChart" height="230"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 rounded-4 h-100">
+                <div class="card-body p-4">
+                    <h5 class="card-title fw-bold text-secondary mb-3"><i class="fas fa-chart-pie me-2 text-primary"></i> إجمالي القيم حسب الأصناف الزراعية</h5>
+                    <canvas id="itemChart" height="230"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Table Section -->
+    <div class="card shadow-sm border-0 rounded-4 mb-4">
+        <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="card-title fw-bold text-secondary mb-0"><i class="fas fa-table me-2 text-primary"></i> سجلات وتقييم العملاء والصفقات</h5>
+                <input type="text" id="searchBox" class="form-control w-25 border-2" placeholder="بحث برقم العميل أو الصنف..." onkeyup="filterData()">
+            </div>
+            <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                <table class="table table-hover align-middle">
+                    <thead class="table-dark sticky-top">
+                        <tr>
+                            <th>كود العميل</th>
+                            <th>الصنف</th>
+                            <th>الدرجة</th>
+                            <th>FOB TON $ بعد الخصم</th>
+                            <th>نسبة الخصم</th>
+                            <th>تصنيف العميل (ABC / D)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // بيانات صفقات العملاء وموسم الموالح المستخرجة من شيت التصفية
+    const rawData = [{"Customer_Code": 101200.0, "Item": "بسره", "Grade": "D", "FOB_After_Discount": 410.27, "Discount_Rate": 0.0, "Segment": "D (Blacklist)"}, {"Customer_Code": 101430.0, "Item": "بسره", "Grade": "B", "FOB_After_Discount": 675.12, "Discount_Rate": 0.0, "Segment": "A"}, {"Customer_Code": 102010.0, "Item": "بسره", "Grade": "C", "FOB_After_Discount": 533.33, "Discount_Rate": 0.0, "Segment": "A"}, {"Customer_Code": 102010.0, "Item": "بسره", "Grade": "D", "FOB_After_Discount": 514.85, "Discount_Rate": 0.06, "Segment": "A"}, {"Customer_Code": 102090.0, "Item": "بسره", "Grade": "D", "FOB_After_Discount": 699.26, "Discount_Rate": 0.0, "Segment": "A"}, {"Customer_Code": 102200.0, "Item": "بسره", "Grade": "B", "FOB_After_Discount": 570.13, "Discount_Rate": 0.0, "Segment": "A"}, {"Customer_Code": 102230.0, "Item": "بسره", "Grade": "C", "FOB_After_Discount": 511.25, "Discount_Rate": 0.0, "Segment": "B"}, {"Customer_Code": 102300.0, "Item": "بسره", "Grade": "C", "FOB_After_Discount": 616.50, "Discount_Rate": 0.0, "Segment": "A"}, {"Customer_Code": 103100.0, "Item": "بسره", "Grade": "C", "FOB_After_Discount": 544.11, "Discount_Rate": 0.0, "Segment": "B"}, {"Customer_Code": 105200.0, "Item": "بسره", "Grade": "C", "FOB_After_Discount": 759.33, "Discount_Rate": 0.0, "Segment": "A"}, {"Customer_Code": 207017.0, "Item": "صيفي", "Grade": "B", "FOB_After_Discount": 480.02, "Discount_Rate": 0.03, "Segment": "A"}, {"Customer_Code": 207035.0, "Item": "صيفي", "Grade": "B", "FOB_After_Discount": 702.88, "Discount_Rate": 0.0, "Segment": "B"}, {"Customer_Code": 209065.0, "Item": "بسره", "Grade": "D", "FOB_After_Discount": 459.82, "Discount_Rate": 0.0, "Segment": "A"}, {"Customer_Code": 717470.0, "Item": "بسره", "Grade": "D", "FOB_After_Discount": 542.62, "Discount_Rate": 0.29, "Segment": "D (Blacklist)"}, {"Customer_Code": 717490.0, "Item": "بسره", "Grade": "D", "FOB_After_Discount": 671.04, "Discount_Rate": 0.15, "Segment": "D (Blacklist)"}, {"Customer_Code": 808120.0, "Item": "صيفي", "Grade": "B", "FOB_After_Discount": 426.97, "Discount_Rate": 0.0, "Segment": "A"}, {"Customer_Code": 907170.0, "Item": "جريب فروت", "Grade": "B", "FOB_After_Discount": 1030.54, "Discount_Rate": 0.0, "Segment": "A"}, {"Customer_Code": 103400.0, "Item": "بلدي", "Grade": "C", "FOB_After_Discount": 598.12, "Discount_Rate": 0.11, "Segment": "D (Blacklist)"}, {"Customer_Code": 207063.0, "Item": "بلدي", "Grade": "D", "FOB_After_Discount": 577.16, "Discount_Rate": 0.0, "Segment": "D (Blacklist)"}];
+
+    let segmentChartInstance = null;
+    let itemChartInstance = null;
+
+    function initDropdowns() {
+        const items = [...new Set(rawData.map(d => d.Item))].sort();
+        const grades = [...new Set(rawData.map(d => d.Grade))].sort();
+
+        const itemSelect = document.getElementById('filterItem');
+        items.forEach(item => {
+            if(item) {
+                let opt = document.createElement('option');
+                opt.value = item;
+                opt.textContent = item;
+                itemSelect.appendChild(opt);
+            }
+        });
+
+        const gradeSelect = document.getElementById('filterGrade');
+        grades.forEach(grade => {
+            if(grade) {
+                let opt = document.createElement('option');
+                opt.value = grade;
+                opt.textContent = grade;
+                gradeSelect.appendChild(opt);
+            }
+        });
+    }
+
+    function filterData() {
+        const segFilter = document.getElementById('filterSegment').value;
+        const itemFilter = document.getElementById('filterItem').value;
+        const gradeFilter = document.getElementById('filterGrade').value;
+        const searchVal = document.getElementById('searchBox').value.toLowerCase();
+
+        const filtered = rawData.filter(d => {
+            let matchSeg = !segFilter || d.Segment === segFilter;
+            let matchItem = !itemFilter || d.Item === itemFilter;
+            let matchGrade = !gradeFilter || String(d.Grade) === gradeFilter;
+            let matchSearch = !searchVal || String(d.Customer_Code).toLowerCase().includes(searchVal) || String(d.Item).toLowerCase().includes(searchVal);
+            return matchSeg && matchItem && matchGrade && matchSearch;
+        });
+
+        updateUI(filtered);
+    }
+
+    function resetFilters() {
+        document.getElementById('filterSegment').value = '';
+        document.getElementById('filterItem').value = '';
+        document.getElementById('filterGrade').value = '';
+        document.getElementById('searchBox').value = '';
+        filterData();
+    }
+
+    function updateUI(data) {
+        const totalTrans = data.length;
+        const totalVal = data.reduce((sum, d) => sum + (parseFloat(d.FOB_After_Discount) || 0), 0);
+        const avgFOB = totalTrans > 0 ? totalVal / totalTrans : 0;
+        const blacklistCount = new Set(data.filter(d => d.Segment === 'D (Blacklist)').map(d => d.Customer_Code)).size;
+
+        document.getElementById('kpiTotalTrans').textContent = totalTrans.toLocaleString();
+        document.getElementById('kpiTotalVal').textContent = Math.round(totalVal).toLocaleString() + ' $';
+        document.getElementById('kpiAvgFOB').textContent = Math.round(avgFOB).toLocaleString() + ' $';
+        document.getElementById('kpiBlacklist').textContent = blacklistCount;
+
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = '';
+        data.forEach(d => {
+            let badgeClass = 'bg-secondary';
+            if (d.Segment === 'A') badgeClass = 'badge-segment-a';
+            else if (d.Segment === 'B') badgeClass = 'badge-segment-b';
+            else if (d.Segment === 'C') badgeClass = 'badge-segment-c';
+            else if (d.Segment === 'D (Blacklist)') badgeClass = 'badge-segment-d';
+
+            let row = `<tr>
+                <td><strong>${d.Customer_Code}</strong></td>
+                <td>${d.Item}</td>
+                <td><span class="badge bg-light text-dark border">${d.Grade}</span></td>
+                <td>${(parseFloat(d.FOB_After_Discount) || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} $</td>
+                <td>${((parseFloat(d.Discount_Rate) || 0) * 100).toFixed(1)}%</td>
+                <td><span class="badge ${badgeClass}">${d.Segment}</span></td>
+            </tr>`;
+            tbody.insertAdjacentHTML('beforeend', row);
+        });
+
+        updateCharts(data);
+    }
+
+    function updateCharts(data) {
+        const segs = ['A', 'B', 'C', 'D (Blacklist)'];
+        const segVals = segs.map(s => data.filter(d => d.Segment === s).reduce((sum, d) => sum + (parseFloat(d.FOB_After_Discount) || 0), 0));
+
+        if(segmentChartInstance) segmentChartInstance.destroy();
+        const ctx1 = document.getElementById('segmentChart').getContext('2d');
+        segmentChartInstance = new Chart(ctx1, {
+            type: 'bar',
+            data: {
+                labels: ['الفئة A', 'الفئة B', 'الفئة C', 'القائمة السوداء D'],
+                datasets: [{
+                    label: 'إجمالي قيم الصفقات ($)',
+                    data: segVals,
+                    backgroundColor: ['#28a745', '#17a2b8', '#ffc107', '#dc3545'],
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+
+        const itemMap = {};
+        data.forEach(d => {
+            itemMap[d.Item] = (itemMap[d.Item] || 0) + (parseFloat(d.FOB_After_Discount) || 0);
+        });
+        const sortedItems = Object.entries(itemMap).sort((a,b) => b[1] - a[1]);
+
+        if(itemChartInstance) itemChartInstance.destroy();
+        const ctx2 = document.getElementById('itemChart').getContext('2d');
+        itemChartInstance = new Chart(ctx2, {
+            type: 'doughnut',
+            data: {
+                labels: sortedItems.map(i => i[0]),
+                datasets: [{
+                    data: sortedItems.map(i => i[1]),
+                    backgroundColor: ['#1e3c72', '#2a5298', '#28a745', '#17a2b8', '#ffc107', '#dc3545']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: 'bottom' } }
+            }
+        });
+    }
+
+    initDropdowns();
+    filterData();
+</script>
+
+</body>
+</html>
