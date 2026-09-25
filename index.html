@@ -17,27 +17,55 @@
     <style>
         body {
             font-family: 'Cairo', sans-serif;
-            background-color: #f4f6f9;
+            background-color: #042f2e; /* خلفية افتراضية في حال تأخر تحميل الفيديو */
             color: #2c3e50;
+            margin: 0;
+            overflow-x: hidden;
         }
-        /* Login Screen Styles */
+
+        /* تنسيق فيديو الخلفية */
+        .video-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -2;
+        }
+
+        /* طبقة تظليل فوق الفيديو عشان تريح العين وتوضح الكتابة والفورم */
+        .video-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(4, 47, 46, 0.75);
+            backdrop-filter: blur(3px);
+            z-index: -1;
+        }
+
+        /* شاشة تسجيل الدخول مع خلفية زجاجية تظهر الفيديو من خلفها */
         #loginOverlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(135deg, #064e3b 0%, #065f46 50%, #047857 100%);
             display: flex;
             justify-content: center;
             align-items: center;
             z-index: 9999;
+            padding: 15px;
         }
         .login-card {
-            background: #ffffff;
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(10px);
             padding: 40px;
             border-radius: 16px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
             width: 100%;
             max-width: 400px;
             text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.3);
         }
         .header-section {
             background: linear-gradient(135deg, #065f46 0%, #047857 100%);
@@ -94,9 +122,28 @@
         .badge-d { background-color: #dc3545; color: #fff; padding: 5px 10px; border-radius: 6px; font-size: 0.85rem; }
         .table th { background-color: #065f46 !important; color: white; text-align: center; }
         .table td { text-align: center; vertical-align: middle; }
+
+        /* تحسين الأداء على الموبايل لتجنب أي تهنيج */
+        @media (max-width: 768px) {
+            .video-background {
+                display: none; /* إيقاف الفيديو على الهواتف الصغيرة لتسريع التصفح وتوفير الباقة */
+            }
+            body {
+                background: linear-gradient(135deg, #064e3b 0%, #042f2e 100%);
+            }
+        }
     </style>
 </head>
 <body>
+
+    <!-- فيديو الخلفية (يعمل بشكل دائم ومتحرك أثناء تسجيل الدخول وفي الخلفية) -->
+    <video autoplay muted loop playsinline preload="metadata" class="video-background">
+        <source src="animo-spiral-stream-720p.mp4" type="video/mp4">
+        متصفحك لا يدعم عرض الفيديو.
+    </video>
+
+    <!-- طبقة التظليل الشفافة -->
+    <div class="video-overlay"></div>
 
     <!-- شاشة تسجيل الدخول -->
     <div id="loginOverlay">
@@ -112,7 +159,7 @@
                 <label class="form-label fw-bold small">كلمة المرور:</label>
                 <input type="password" id="password" class="form-control" placeholder="أدخل كلمة المرور">
             </div>
-            <button class="btn btn-success w-100 fw-bold py-2" onclick="checkLogin()">دخول النظام</button>
+            <button class="btn btn-success w-100 fw-bold py-2 shadow-sm" onclick="checkLogin()">دخول النظام</button>
         </div>
     </div>
 
@@ -193,7 +240,7 @@
             </div>
         </div>
 
-        <!-- AI Strategic Advisor Section (مبني حصرياً بناءً على الشيت المرفوع) -->
+        <!-- AI Strategic Advisor Section -->
         <div class="ai-insights-box mb-4">
             <div class="d-flex align-items-center mb-3">
                 <h5 class="fw-bold text-success mb-0"><i class="fas fa-brain me-2 text-warning"></i> التحليل الاستراتيجي ورأي الذكاء الاصطناعي (مبني على الشيت المرفوع)</h5>
@@ -292,7 +339,6 @@
                 let parsedData = [];
                 for (let i = 1; i < jsonRows.length; i++) {
                     let row = jsonRows[i];
-                    // استبعاد صف المجموع السفلي والتأكد من صحة كود العميل
                     if (row && row.length >= 5 && row[0] !== undefined && !isNaN(parseFloat(row[0]))) {
                         let custCode = row[0];
                         let item = row[1] || 'غير محدد';
@@ -392,7 +438,6 @@
         document.getElementById('kpiAvgDiscount').textContent = avgDiscount.toFixed(1) + '%';
         document.getElementById('kpiBlacklist').textContent = blacklistCount;
 
-        // توليد التحليلات البروفيشنال بناءً على البيانات الفعلية للشيت المرفوع
         generateAIRecommendations(data);
 
         const tbody = document.getElementById('tableBody');
@@ -421,7 +466,6 @@
         updateCharts(data);
     }
 
-    // دالة تحليل الذكاء الاصطناعي البروفيشنال المبنية حصرياً من بيانات الشيت المرفوع
     function generateAIRecommendations(data) {
         const container = document.getElementById('aiRecommendationsContainer');
         if (!data || data.length === 0) {
@@ -429,7 +473,6 @@
             return;
         }
 
-        // إيجاد أعلى العرسان/العملاء قيمة وأكثرهم خصماً بناءً على الشيت
         let sortedByVal = [...data].sort((a, b) => b.FOB_After_Discount - a.FOB_After_Discount);
         let topCustomer = sortedByVal[0] || {};
         
