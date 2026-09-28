@@ -12,7 +12,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- SheetJS (XLSX Reader) لقراءة ملفات الإكسل أوتوماتيكياً من الجيت هاب -->
+    <!-- SheetJS (XLSX Reader) لقراءة ملفات الإكسل أوتوماتيكياً -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         body {
@@ -23,7 +23,7 @@
             overflow-x: hidden;
         }
 
-        /* تنسيق فيديو الخلفية ليعمل على كل الأجهزة بكفاءة */
+        /* تنسيق فيديو الخلفية */
         .video-background {
             position: fixed;
             top: 0;
@@ -34,7 +34,7 @@
             z-index: -2;
         }
 
-        /* طبقة تظليل فوق الفيديو لتوضيح المحتوى وفوقها الزجاج الفاخر */
+        /* طبقة التظليل الزجاجية */
         .video-overlay {
             position: fixed;
             top: 0;
@@ -480,12 +480,11 @@
         updateCharts(data);
     }
 
-    // حساب واختيار أفضل عميل لكل صنف بناءً على توجيهات المالك (أعلى عائد FOB ثم أعلى عمليات ثم أقل نسبة خصم)
+    // حساب واختيار أفضل عميل لكل صنف بناءً على توجيهات المالك
     function renderTopCustomersPerItem(allData) {
         const tbody = document.getElementById('topCustomersTableBody');
         tbody.innerHTML = '';
 
-        // تجميع البيانات لكل صنف ولكل عميل
         let itemCustomerMap = {};
         
         allData.forEach(d => {
@@ -508,7 +507,6 @@
             itemCustomerMap[key].Total_Discount += (parseFloat(d.Discount_Rate) || 0);
         });
 
-        // تحويل إلى مصفوفة وترتيبها لاستخراج الأفضل لكل صنف
         let aggregated = Object.values(itemCustomerMap);
         let itemsList = [...new Set(allData.map(d => d.Item))].sort();
 
@@ -516,17 +514,16 @@
             let candidates = aggregated.filter(c => c.Item === item);
             if(candidates.length === 0) return;
 
-            // تطبيق منطق المفاضلة: أعلى FOB، ثم أعلى عمليات، ثم أقل متوسط خصم
             candidates.sort((a, b) => {
                 if (Math.abs(b.Total_FOB - a.Total_FOB) > 0.01) {
-                    return b.Total_FOB - a.Total_FOB; // أعلى عائد أولاً
+                    return b.Total_FOB - a.Total_FOB;
                 }
                 if (b.Count !== a.Count) {
-                    return b.Count - a.Count; // أعلى عدد عمليات ثانياً
+                    return b.Count - a.Count;
                 }
-                let avgDisc A = a.Total_Discount / a.Count;
-                let avgDisc B = b.Total_Discount / b.Count;
-                return avgDisc A - avgDisc B; // أقل نسبة خصم ثالثاً
+                let avgDisc_A = a.Total_Discount / a.Count;
+                let avgDisc_B = b.Total_Discount / b.Count;
+                return avgDisc_A - avgDisc_B;
             });
 
             let best = candidates[0];
