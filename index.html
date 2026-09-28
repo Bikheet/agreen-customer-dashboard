@@ -17,13 +17,13 @@
     <style>
         body {
             font-family: 'Cairo', sans-serif;
-            background-color: #042f2e; /* خلفية افتراضية في حال تأخر تحميل الفيديو قليلاً */
+            background-color: #042f2e;
             color: #2c3e50;
             margin: 0;
             overflow-x: hidden;
         }
 
-        /* تنسيق فيديو الخلفية ليعمل على كل الأجهزة */
+        /* تنسيق فيديو الخلفية ليعمل على كل الأجهزة بكفاءة */
         .video-background {
             position: fixed;
             top: 0;
@@ -34,19 +34,19 @@
             z-index: -2;
         }
 
-        /* طبقة تظليل فوق الفيديو عشان تريح العين وتوضح الفورم والكتابة */
+        /* طبقة تظليل فوق الفيديو لتوضيح المحتوى وفوقها الزجاج الفاخر */
         .video-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(4, 47, 46, 0.75);
+            background: rgba(4, 47, 46, 0.78);
             backdrop-filter: blur(3px);
             z-index: -1;
         }
 
-        /* شاشة تسجيل الدخول مع خلفية زجاجية تظهر الفيديو من خلفها */
+        /* شاشة تسجيل الدخول */
         #loginOverlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -57,7 +57,7 @@
             padding: 15px;
         }
         .login-card {
-            background: rgba(255, 255, 255, 0.94);
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
             padding: 40px;
             border-radius: 16px;
@@ -84,7 +84,7 @@
         .kpi-card:hover {
             transform: translateY(-3px);
         }
-        .filter-box, .ai-insights-box {
+        .filter-box, .ai-insights-box, .top-customers-box {
             background: #ffffff;
             border-radius: 10px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.03);
@@ -126,13 +126,13 @@
 </head>
 <body>
 
-    <!-- فيديو الخلفية يعمل على كافة الأجهزة -->
+    <!-- فيديو الخلفية -->
     <video autoplay muted loop playsinline preload="metadata" class="video-background">
         <source src="animo-spiral-stream-720p.mp4" type="video/mp4">
         متصفحك لا يدعم عرض الفيديو.
     </video>
 
-    <!-- طبقة التظليل الشفافة -->
+    <!-- طبقة التظليل -->
     <div class="video-overlay"></div>
 
     <!-- شاشة تسجيل الدخول -->
@@ -159,7 +159,7 @@
         <div class="header-section p-3 mb-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
             <div>
                 <h4 class="fw-bold mb-1"><i class="fas fa-chart-line me-2 text-warning"></i> لوحة تحليل وتصنيف عملاء AGREEN</h4>
-                <p class="mb-0 text-white-50 small">شركة AGREEN | نظام تحليل الشيت المرفوع ورؤى الذكاء الاصطناعي التخصصية (موسم 2025-2026)</p>
+                <p class="mb-0 text-white-50 small">شركة AGREEN | نظام تحليل الشيت المرفوع ورؤى الذكاء الاصطناعي (موسم 2025-2026)</p>
             </div>
             <div>
                 <button class="btn btn-light btn-sm fw-bold text-danger" onclick="logout()"><i class="fas fa-sign-out-alt me-1"></i> خروج</button>
@@ -230,13 +230,36 @@
             </div>
         </div>
 
+        <!-- قسم أفضل عميل في كل صنف بناءً على توجيهات المالك -->
+        <div class="top-customers-box mb-4">
+            <div class="d-flex align-items-center mb-3">
+                <h5 class="fw-bold text-success mb-0"><i class="fas fa-award me-2 text-warning"></i> تقرير القيادة: أفضل عميل في كل صنف (بناءً على أعلى عائد FOB بعد الخصم وأقل خصم)</h5>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped small align-middle">
+                    <thead>
+                        <tr>
+                            <th>الصنف الزراعي</th>
+                            <th>كود العميل الأفضل</th>
+                            <th>إجمالي العائد بعد الخصم (FOB $)</th>
+                            <th>عدد العمليات</th>
+                            <th>متوسط نسبة الخصم</th>
+                            <th>التقييم التوجيهي</th>
+                        </tr>
+                    </thead>
+                    <tbody id="topCustomersTableBody">
+                        <!-- يتم تعبئته تلقائياً من الجافاسكريبت -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
         <!-- AI Strategic Advisor Section -->
         <div class="ai-insights-box mb-4">
             <div class="d-flex align-items-center mb-3">
-                <h5 class="fw-bold text-success mb-0"><i class="fas fa-brain me-2 text-warning"></i> التحليل الاستراتيجي ورأي الذكاء الاصطناعي (مبني على الشيت المرفوع)</h5>
+                <h5 class="fw-bold text-success mb-0"><i class="fas fa-brain me-2 text-warning"></i> التحليل الاستراتيجي ورأي الذكاء الاصطناعي</h5>
             </div>
             <div class="row g-3" id="aiRecommendationsContainer">
-                <!-- يتم توليد التحليلات والتوصيات بناءً على بيانات الشيت الفعلية -->
             </div>
         </div>
 
@@ -428,6 +451,7 @@
         document.getElementById('kpiAvgDiscount').textContent = avgDiscount.toFixed(1) + '%';
         document.getElementById('kpiBlacklist').textContent = blacklistCount;
 
+        renderTopCustomersPerItem(rawData);
         generateAIRecommendations(data);
 
         const tbody = document.getElementById('tableBody');
@@ -456,6 +480,70 @@
         updateCharts(data);
     }
 
+    // حساب واختيار أفضل عميل لكل صنف بناءً على توجيهات المالك (أعلى عائد FOB ثم أعلى عمليات ثم أقل نسبة خصم)
+    function renderTopCustomersPerItem(allData) {
+        const tbody = document.getElementById('topCustomersTableBody');
+        tbody.innerHTML = '';
+
+        // تجميع البيانات لكل صنف ولكل عميل
+        let itemCustomerMap = {};
+        
+        allData.forEach(d => {
+            let item = d.Item;
+            let code = d.Customer_Code;
+            if(!item || item === 'undefined') return;
+
+            let key = `${item}_${code}`;
+            if(!itemCustomerMap[key]) {
+                itemCustomerMap[key] = {
+                    Item: item,
+                    Customer_Code: code,
+                    Total_FOB: 0,
+                    Count: 0,
+                    Total_Discount: 0
+                };
+            }
+            itemCustomerMap[key].Total_FOB += (parseFloat(d.FOB_After_Discount) || 0);
+            itemCustomerMap[key].Count += 1;
+            itemCustomerMap[key].Total_Discount += (parseFloat(d.Discount_Rate) || 0);
+        });
+
+        // تحويل إلى مصفوفة وترتيبها لاستخراج الأفضل لكل صنف
+        let aggregated = Object.values(itemCustomerMap);
+        let itemsList = [...new Set(allData.map(d => d.Item))].sort();
+
+        itemsList.forEach(item => {
+            let candidates = aggregated.filter(c => c.Item === item);
+            if(candidates.length === 0) return;
+
+            // تطبيق منطق المفاضلة: أعلى FOB، ثم أعلى عمليات، ثم أقل متوسط خصم
+            candidates.sort((a, b) => {
+                if (Math.abs(b.Total_FOB - a.Total_FOB) > 0.01) {
+                    return b.Total_FOB - a.Total_FOB; // أعلى عائد أولاً
+                }
+                if (b.Count !== a.Count) {
+                    return b.Count - a.Count; // أعلى عدد عمليات ثانياً
+                }
+                let avgDisc A = a.Total_Discount / a.Count;
+                let avgDisc B = b.Total_Discount / b.Count;
+                return avgDisc A - avgDisc B; // أقل نسبة خصم ثالثاً
+            });
+
+            let best = candidates[0];
+            let avgDisc = (best.Total_Discount / best.Count) * 100;
+
+            let row = `<tr>
+                <td><strong>${item}</strong></td>
+                <td><span class="text-success fw-bold"><i class="fas fa-user-check me-1"></i> ${best.Customer_Code}</span></td>
+                <td class="text-primary fw-bold">${Math.round(best.Total_FOB).toLocaleString()} $</td>
+                <td><span class="badge bg-secondary">${best.Count} عملية</span></td>
+                <td><span class="text-danger fw-bold">${avgDisc.toFixed(1)}%</span></td>
+                <td><span class="badge bg-success">عميل استراتيجي مربح</span></td>
+            </tr>`;
+            tbody.insertAdjacentHTML('beforeend', row);
+        });
+    }
+
     function generateAIRecommendations(data) {
         const container = document.getElementById('aiRecommendationsContainer');
         if (!data || data.length === 0) {
@@ -472,10 +560,10 @@
         let rec1 = `
             <div class="col-md-4">
                 <div class="ai-card-item">
-                    <h6 class="fw-bold text-success mb-1"><i class="fas fa-bullseye me-1"></i> سياسة الخصم والكميات (للعام القادم)</h6>
+                    <h6 class="fw-bold text-success mb-1"><i class="fas fa-bullseye me-1"></i> سياسة الخصم والكميات</h6>
                     <p class="small text-muted mb-0">
-                        استناداً إلى الشيت المرفوع، يوجد <strong>${zeroDiscountCount} صفقة بدون أي خصم</strong> تعود بعوائد ممتازة. 
-                        <strong>التوصية:</strong> بالنسبة للعام القادم، لا تقم بزيادة الخصومات عشوائياً؛ بل اربط أي خصم إضافي (تجاوز 10%) بزيادة ملحوظة في حجم الكميات المسحوبة لضمان حماية هامش الربح الكلي.
+                        يوجد <strong>${zeroDiscountCount} صفقة بدون أي خصم</strong> تعود بعوائد ممتازة. 
+                        <strong>التوصية:</strong> ربط أي خصم إضافي يتجاوز 10% بزيادة حقيقية في حجم المسحوبات لضمان تعظيم العائد الكلي للخزينة.
                     </p>
                 </div>
             </div>`;
@@ -483,10 +571,10 @@
         let rec2 = `
             <div class="col-md-4">
                 <div class="ai-card-item ai-card-warning">
-                    <h6 class="fw-bold text-danger mb-1"><i class="fas fa-exclamation-triangle me-1"></i> موقف عملاء القائمة السوداء (الفرص البديلة)</h6>
+                    <h6 class="fw-bold text-danger mb-1"><i class="fas fa-exclamation-triangle me-1"></i> موقف عملاء القائمة السوداء (D)</h6>
                     <p class="small text-muted mb-0">
-                        رصد الشيت <strong>${blacklistItems.length} حالة</strong> ضمن قائمة المخاطر (الفئة D). 
-                        <strong>التوصية:</strong> لا يُنصح بحذفهم نهائياً، بل منحهم "فرصة ثانية" بشرطين أساسيين: السداد النقدي الفوري، وتخفيض الخصم إلى الحد الأدنى (أقل من 5%) لتفادي أي خسائر تشغيلية جديدة.
+                        رصد الشيت <strong>${blacklistItems.length} حالة</strong> ضمن قائمة المخاطر. 
+                        <strong>التوصية:</strong> منحهم فرصة ثانية بشرط السداد الفوري وتخفيض الخصم لأقل من 5% لضمان التدفقات النقدية.
                     </p>
                 </div>
             </div>`;
@@ -494,10 +582,10 @@
         let rec3 = `
             <div class="col-md-4">
                 <div class="ai-card-item ai-card-growth">
-                    <h6 class="fw-bold text-warning mb-1"><i class="fas fa-chart-line me-1"></i> تحليل الأداء وأبرز الصفقات</h6>
+                    <h6 class="fw-bold text-warning mb-1"><i class="fas fa-chart-line me-1"></i> رؤية المالك والعائد الأفضل</h6>
                     <p class="small text-muted mb-0">
-                        أعلى قيمة مسجلة في الشيت الحالي تخص العميل برقم <strong>(${topCustomer.Customer_Code || 'غير متوفر'})</strong> في صنف <strong>(${topCustomer.Item || '-'})</strong> بقيمة <strong>${Math.round(topCustomer.FOB_After_Discount || 0)} $</strong>. 
-                        <strong>التوصية:</strong> التركيز على هذا النمط من العملاء وتوجيه فريق المبيعات للحفاظ على ولائهم وتأمين عقودهم مبكراً.
+                        العميل برقم <strong>(${topCustomer.Customer_Code || '-'})</strong> في صنف <strong>(${topCustomer.Item || '-'})</strong> حقق أعلى عائد بقيمة <strong>${Math.round(topCustomer.FOB_After_Discount || 0)} $</strong>. 
+                        <strong>التوصية:</strong> التركيز على هذا النمط من العملاء لأن العائد الأكبر والمكسب الصافي هو الفيصل في التقييم.
                     </p>
                 </div>
             </div>`;
