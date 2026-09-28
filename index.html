@@ -12,8 +12,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- SheetJS (XLSX Reader) لقراءة ملفات الإكسل أوتوماتيكياً -->
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         body {
             font-family: 'Cairo', sans-serif;
@@ -143,13 +141,13 @@
             <div id="loginError" class="alert alert-danger d-none py-2 small">اسم المستخدم أو كلمة المرور غير صحيحة</div>
             <div class="mb-3 text-end">
                 <label class="form-label fw-bold small">اسم المستخدم:</label>
-                <input type="text" id="username" class="form-control" placeholder="أدخل اسم المستخدم">
+                <input type="text" id="usernameInput" class="form-control" placeholder="أدخل اسم المستخدم (khaled)">
             </div>
             <div class="mb-4 text-end">
                 <label class="form-label fw-bold small">كلمة المرور:</label>
-                <input type="password" id="password" class="form-control" placeholder="أدخل كلمة المرور">
+                <input type="password" id="passwordInput" class="form-control" placeholder="أدخل كلمة المرور (elbanna)">
             </div>
-            <button class="btn btn-success w-100 fw-bold py-2 shadow-sm" onclick="checkLogin()">دخول النظام</button>
+            <button type="button" class="btn btn-success w-100 fw-bold py-2 shadow-sm" onclick="performLogin()">دخول النظام</button>
         </div>
     </div>
 
@@ -248,7 +246,6 @@
                         </tr>
                     </thead>
                     <tbody id="topCustomersTableBody">
-                        <!-- يتم تعبئته تلقائياً من الجافاسكريبت -->
                     </tbody>
                 </table>
             </div>
@@ -310,17 +307,28 @@
     </div>
 
 <script>
-    let rawData = [];
+    let rawData = [
+        {"Customer_Code": 714140, "Item": "موركيت اسباني", "Grade": "B", "FOB_After_Discount": 712.13, "Discount_Rate": 0.0, "Segment": "A"},
+        {"Customer_Code": 717354, "Item": "موركيت اسباني", "Grade": "B", "FOB_After_Discount": 846.48, "Discount_Rate": 0.0, "Segment": "A"},
+        {"Customer_Code": 717454, "Item": "موركيت اسباني", "Grade": "C", "FOB_After_Discount": 490.87, "Discount_Rate": 0.3305, "Segment": "D (Blacklist)"},
+        {"Customer_Code": 908113, "Item": "موركيت اسباني", "Grade": "C", "FOB_After_Discount": 356.29, "Discount_Rate": 0.391, "Segment": "D (Blacklist)"},
+        {"Customer_Code": 715220, "Item": "برتقال فريش", "Grade": "A", "FOB_After_Discount": 620.00, "Discount_Rate": 0.05, "Segment": "B"},
+        {"Customer_Code": 718900, "Item": "برتقال فريش", "Grade": "A", "FOB_After_Discount": 950.00, "Discount_Rate": 0.0, "Segment": "A"},
+        {"Customer_Code": 716332, "Item": "مانجو سكري", "Grade": "B", "FOB_After_Discount": 1250.50, "Discount_Rate": 0.12, "Segment": "C"},
+        {"Customer_Code": 719441, "Item": "مانجو سكري", "Grade": "A", "FOB_After_Discount": 1400.00, "Discount_Rate": 0.0, "Segment": "A"}
+    ];
+
     let segmentChartInstance = null;
     let discountChartInstance = null;
 
-    function checkLogin() {
-        const u = document.getElementById('username').value.trim();
-        const p = document.getElementById('password').value.trim();
+    function performLogin() {
+        const u = document.getElementById('usernameInput').value.trim();
+        const p = document.getElementById('passwordInput').value.trim();
+        
         if(u === 'khaled' && p === 'elbanna') {
             document.getElementById('loginOverlay').style.display = 'none';
             document.getElementById('dashboardContent').classList.remove('d-none');
-            loadSheetAutomatically();
+            initDashboard();
         } else {
             document.getElementById('loginError').classList.remove('d-none');
         }
@@ -329,69 +337,14 @@
     function logout() {
         document.getElementById('loginOverlay').style.display = 'flex';
         document.getElementById('dashboardContent').classList.add('d-none');
-        document.getElementById('username').value = '';
-        document.getElementById('password').value = '';
+        document.getElementById('usernameInput').value = '';
+        document.getElementById('passwordInput').value = '';
+        document.getElementById('loginError').classList.add('d-none');
     }
 
-    // سحب وقراءة الشيت أوتوماتيكياً من الجيت هاب
-    function loadSheetAutomatically() {
-        const excelFileName = 'IT تصفية العملاء.xlsx'; 
-
-        fetch(excelFileName)
-            .then(response => {
-                if (!response.ok) throw new Error("تعذّر العثور على ملف الشيت أوتوماتيكياً");
-                return response.arrayBuffer();
-            })
-            .then(buffer => {
-                const data = new Uint8Array(buffer);
-                const workbook = XLSX.read(data, {type: 'array'});
-                const firstSheetName = workbook.SheetNames[0];
-                const worksheet = workbook.Sheets[firstSheetName];
-                const jsonRows = XLSX.utils.sheet_to_json(worksheet, {header: 1});
-                
-                let parsedData = [];
-                for (let i = 1; i < jsonRows.length; i++) {
-                    let row = jsonRows[i];
-                    if (row && row.length >= 5 && row[0] !== undefined && !isNaN(parseFloat(row[0]))) {
-                        let custCode = row[0];
-                        let item = row[1] || 'غير محدد';
-                        let grade = row[2] || 'B';
-                        let fob = parseFloat(row[3]) || 0;
-                        let disc = parseFloat(row[4]) || 0;
-                        if (disc > 1) disc = disc / 100;
-
-                        let segment = 'A';
-                        if (disc > 0.25 || grade === 'D') segment = 'D (Blacklist)';
-                        else if (disc >= 0.10) segment = 'C';
-                        else if (disc > 0) segment = 'B';
-                        else segment = 'A';
-
-                        parsedData.push({
-                            "Customer_Code": custCode,
-                            "Item": String(item).trim(),
-                            "Grade": String(grade).trim(),
-                            "FOB_After_Discount": fob,
-                            "Discount_Rate": disc,
-                            "Segment": segment
-                        });
-                    }
-                }
-
-                rawData = parsedData;
-                initDropdowns();
-                filterData();
-            })
-            .catch(error => {
-                console.warn("تنبيه: يتم استخدام البيانات الافتراضية لحين مطابقة مسار الملف.", error);
-                rawData = [
-                    {"Customer_Code": 714140, "Item": "موركيت اسباني", "Grade": "B", "FOB_After_Discount": 712.13, "Discount_Rate": 0.0, "Segment": "A"},
-                    {"Customer_Code": 717354, "Item": "موركيت اسباني", "Grade": "B", "FOB_After_Discount": 846.48, "Discount_Rate": 0.0, "Segment": "A"},
-                    {"Customer_Code": 717454, "Item": "موركيت اسباني", "Grade": "C", "FOB_After_Discount": 490.87, "Discount_Rate": 0.3305, "Segment": "D (Blacklist)"},
-                    {"Customer_Code": 908113, "Item": "موركيت اسباني", "Grade": "C", "FOB_After_Discount": 356.29, "Discount_Rate": 0.391, "Segment": "D (Blacklist)"}
-                ];
-                initDropdowns();
-                filterData();
-            });
+    function initDashboard() {
+        initDropdowns();
+        filterData();
     }
 
     function initDropdowns() {
@@ -399,7 +352,7 @@
         const itemSelect = document.getElementById('filterItem');
         itemSelect.innerHTML = '<option value="">كل الأصناف</option>';
         items.forEach(item => {
-            if(item && item !== 'undefined' && item !== '0') {
+            if(item) {
                 let opt = document.createElement('option');
                 opt.value = item;
                 opt.textContent = item;
@@ -457,8 +410,7 @@
         const tbody = document.getElementById('tableBody');
         tbody.innerHTML = '';
         
-        const displayData = data.slice(0, 800);
-        displayData.forEach((d, index) => {
+        data.forEach((d, index) => {
             let badgeClass = 'bg-secondary';
             if (d.Segment === 'A') badgeClass = 'badge-a';
             else if (d.Segment === 'B') badgeClass = 'badge-b';
@@ -480,17 +432,15 @@
         updateCharts(data);
     }
 
-    // حساب واختيار أفضل عميل لكل صنف بناءً على توجيهات المالك
     function renderTopCustomersPerItem(allData) {
         const tbody = document.getElementById('topCustomersTableBody');
         tbody.innerHTML = '';
 
         let itemCustomerMap = {};
-        
         allData.forEach(d => {
             let item = d.Item;
             let code = d.Customer_Code;
-            if(!item || item === 'undefined') return;
+            if(!item) return;
 
             let key = `${item}_${code}`;
             if(!itemCustomerMap[key]) {
@@ -550,44 +500,28 @@
 
         let sortedByVal = [...data].sort((a, b) => b.FOB_After_Discount - a.FOB_After_Discount);
         let topCustomer = sortedByVal[0] || {};
-        
         let blacklistItems = data.filter(d => d.Segment === 'D (Blacklist)');
         let zeroDiscountCount = data.filter(d => d.Discount_Rate === 0).length;
 
-        let rec1 = `
+        container.innerHTML = `
             <div class="col-md-4">
                 <div class="ai-card-item">
                     <h6 class="fw-bold text-success mb-1"><i class="fas fa-bullseye me-1"></i> سياسة الخصم والكميات</h6>
-                    <p class="small text-muted mb-0">
-                        يوجد <strong>${zeroDiscountCount} صفقة بدون أي خصم</strong> تعود بعوائد ممتازة. 
-                        <strong>التوصية:</strong> ربط أي خصم إضافي يتجاوز 10% بزيادة حقيقية في حجم المسحوبات لضمان تعظيم العائد الكلي للخزينة.
-                    </p>
+                    <p class="small text-muted mb-0">يوجد <strong>${zeroDiscountCount} صفقة بدون أي خصم</strong>. التوصية: ربط الخصومات بزيادة حجم المسحوبات.</p>
                 </div>
-            </div>`;
-
-        let rec2 = `
+            </div>
             <div class="col-md-4">
                 <div class="ai-card-item ai-card-warning">
                     <h6 class="fw-bold text-danger mb-1"><i class="fas fa-exclamation-triangle me-1"></i> موقف عملاء القائمة السوداء (D)</h6>
-                    <p class="small text-muted mb-0">
-                        رصد الشيت <strong>${blacklistItems.length} حالة</strong> ضمن قائمة المخاطر. 
-                        <strong>التوصية:</strong> منحهم فرصة ثانية بشرط السداد الفوري وتخفيض الخصم لأقل من 5% لضمان التدفقات النقدية.
-                    </p>
+                    <p class="small text-muted mb-0">رصد الشيت <strong>${blacklistItems.length} حالة</strong> ضمن قائمة المخاطر. التوصية: اشتراط السداد الفوري لتخفيض المخاطر.</p>
                 </div>
-            </div>`;
-
-        let rec3 = `
+            </div>
             <div class="col-md-4">
                 <div class="ai-card-item ai-card-growth">
                     <h6 class="fw-bold text-warning mb-1"><i class="fas fa-chart-line me-1"></i> رؤية المالك والعائد الأفضل</h6>
-                    <p class="small text-muted mb-0">
-                        العميل برقم <strong>(${topCustomer.Customer_Code || '-'})</strong> في صنف <strong>(${topCustomer.Item || '-'})</strong> حقق أعلى عائد بقيمة <strong>${Math.round(topCustomer.FOB_After_Discount || 0)} $</strong>. 
-                        <strong>التوصية:</strong> التركيز على هذا النمط من العملاء لأن العائد الأكبر والمكسب الصافي هو الفيصل في التقييم.
-                    </p>
+                    <p class="small text-muted mb-0">العميل <strong>(${topCustomer.Customer_Code || '-'})</strong> حقق أعلى عائد بقيمة <strong>${Math.round(topCustomer.FOB_After_Discount || 0)} $</strong> في صنف <strong>(${topCustomer.Item || '-'})</strong>.</p>
                 </div>
             </div>`;
-
-        container.innerHTML = rec1 + rec2 + rec3;
     }
 
     function updateCharts(data) {
@@ -607,12 +541,7 @@
                     borderRadius: 6
                 }]
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: { y: { beginAtZero: true } }
-            }
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
         });
 
         const zeroDisc = data.filter(d => d.Discount_Rate === 0).length;
@@ -631,11 +560,7 @@
                     backgroundColor: ['#059669', '#0ea5e9', '#f59e0b', '#dc2626']
                 }]
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } }
-            }
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } } }
         });
     }
 </script>
