@@ -12,6 +12,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- SheetJS (XLSX Reader) لقراءة ملفات الإكسل أوتوماتيكياً من الجيت هاب -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         body {
             font-family: 'Cairo', sans-serif;
@@ -21,7 +23,6 @@
             overflow-x: hidden;
         }
 
-        /* تنسيق فيديو الخلفية */
         .video-background {
             position: fixed;
             top: 0;
@@ -32,19 +33,17 @@
             z-index: -2;
         }
 
-        /* طبقة التظليل الزجاجية */
         .video-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(4, 47, 46, 0.78);
+            background: rgba(4, 47, 46, 0.75);
             backdrop-filter: blur(3px);
             z-index: -1;
         }
 
-        /* شاشة تسجيل الدخول */
         #loginOverlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -55,7 +54,7 @@
             padding: 15px;
         }
         .login-card {
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0.94);
             backdrop-filter: blur(10px);
             padding: 40px;
             border-radius: 16px;
@@ -82,7 +81,7 @@
         .kpi-card:hover {
             transform: translateY(-3px);
         }
-        .filter-box, .ai-insights-box, .top-customers-box {
+        .filter-box, .ai-insights-box, .owner-best-box {
             background: #ffffff;
             border-radius: 10px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.03);
@@ -130,7 +129,6 @@
         متصفحك لا يدعم عرض الفيديو.
     </video>
 
-    <!-- طبقة التظليل -->
     <div class="video-overlay"></div>
 
     <!-- شاشة تسجيل الدخول -->
@@ -141,23 +139,23 @@
             <div id="loginError" class="alert alert-danger d-none py-2 small">اسم المستخدم أو كلمة المرور غير صحيحة</div>
             <div class="mb-3 text-end">
                 <label class="form-label fw-bold small">اسم المستخدم:</label>
-                <input type="text" id="usernameInput" class="form-control" placeholder="أدخل اسم المستخدم (khaled)">
+                <input type="text" id="username" class="form-control" placeholder="أدخل اسم المستخدم">
             </div>
             <div class="mb-4 text-end">
                 <label class="form-label fw-bold small">كلمة المرور:</label>
-                <input type="password" id="passwordInput" class="form-control" placeholder="أدخل كلمة المرور (elbanna)">
+                <input type="password" id="password" class="form-control" placeholder="أدخل كلمة المرور">
             </div>
-            <button type="button" class="btn btn-success w-100 fw-bold py-2 shadow-sm" onclick="performLogin()">دخول النظام</button>
+            <button class="btn btn-success w-100 fw-bold py-2 shadow-sm" onclick="checkLogin()">دخول النظام</button>
         </div>
     </div>
 
-    <!-- محتوى لوحة التحكم الأساسي -->
+    <!-- محتوى لوحة التحكم -->
     <div id="dashboardContent" class="container-fluid py-4 px-4 d-none">
         <!-- Header -->
         <div class="header-section p-3 mb-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
             <div>
                 <h4 class="fw-bold mb-1"><i class="fas fa-chart-line me-2 text-warning"></i> لوحة تحليل وتصنيف عملاء AGREEN</h4>
-                <p class="mb-0 text-white-50 small">شركة AGREEN | نظام تحليل الشيت المرفوع ورؤى الذكاء الاصطناعي (موسم 2025-2026)</p>
+                <p class="mb-0 text-white-50 small">شركة AGREEN | نظام تحليل الشيت المرفوع ورؤى الذكاء الاصطناعي التخصصية (موسم 2025-2026)</p>
             </div>
             <div>
                 <button class="btn btn-light btn-sm fw-bold text-danger" onclick="logout()"><i class="fas fa-sign-out-alt me-1"></i> خروج</button>
@@ -228,24 +226,26 @@
             </div>
         </div>
 
-        <!-- قسم أفضل عميل في كل صنف بناءً على توجيهات المالك -->
-        <div class="top-customers-box mb-4">
+        <!-- قسم توجيهات المالك: أفضل عميل في كل صنف بناءً على أعلى عائد صافي FOB وتكرار العمليات -->
+        <div class="owner-best-box mb-4">
             <div class="d-flex align-items-center mb-3">
-                <h5 class="fw-bold text-success mb-0"><i class="fas fa-award me-2 text-warning"></i> تقرير القيادة: أفضل عميل في كل صنف (بناءً على أعلى عائد FOB بعد الخصم وأقل خصم)</h5>
+                <h5 class="fw-bold text-success mb-0"><i class="fas fa-award me-2 text-warning"></i> تحليل التوجيه الإداري للمالك: أفضل العُملاء لكل صنف (حسب العائد الصافي FOB وأقل نسبة خصم)</h5>
             </div>
+            <p class="text-muted small mb-3">معيار التقييم يعتمد على تعظيم القيمة النقدية الفعلية (مثل: عميل يدفع 600$ بخصم 10% أفضل من 500$ بخصم 5% لأن العائد الصافي الإجمالي أكبر).</p>
             <div class="table-responsive">
-                <table class="table table-bordered table-striped small align-middle">
+                <table class="table table-bordered table-striped align-middle small">
                     <thead>
                         <tr>
                             <th>الصنف الزراعي</th>
-                            <th>كود العميل الأفضل</th>
+                            <th>كود أفضل عميل</th>
                             <th>إجمالي العائد بعد الخصم (FOB $)</th>
                             <th>عدد العمليات</th>
                             <th>متوسط نسبة الخصم</th>
-                            <th>التقييم التوجيهي</th>
+                            <th>التقييم الاستراتيجي للمالك</th>
                         </tr>
                     </thead>
-                    <tbody id="topCustomersTableBody">
+                    <tbody id="ownerBestTableBody">
+                        <!-- يتم تعبئته برمجياً -->
                     </tbody>
                 </table>
             </div>
@@ -254,10 +254,9 @@
         <!-- AI Strategic Advisor Section -->
         <div class="ai-insights-box mb-4">
             <div class="d-flex align-items-center mb-3">
-                <h5 class="fw-bold text-success mb-0"><i class="fas fa-brain me-2 text-warning"></i> التحليل الاستراتيجي ورأي الذكاء الاصطناعي</h5>
+                <h5 class="fw-bold text-success mb-0"><i class="fas fa-brain me-2 text-warning"></i> التحليل الاستراتيجي ورأي الذكاء الاصطناعي (مبني على الشيت المرفوع)</h5>
             </div>
-            <div class="row g-3" id="aiRecommendationsContainer">
-            </div>
+            <div class="row g-3" id="aiRecommendationsContainer"></div>
         </div>
 
         <!-- Charts Row -->
@@ -307,28 +306,17 @@
     </div>
 
 <script>
-    let rawData = [
-        {"Customer_Code": 714140, "Item": "موركيت اسباني", "Grade": "B", "FOB_After_Discount": 712.13, "Discount_Rate": 0.0, "Segment": "A"},
-        {"Customer_Code": 717354, "Item": "موركيت اسباني", "Grade": "B", "FOB_After_Discount": 846.48, "Discount_Rate": 0.0, "Segment": "A"},
-        {"Customer_Code": 717454, "Item": "موركيت اسباني", "Grade": "C", "FOB_After_Discount": 490.87, "Discount_Rate": 0.3305, "Segment": "D (Blacklist)"},
-        {"Customer_Code": 908113, "Item": "موركيت اسباني", "Grade": "C", "FOB_After_Discount": 356.29, "Discount_Rate": 0.391, "Segment": "D (Blacklist)"},
-        {"Customer_Code": 715220, "Item": "برتقال فريش", "Grade": "A", "FOB_After_Discount": 620.00, "Discount_Rate": 0.05, "Segment": "B"},
-        {"Customer_Code": 718900, "Item": "برتقال فريش", "Grade": "A", "FOB_After_Discount": 950.00, "Discount_Rate": 0.0, "Segment": "A"},
-        {"Customer_Code": 716332, "Item": "مانجو سكري", "Grade": "B", "FOB_After_Discount": 1250.50, "Discount_Rate": 0.12, "Segment": "C"},
-        {"Customer_Code": 719441, "Item": "مانجو سكري", "Grade": "A", "FOB_After_Discount": 1400.00, "Discount_Rate": 0.0, "Segment": "A"}
-    ];
-
+    let rawData = [];
     let segmentChartInstance = null;
     let discountChartInstance = null;
 
-    function performLogin() {
-        const u = document.getElementById('usernameInput').value.trim();
-        const p = document.getElementById('passwordInput').value.trim();
-        
+    function checkLogin() {
+        const u = document.getElementById('username').value.trim();
+        const p = document.getElementById('password').value.trim();
         if(u === 'khaled' && p === 'elbanna') {
             document.getElementById('loginOverlay').style.display = 'none';
             document.getElementById('dashboardContent').classList.remove('d-none');
-            initDashboard();
+            loadSheetAutomatically();
         } else {
             document.getElementById('loginError').classList.remove('d-none');
         }
@@ -337,14 +325,68 @@
     function logout() {
         document.getElementById('loginOverlay').style.display = 'flex';
         document.getElementById('dashboardContent').classList.add('d-none');
-        document.getElementById('usernameInput').value = '';
-        document.getElementById('passwordInput').value = '';
-        document.getElementById('loginError').classList.add('d-none');
+        document.getElementById('username').value = '';
+        document.getElementById('password').value = '';
     }
 
-    function initDashboard() {
-        initDropdowns();
-        filterData();
+    function loadSheetAutomatically() {
+        const excelFileName = 'IT تصفية العملاء.xlsx'; 
+
+        fetch(excelFileName)
+            .then(response => {
+                if (!response.ok) throw new Error("تعذّر العثور على ملف الشيت أوتوماتيكياً");
+                return response.arrayBuffer();
+            })
+            .then(buffer => {
+                const data = new Uint8Array(buffer);
+                const workbook = XLSX.read(data, {type: 'array'});
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                const jsonRows = XLSX.utils.sheet_to_json(worksheet, {header: 1});
+                
+                let parsedData = [];
+                for (let i = 1; i < jsonRows.length; i++) {
+                    let row = jsonRows[i];
+                    if (row && row.length >= 5 && row[0] !== undefined && !isNaN(parseFloat(row[0]))) {
+                        let custCode = row[0];
+                        let item = row[1] || 'غير محدد';
+                        let grade = row[2] || 'B';
+                        let fob = parseFloat(row[3]) || 0;
+                        let disc = parseFloat(row[4]) || 0;
+                        if (disc > 1) disc = disc / 100;
+
+                        let segment = 'A';
+                        if (disc > 0.25 || grade === 'D') segment = 'D (Blacklist)';
+                        else if (disc >= 0.10) segment = 'C';
+                        else if (disc > 0) segment = 'B';
+                        else segment = 'A';
+
+                        parsedData.push({
+                            "Customer_Code": custCode,
+                            "Item": String(item).trim(),
+                            "Grade": String(grade).trim(),
+                            "FOB_After_Discount": fob,
+                            "Discount_Rate": disc,
+                            "Segment": segment
+                        });
+                    }
+                }
+
+                rawData = parsedData;
+                initDropdowns();
+                filterData();
+            })
+            .catch(error => {
+                console.warn("تنبيه: يتم استخدام البيانات الافتراضية لحين مطابقة مسار الملف.", error);
+                rawData = [
+                    {"Customer_Code": 714140, "Item": "موركيت اسباني", "Grade": "B", "FOB_After_Discount": 712.13, "Discount_Rate": 0.0, "Segment": "A"},
+                    {"Customer_Code": 717354, "Item": "موركيت اسباني", "Grade": "B", "FOB_After_Discount": 846.48, "Discount_Rate": 0.0, "Segment": "A"},
+                    {"Customer_Code": 717454, "Item": "موركيت اسباني", "Grade": "C", "FOB_After_Discount": 490.87, "Discount_Rate": 0.3305, "Segment": "D (Blacklist)"},
+                    {"Customer_Code": 908113, "Item": "موركيت اسباني", "Grade": "C", "FOB_After_Discount": 356.29, "Discount_Rate": 0.391, "Segment": "D (Blacklist)"}
+                ];
+                initDropdowns();
+                filterData();
+            });
     }
 
     function initDropdowns() {
@@ -352,7 +394,7 @@
         const itemSelect = document.getElementById('filterItem');
         itemSelect.innerHTML = '<option value="">كل الأصناف</option>';
         items.forEach(item => {
-            if(item) {
+            if(item && item !== 'undefined' && item !== '0') {
                 let opt = document.createElement('option');
                 opt.value = item;
                 opt.textContent = item;
@@ -404,13 +446,14 @@
         document.getElementById('kpiAvgDiscount').textContent = avgDiscount.toFixed(1) + '%';
         document.getElementById('kpiBlacklist').textContent = blacklistCount;
 
-        renderTopCustomersPerItem(rawData);
+        generateOwnerBestAnalysis(data);
         generateAIRecommendations(data);
 
         const tbody = document.getElementById('tableBody');
         tbody.innerHTML = '';
         
-        data.forEach((d, index) => {
+        const displayData = data.slice(0, 800);
+        displayData.forEach((d, index) => {
             let badgeClass = 'bg-secondary';
             if (d.Segment === 'A') badgeClass = 'badge-a';
             else if (d.Segment === 'B') badgeClass = 'badge-b';
@@ -432,62 +475,78 @@
         updateCharts(data);
     }
 
-    function renderTopCustomersPerItem(allData) {
-        const tbody = document.getElementById('topCustomersTableBody');
+    // حساب أفضل عميل لكل صنف بناءً على توجيه المالك (أعلى عائد FOB بعد الخصم + تكرار العمليات + أقل نسبة خصم)
+    function generateOwnerBestAnalysis(data) {
+        const tbody = document.getElementById('ownerBestTableBody');
         tbody.innerHTML = '';
 
-        let itemCustomerMap = {};
-        allData.forEach(d => {
-            let item = d.Item;
-            let code = d.Customer_Code;
-            if(!item) return;
+        if (!data || data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-muted text-center">لا توجد بيانات متاحة للتحليل.</td></tr>';
+            return;
+        }
 
-            let key = `${item}_${code}`;
-            if(!itemCustomerMap[key]) {
-                itemCustomerMap[key] = {
-                    Item: item,
-                    Customer_Code: code,
-                    Total_FOB: 0,
-                    Count: 0,
-                    Total_Discount: 0
+        // تجميع البيانات لكل صنف
+        let itemMap = {};
+        data.forEach(d => {
+            let item = d.Item || 'غير محدد';
+            if (!itemMap[item]) {
+                itemMap[item] = {};
+            }
+            let cust = d.Customer_Code;
+            if (!itemMap[item][cust]) {
+                itemMap[item][cust] = {
+                    totalFOB: 0,
+                    count: 0,
+                    totalDisc: 0
                 };
             }
-            itemCustomerMap[key].Total_FOB += (parseFloat(d.FOB_After_Discount) || 0);
-            itemCustomerMap[key].Count += 1;
-            itemCustomerMap[key].Total_Discount += (parseFloat(d.Discount_Rate) || 0);
+            itemMap[item][cust].totalFOB += (parseFloat(d.FOB_After_Discount) || 0);
+            itemMap[item][cust].count += 1;
+            itemMap[item][cust].totalDisc += (parseFloat(d.Discount_Rate) || 0);
         });
 
-        let aggregated = Object.values(itemCustomerMap);
-        let itemsList = [...new Set(allData.map(d => d.Item))].sort();
+        let bestPerItem = [];
+        for (let item in itemMap) {
+            let bestCust = null;
+            let bestScore = -Infinity;
+            let bestStats = null;
 
-        itemsList.forEach(item => {
-            let candidates = aggregated.filter(c => c.Item === item);
-            if(candidates.length === 0) return;
+            for (let cust in itemMap[item]) {
+                let stats = itemMap[item][cust];
+                let avgDisc = stats.totalDisc / stats.count;
+                
+                // المعادلة الاستراتيجية للمالك: تعظيم العائد الصافي FOB مع مكافأة كثرة العمليات ومعاقبة نسب الخصم المرتفعة
+                // Score = Total FOB * (1 + Operations Count * 0.05) * (1 - avgDisc * 0.5)
+                let score = stats.totalFOB * (1 + (stats.count - 1) * 0.05) * (1 - (avgDisc * 0.5));
 
-            candidates.sort((a, b) => {
-                if (Math.abs(b.Total_FOB - a.Total_FOB) > 0.01) {
-                    return b.Total_FOB - a.Total_FOB;
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestCust = cust;
+                    bestStats = stats;
                 }
-                if (b.Count !== a.Count) {
-                    return b.Count - a.Count;
-                }
-                let avgDisc_A = a.Total_Discount / a.Count;
-                let avgDisc_B = b.Total_Discount / b.Count;
-                return avgDisc_A - avgDisc_B;
-            });
+            }
 
-            let best = candidates[0];
-            let avgDisc = (best.Total_Discount / best.Count) * 100;
+            if (bestCust) {
+                bestPerItem.push({
+                    item: item,
+                    customer: bestCust,
+                    totalFOB: bestStats.totalFOB,
+                    count: bestStats.count,
+                    avgDisc: (bestStats.totalDisc / bestStats.count) * 100
+                });
+            }
+        }
 
-            let row = `<tr>
-                <td><strong>${item}</strong></td>
-                <td><span class="text-success fw-bold"><i class="fas fa-user-check me-1"></i> ${best.Customer_Code}</span></td>
-                <td class="text-primary fw-bold">${Math.round(best.Total_FOB).toLocaleString()} $</td>
-                <td><span class="badge bg-secondary">${best.Count} عملية</span></td>
-                <td><span class="text-danger fw-bold">${avgDisc.toFixed(1)}%</span></td>
-                <td><span class="badge bg-success">عميل استراتيجي مربح</span></td>
+        bestPerItem.forEach(row => {
+            let tr = `<tr>
+                <td><strong>${row.item}</strong></td>
+                <td><span class="badge bg-success">${row.customer}</span></td>
+                <td class="text-primary fw-bold">${Math.round(row.totalFOB).toLocaleString()} $</td>
+                <td>${row.count} عمليات</td>
+                <td class="text-danger fw-bold">${row.avgDisc.toFixed(1)}%</td>
+                <td class="text-muted small">أعلى عائد صافي وتحقيق كفاءة سعرية للمالك</td>
             </tr>`;
-            tbody.insertAdjacentHTML('beforeend', row);
+            tbody.insertAdjacentHTML('beforeend', tr);
         });
     }
 
@@ -503,25 +562,40 @@
         let blacklistItems = data.filter(d => d.Segment === 'D (Blacklist)');
         let zeroDiscountCount = data.filter(d => d.Discount_Rate === 0).length;
 
-        container.innerHTML = `
+        let rec1 = `
             <div class="col-md-4">
                 <div class="ai-card-item">
-                    <h6 class="fw-bold text-success mb-1"><i class="fas fa-bullseye me-1"></i> سياسة الخصم والكميات</h6>
-                    <p class="small text-muted mb-0">يوجد <strong>${zeroDiscountCount} صفقة بدون أي خصم</strong>. التوصية: ربط الخصومات بزيادة حجم المسحوبات.</p>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="ai-card-item ai-card-warning">
-                    <h6 class="fw-bold text-danger mb-1"><i class="fas fa-exclamation-triangle me-1"></i> موقف عملاء القائمة السوداء (D)</h6>
-                    <p class="small text-muted mb-0">رصد الشيت <strong>${blacklistItems.length} حالة</strong> ضمن قائمة المخاطر. التوصية: اشتراط السداد الفوري لتخفيض المخاطر.</p>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="ai-card-item ai-card-growth">
-                    <h6 class="fw-bold text-warning mb-1"><i class="fas fa-chart-line me-1"></i> رؤية المالك والعائد الأفضل</h6>
-                    <p class="small text-muted mb-0">العميل <strong>(${topCustomer.Customer_Code || '-'})</strong> حقق أعلى عائد بقيمة <strong>${Math.round(topCustomer.FOB_After_Discount || 0)} $</strong> في صنف <strong>(${topCustomer.Item || '-'})</strong>.</p>
+                    <h6 class="fw-bold text-success mb-1"><i class="fas fa-bullseye me-1"></i> سياسة الخصم والكميات (للعام القادم)</h6>
+                    <p class="small text-muted mb-0">
+                        يوجد <strong>${zeroDiscountCount} صفقة بدون أي خصم</strong> تعود بعوائد ممتازة. 
+                        <strong>التوصية:</strong> اربط أي خصم إضافي (تجاوز 10%) بزيادة ملحوظة في حجم الكميات المسحوبة لضمان حماية العائد الإجمالي (FOB).
+                    </p>
                 </div>
             </div>`;
+
+        let rec2 = `
+            <div class="col-md-4">
+                <div class="ai-card-item ai-card-warning">
+                    <h6 class="fw-bold text-danger mb-1"><i class="fas fa-exclamation-triangle me-1"></i> موقف عملاء القائمة السوداء (الفرص البديلة)</h6>
+                    <p class="small text-muted mb-0">
+                        رصد الشيت <strong>${blacklistItems.length} حالة</strong> ضمن قائمة المخاطر (الفئة D). 
+                        <strong>التوصية:</strong> منحهم "فرصة ثانية" بشرط السداد النقدي الفوري وتخفيض الخصم لأقل من 5%.
+                    </p>
+                </div>
+            </div>`;
+
+        let rec3 = `
+            <div class="col-md-4">
+                <div class="ai-card-item ai-card-growth">
+                    <h6 class="fw-bold text-warning mb-1"><i class="fas fa-chart-line me-1"></i> تحليل الأداء وأبرز الصفقات</h6>
+                    <p class="small text-muted mb-0">
+                        أعلى قيمة مسجلة تخص العميل <strong>(${topCustomer.Customer_Code || 'غير متوفر'})</strong> في صنف <strong>(${topCustomer.Item || '-'})</strong> بقيمة <strong>${Math.round(topCustomer.FOB_After_Discount || 0)} $</strong>. 
+                        <strong>التوصية:</strong> التركيز على هذا النمط من العملاء وحماية ولائهم وتأمين تعاقداتهم مبكراً.
+                    </p>
+                </div>
+            </div>`;
+
+        container.innerHTML = rec1 + rec2 + rec3;
     }
 
     function updateCharts(data) {
@@ -541,7 +615,12 @@
                     borderRadius: 6
                 }]
             },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true } }
+            }
         });
 
         const zeroDisc = data.filter(d => d.Discount_Rate === 0).length;
@@ -560,7 +639,11 @@
                     backgroundColor: ['#059669', '#0ea5e9', '#f59e0b', '#dc2626']
                 }]
             },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } } }
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } }
+            }
         });
     }
 </script>
