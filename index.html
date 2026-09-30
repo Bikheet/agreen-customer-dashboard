@@ -216,9 +216,9 @@
             </div>
         </div>
 
-        <!-- رأي الذكاء الاصطناعي وتوصيات أفضل العملاء وطرق التعامل -->
+        <!-- رأي الذكاء الاصطناعي وتوصيات أفضل وأسوأ العملاء لكل درجة على مستوى الدولة -->
         <div class="ai-insights-box mb-4">
-            <h5 class="fw-bold text-success mb-3"><i class="fas fa-brain me-2 text-warning"></i> رؤى الذكاء الاصطناعي: أفضل أنواع العملاء وطرق التعامل مع الأسوأ</h5>
+            <h5 class="fw-bold text-success mb-3"><i class="fas fa-brain me-2 text-warning"></i> رؤى وتحليلات الذكاء الاصطناعي المتقدمة (قائمة أفضل وأسوأ العملاء لكل درجة ودولة وتوصيات التعامل)</h5>
             <div class="row g-3" id="aiRecommendationsContainer"></div>
         </div>
 
@@ -484,36 +484,54 @@
         }
     }
 
-    // توصيات الذكاء الاصطناعي
+    // توصيات وقوائم الذكاء الاصطناعي المفصلة لكل دولة ودرجة
     function generateAIRecommendations(data) {
         const container = document.getElementById('aiRecommendationsContainer');
         if (!data.length) return;
 
+        // تجميع أفضل وأسوأ عميل لكل (دولة + درجة) للذكاء الاصطناعي
+        let countryGradeMap = {};
+        data.forEach(d => {
+            let k = `${d.Country} - درجة (${d.Grade})`;
+            if (!countryGradeMap[k]) countryGradeMap[k] = [];
+            countryGradeMap[k].push(d);
+        });
+
+        let bestListHTML = "";
+        let worstListHTML = "";
+
+        for (let k in countryGradeMap) {
+            let group = countryGradeMap[k];
+            // فرز حسب صافي العائد تنازلياً
+            group.sort((a, b) => (b.FOB_After_Discount * b.Quantity * (1 - b.Discount_Rate)) - (a.FOB_After_Discount * a.Quantity * (1 - a.Discount_Rate)));
+            let best = group[0];
+            let worst = group[group.length - 1];
+
+            bestListHTML += `<li class="mb-1"><strong>${k}:</strong> العميل المميز <span class="badge bg-success">كود: ${best.Customer_Code}</span> (عائد: ${Math.round(best.FOB_After_Discount)} $، كمية: ${best.Quantity} طن).</li>`;
+            worstListHTML += `<li class="mb-1"><strong>${k}:</strong> العميل الأقل كفاءة <span class="badge bg-danger">كود: ${worst.Customer_Code}</span> (خصم: ${(worst.Discount_Rate*100).toFixed(0)}%).</li>`;
+        }
+
         container.innerHTML = `
-            <div class="col-md-4">
+            <div class="col-md-6">
                 <div class="ai-card-item">
-                    <h6 class="fw-bold text-success mb-1"><i class="fas fa-star me-1"></i> أفضل أنواع العملاء (القائمة الذهبية)</h6>
-                    <p class="small text-muted mb-0">
-                        العملاء الذين يسحبون <strong>بكميات كبيرة وبدون خصومات أو بخصم أقل من 10%</strong> ويحققون أعلى عائد FOB. 
-                        <strong>التوصية:</strong> منحهم أولوية في التوريد، وتخصيص تعاقدات مستمرة، وربطهم بمتابعة مباشرة من أفضل مسؤولي المبيعات.
-                    </p>
+                    <h6 class="fw-bold text-success mb-2"><i class="fas fa-medal me-1"></i> قائمة أفضل العملاء لكل درجة على مستوى الدولة</h6>
+                    <div class="small text-muted mb-2" style="max-height: 220px; overflow-y: auto;">
+                        <ul class="ps-3 mb-0">${bestListHTML}</ul>
+                    </div>
+                    <div class="alert alert-success py-2 px-3 small mb-0">
+                        <strong>طريقة التعامل الاستراتيجية:</strong> منحهم الأولوية القصوى في الحصص التصديرية، وتثبيت عقود طويلة الأجل، وتقديم حوافز تسليم مبكر مع الحفاظ على هوامش الربح.
+                    </div>
                 </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-6">
                 <div class="ai-card-item ai-card-warning">
-                    <h6 class="fw-bold text-danger mb-1"><i class="fas fa-exclamation-circle me-1"></i> أسوأ العملاء (الخاسرون / القائمة السوداء)</h6>
-                    <p class="small text-muted mb-0">
-                        العملاء الذين يستنزفون الهامش الربحي بخصومات مرتفعة تتجاوز 25% أو في درجات منتج (D) دون تعويض حقيقي بالكميات.
-                        <strong>التوصية:</strong> تحويل تعاملاتهم للنقدي الفوري (Cash) وإلغاء أي تسهيلات سعرية سابقة.
-                    </p>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="ai-card-item ai-card-growth">
-                    <h6 class="fw-bold text-warning mb-1"><i class="fas fa-handshake me-1"></i> أفضل استراتيجية للتعامل والتفاوض</h6>
-                    <p class="small text-muted mb-0">
-                        ربط أي خصم إضافي <strong>بحجم الكمية المسحوبة داخل الدولة الواحدة</strong>، ومراجعة أداء مسؤولي المبيعات بناءً على العائد الصافي الفعلي لضمان تحقيق مستهدفات القسم (GO Digital - GO Paperless).
-                    </p>
+                    <h6 class="fw-bold text-danger mb-2"><i class="fas fa-exclamation-triangle me-1"></i> قائمة أسوأ العملاء لكل درجة على مستوى الدولة</h6>
+                    <div class="small text-muted mb-2" style="max-height: 220px; overflow-y: auto;">
+                        <ul class="ps-3 mb-0">${worstListHTML}</ul>
+                    </div>
+                    <div class="alert alert-danger py-2 px-3 small mb-0">
+                        <strong>طريقة التعامل الاستراتيجية:</strong> تقييد أي خصومات إضافية، وتعديل شروط السداد لتكون (نقدية فورية / Cash)، أو إعادة توجيه الكميات لأسواق أخرى أكثر ربحية.
+                    </div>
                 </div>
             </div>`;
     }
