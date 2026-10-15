@@ -72,25 +72,94 @@
         .table th { background-color: #065f46 !important; color: white; text-align: center; }
         .table td { text-align: center; vertical-align: middle; }
 
-        /* إعدادات مخصصة للطباعة وتصدير الـ PDF */
+        /* تصميم شات مساعد الـ AI العائم */
+        #aiChatWidget {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 9998;
+        }
+        .chat-toggle-btn {
+            background-color: #059669;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 12px 20px;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .chat-toggle-btn:hover { transform: scale(1.05); background-color: #047857; }
+        .chat-box {
+            position: absolute;
+            bottom: 65px;
+            left: 0;
+            width: 360px;
+            height: 480px;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid #cbd5e1;
+        }
+        .chat-header {
+            background: #065f46;
+            color: white;
+            padding: 12px 15px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .chat-body {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            background: #f8fafc;
+            font-size: 0.85rem;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .chat-msg {
+            padding: 10px 12px;
+            border-radius: 8px;
+            max-width: 85%;
+            line-height: 1.4;
+        }
+        .bot-msg { background: #e2e8f0; color: #1e293b; align-self: flex-start; }
+        .user-msg { background: #059669; color: white; align-self: flex-end; }
+        .chat-footer {
+            padding: 10px;
+            background: #ffffff;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            gap: 6px;
+        }
+        .chat-footer input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 0.85rem;
+        }
+        .chat-footer button {
+            background: #059669;
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
         @media print {
-            body {
-                background: white !important;
-                color: #000 !important;
-            }
-            .video-background, .video-overlay, #loginOverlay, .no-print, .filter-box {
-                display: none !important;
-            }
-            .header-section {
-                background: #065f46 !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-            }
-            .kpi-card, .ai-insights-box, .owner-best-box, .table-box {
-                box-shadow: none !important;
-                border: 1px solid #ddd !important;
-                break-inside: avoid;
-            }
+            .no-print, #aiChatWidget { display: none !important; }
         }
     </style>
 </head>
@@ -124,7 +193,7 @@
     <!-- محتوى لوحة التحكم -->
     <div id="dashboardContent" class="container-fluid py-4 px-4 d-none">
         
-        <!-- رأس الداش بورد وأزرار التحكم -->
+        <!-- رأس الداش بورد -->
         <div class="header-section p-3 mb-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
             <div>
                 <span class="badge bg-warning text-dark mb-1 fw-bold">GO Digital - GO Paperless</span>
@@ -137,7 +206,7 @@
             </div>
         </div>
 
-        <!-- فلاتر التحكم الشاملة (تختفي عند الطباعة) -->
+        <!-- فلاتر التحكم الشاملة -->
         <div class="filter-box no-print mb-4">
             <h6 class="fw-bold text-success mb-3"><i class="fas fa-filter me-2"></i> فلاتر التحليل المقارن (حسب الدولة، الصنف، الفئة، والمسؤول)</h6>
             <div class="row g-3">
@@ -203,7 +272,6 @@
         <!-- تحليل الأداء حسب الدولة -->
         <div class="owner-best-box mb-4">
             <h5 class="fw-bold text-success mb-2"><i class="fas fa-globe me-2 text-warning"></i> مقارنة الدول ودرجات المنتجات (أفضل وأسوأ عميل لكل دولة ودرجة)</h5>
-            <p class="text-muted small mb-3">مقارنة أداء العملاء داخل كل دولة بناءً على درجات المنتجات، الكميات، نسب الخصم، وعائد FOB الصافي.</p>
             <div class="table-responsive">
                 <table class="table table-bordered table-striped align-middle small">
                     <thead>
@@ -221,7 +289,7 @@
             </div>
         </div>
 
-        <!-- جدول أفضل المسؤولين حسب المنتج والدرجة -->
+        <!-- جدول أفضل المسؤولين -->
         <div class="owner-best-box mb-4">
             <h5 class="fw-bold text-success mb-2"><i class="fas fa-user-tie me-2 text-warning"></i> تحليل كفاءة مسؤولي المبيعات (الأفضل حسب الصنف ودرجة المنتج)</h5>
             <div class="table-responsive">
@@ -240,19 +308,19 @@
             </div>
         </div>
 
-        <!-- رأي الذكاء الاصطناعي وتوصيات أفضل وأسوأ العملاء -->
+        <!-- توصيات الذكاء الاصطناعي -->
         <div class="ai-insights-box mb-4">
-            <h5 class="fw-bold text-success mb-3"><i class="fas fa-brain me-2 text-warning"></i> رؤى وتحليلات الذكاء الاصطناعي المتقدمة (قائمة أفضل وأسوأ العملاء لكل درجة ودولة وتوصيات التعامل)</h5>
+            <h5 class="fw-bold text-success mb-3"><i class="fas fa-brain me-2 text-warning"></i> رؤى وتحليلات الذكاء الاصطناعي المتقدمة</h5>
             <div class="row g-3" id="aiRecommendationsContainer"></div>
         </div>
 
-        <!-- جدول التفاصيل الكاملة للشيت -->
+        <!-- جدول التفاصيل -->
         <div class="table-box">
             <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
                 <h6 class="fw-bold text-secondary mb-0"><i class="fas fa-table text-success me-2"></i> جدول بيانات الشيت (IT تصفية العملاء)</h6>
                 <input type="text" id="searchBox" class="form-control form-control-sm w-auto no-print" style="min-width: 250px;" placeholder="بحث برقم العميل، الدولة، أو المسؤول..." onkeyup="filterData()">
             </div>
-            <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+            <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
                 <table class="table table-hover table-bordered align-middle small">
                     <thead>
                         <tr>
@@ -274,6 +342,24 @@
         </div>
     </div>
 
+    <!-- ميزة المساعد الذكي الداخلي (Chatbot Assistant) -->
+    <div id="aiChatWidget" class="no-print d-none">
+        <div id="chatBoxContainer" class="chat-box d-none">
+            <div class="chat-header">
+                <span><i class="fas fa-robot me-1"></i> مساعد AGREEN الذكي</span>
+                <button class="btn btn-sm text-white p-0" onclick="toggleChatBox()"><i class="fas fa-times"></i></button>
+            </div>
+            <div id="chatBody" class="chat-body">
+                <div class="chat-msg bot-msg">أهلاً بك يا فندم! أنا مساعدك الذكي لتحليل بيانات الشيت. اسألني عن أي عميل، دولة، صنف، أو مسؤول وسأجيبك فوراً!</div>
+            </div>
+            <div class="chat-footer">
+                <input type="text" id="chatInput" placeholder="اكتب سؤالك هنا..." onkeypress="handleChatKey(event)">
+                <button onclick="sendChatMessage()"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+        <button class="chat-toggle-btn" onclick="toggleChatBox()"><i class="fas fa-comment-dots fa-lg"></i> المساعد الذكي</button>
+    </div>
+
 <script>
     let rawData = [];
 
@@ -283,6 +369,7 @@
         if(u === 'khaled' && p === '1235') {
             document.getElementById('loginOverlay').style.display = 'none';
             document.getElementById('dashboardContent').classList.remove('d-none');
+            document.getElementById('aiChatWidget').classList.remove('d-none');
             loadSheetAutomatically();
         } else {
             document.getElementById('loginError').classList.remove('d-none');
@@ -292,6 +379,7 @@
     function logout() {
         document.getElementById('loginOverlay').style.display = 'flex';
         document.getElementById('dashboardContent').classList.add('d-none');
+        document.getElementById('aiChatWidget').classList.add('d-none');
         document.getElementById('username').value = '';
         document.getElementById('password').value = '';
     }
@@ -435,10 +523,7 @@
     function generateCountryGradeAnalysis(data) {
         const tbody = document.getElementById('countryGradeTableBody');
         tbody.innerHTML = '';
-        if (!data.length) {
-            tbody.innerHTML = '<tr><td colspan="6" class="text-muted text-center">لا توجد بيانات متاحة للتحليل.</td></tr>';
-            return;
-        }
+        if (!data.length) return;
 
         let map = {};
         data.forEach(d => {
@@ -450,13 +535,12 @@
         for (let key in map) {
             let group = map[key];
             group.sort((a, b) => (b.FOB_After_Discount * b.Quantity * (1 - b.Discount_Rate)) - (a.FOB_After_Discount * a.Quantity * (1 - a.Discount_Rate)));
-            
             let best = group[0];
             let worst = group[group.length - 1];
             let totalQ = group.reduce((s, x) => s + x.Quantity, 0);
             let avgFob = group.reduce((s, x) => s + x.FOB_After_Discount, 0) / group.length;
-
             let parts = key.split(' | ');
+
             tbody.insertAdjacentHTML('beforeend', `<tr>
                 <td><strong>${parts[0]}</strong></td>
                 <td>${parts[1]} - <span class="badge bg-info text-dark">${parts[2]}</span></td>
@@ -487,7 +571,6 @@
             let bestOwner = '';
             let maxRev = -1;
             let totalQty = 0;
-
             for (let o in owners) {
                 if (owners[o].revenue > maxRev) {
                     maxRev = owners[o].revenue;
@@ -495,7 +578,6 @@
                     totalQty = owners[o].qty;
                 }
             }
-
             tbody.insertAdjacentHTML('beforeend', `<tr>
                 <td><strong>${key.split(' | ')[0]}</strong></td>
                 <td><span class="badge bg-secondary">${key.split(' | ')[1]}</span></td>
@@ -526,7 +608,7 @@
             let best = group[0];
             let worst = group[group.length - 1];
 
-            bestListHTML += `<li class="mb-1"><strong>${k}:</strong> العميل المميز <span class="badge bg-success">كود: ${best.Customer_Code}</span> (عائد: ${Math.round(best.FOB_After_Discount)} $، كمية: ${best.Quantity} طن).</li>`;
+            bestListHTML += `<li class="mb-1"><strong>${k}:</strong> العميل المميز <span class="badge bg-success">كود: ${best.Customer_Code}</span> (عائد: ${Math.round(best.FOB_After_Discount)} $).</li>`;
             worstListHTML += `<li class="mb-1"><strong>${k}:</strong> العميل الأقل كفاءة <span class="badge bg-danger">كود: ${worst.Customer_Code}</span> (خصم: ${(worst.Discount_Rate*100).toFixed(0)}%).</li>`;
         }
 
@@ -534,30 +616,107 @@
             <div class="col-md-6">
                 <div class="ai-card-item">
                     <h6 class="fw-bold text-success mb-2"><i class="fas fa-medal me-1"></i> قائمة أفضل العملاء لكل درجة على مستوى الدولة</h6>
-                    <div class="small text-muted mb-2" style="max-height: 220px; overflow-y: auto;">
-                        <ul class="ps-3 mb-0">${bestListHTML}</ul>
-                    </div>
-                    <div class="alert alert-success py-2 px-3 small mb-0">
-                        <strong>طريقة التعامل الاستراتيجية:</strong> منحهم الأولوية القصوى في الحصص التصديرية، وتثبيت عقود طويلة الأجل، وتقديم حوافز تسليم مبكر مع الحفاظ على هوامش الربح.
-                    </div>
+                    <div class="small text-muted mb-2" style="max-height: 200px; overflow-y: auto;"><ul class="ps-3 mb-0">${bestListHTML}</ul></div>
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="ai-card-item ai-card-warning">
                     <h6 class="fw-bold text-danger mb-2"><i class="fas fa-exclamation-triangle me-1"></i> قائمة أسوأ العملاء لكل درجة على مستوى الدولة</h6>
-                    <div class="small text-muted mb-2" style="max-height: 220px; overflow-y: auto;">
-                        <ul class="ps-3 mb-0">${worstListHTML}</ul>
-                    </div>
-                    <div class="alert alert-danger py-2 px-3 small mb-0">
-                        <strong>طريقة التعامل الاستراتيجية:</strong> تقييد أي خصومات إضافية، وتعديل شروط السداد لتكون (نقدية فورية / Cash)، أو إعادة توجيه الكميات لأسواق أخرى أكثر ربحية.
-                    </div>
+                    <div class="small text-muted mb-2" style="max-height: 200px; overflow-y: auto;"><ul class="ps-3 mb-0">${worstListHTML}</ul></div>
                 </div>
             </div>`;
     }
 
-    // وظيفة طباعة وتصدير PDF مباشرة بدون مشاكل
-    function exportToPDF() {
-        window.print();
+    function exportToPDF() { window.print(); }
+
+    // دوظائف تشغيل شات المساعد الذكي الداخلي (Chatbot AI)
+    function toggleChatBox() {
+        const box = document.getElementById('chatBoxContainer');
+        box.classList.toggle('d-none');
+    }
+
+    function handleChatKey(e) {
+        if (e.key === 'Enter') sendChatMessage();
+    }
+
+    function sendChatMessage() {
+        const input = document.getElementById('chatInput');
+        const text = input.value.trim();
+        if (!text) return;
+
+        appendUserMessage(text);
+        input.value = '';
+
+        setTimeout(() => {
+            processAIQuery(text);
+        }, 400);
+    }
+
+    function appendUserMessage(msg) {
+        const body = document.getElementById('chatBody');
+        body.insertAdjacentHTML('beforeend', `<div class="chat-msg user-msg">${msg}</div>`);
+        body.scrollTop = body.scrollHeight;
+    }
+
+    function appendBotMessage(msg) {
+        const body = document.getElementById('chatBody');
+        body.insertAdjacentHTML('beforeend', `<div class="chat-msg bot-msg">${msg}</div>`);
+        body.scrollTop = body.scrollHeight;
+    }
+
+    // معالجة أسئلة المستخدم بالذكاء الاصطناعي بناءً على بيانات الشيت الفعلية
+    function processAIQuery(query) {
+        q = query.toLowerCase();
+        let reply = "عذراً يا فندم، لم أتمكن من العثور على إجابة مطابقة لسؤالك في بيانات الشيت الحالي. جرب السؤال عن دولة معينة، كود عميل، أو صنف.";
+
+        if (q.includes('إجمالي') || q.includes('كميات') || q.includes('كام')) {
+            let totalQ = rawData.reduce((s, x) => s + x.Quantity, 0);
+            let totalV = rawData.reduce((s, x) => s + (x.FOB_After_Discount * x.Quantity), 0);
+            reply = `إجمالي الكميات المسحوبة في الشيت بالكامل هو <strong>${totalQ.toLocaleString()} طن</strong>، بإجمالي عوائد صافية FOB تبلغ <strong>${Math.round(totalV).toLocaleString()} $</strong>.`;
+        } 
+        else if (q.includes('عميل') || q.includes('كود')) {
+            // البحث برقم العميل إذا وجد في السوال
+            let matchCode = query.match(/\d+/);
+            if (matchCode) {
+                let code = parseInt(matchCode[0]);
+                let matches = rawData.filter(d => d.Customer_Code == code);
+                if (matches.length > 0) {
+                    let m = matches[0];
+                    reply = `العميل برقم <strong>${code}</strong>:<br>
+                    - الدولة: ${m.Country}<br>
+                    - المسؤول: ${m.Owner}<br>
+                    - الصنف: ${m.Item} (درجة ${m.Grade})<br>
+                    - الكمية: ${m.Quantity} طن<br>
+                    - نسبة الخصم: ${(m.Discount_Rate*100).toFixed(1)}%<br>
+                    - التصنيف: <span class="badge bg-secondary">${m.Segment}</span>`;
+                } else {
+                    reply = `عذراً، لم أجد أي سجل للعميل برقم ${code} في الشيت.`;
+                }
+            } else {
+                reply = `يرجى تحديد رقم أو كود العميل المطلوب البحث عنه بدقة (مثال: "عميل 101200").`;
+            }
+        }
+        else if (q.includes('الإمارات') || q.includes('السعودية') || q.includes('روسيا') || q.includes('الصين')) {
+            let countryName = q.includes('الإمارات') ? 'الامارات' : (q.includes('السعودية') ? 'السعوديه' : (q.includes('روسيا') ? 'روسيا' : 'الصين'));
+            let countryData = rawData.filter(d => d.Country.includes(countryName));
+            if (countryData.length > 0) {
+                let totalC_Q = countryData.reduce((s, x) => s + x.Quantity, 0);
+                reply = `بيانات دولة <strong>${countryName}</strong>:<br>
+                - عدد الصفقات: ${countryData.length}<br>
+                - إجمالي الكميات: ${totalC_Q.toLocaleString()} طن<br>
+                - المسؤولون عن السوق: ${[...new Set(countryData.map(d => d.Owner))].join(', ')}`;
+            } else {
+                reply = `لا توجد بيانات مسجلة لهذه الدولة في الشيت الحالي.`;
+            }
+        }
+        else if (q.includes('أسوأ') || q.includes('خاسر')) {
+            reply = `يمكنك الاطلاع على <strong>"قائمة أسوأ العملاء لكل درجة على مستوى الدولة"</strong> مع تفاصيل نسب الخصم وأسباب التصنيف مباشرة في قسم رؤى الذكاء الاصطناعي وسط الداش بورد!`;
+        }
+        else if (q.includes('أفضل') || q.includes('ممتاز')) {
+            reply = `أفضل العملاء هم من يسحبون بكميات مرتفعة وبدون خصومات (الفئة A). يمكنك مراجعة تقرير أفضل العملاء لكل دولة ودرجة في الجداول المخصصة بالصفحة.`;
+        }
+
+        appendBotMessage(reply);
     }
 </script>
 </body>
