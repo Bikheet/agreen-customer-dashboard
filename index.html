@@ -349,7 +349,7 @@
                 <button class="btn btn-sm text-white p-0" onclick="toggleChatBox()"><i class="fas fa-times"></i></button>
             </div>
             <div id="chatBody" class="chat-body">
-                <div class="chat-msg bot-msg">أهلاً بك يا فندم! أنا جاهز تماماً لتحليل أسئلتك بعمق ودقة فورية. اسألني عن أي بياع، دولة، أو مقارنة وسأرد عليك من الآخر!</div>
+                <div class="chat-msg bot-msg">أهلاً بك يا فندم! أنا جاهز تماماً للرد المباشر والدقيق (أفضل/أسوأ عميل، أفضل/أسوأ بلد، ترتيب البياعين). اسألني!</div>
             </div>
             <div class="chat-footer">
                 <input type="text" id="chatInput" placeholder="اكتب سؤالك هنا..." onkeypress="handleChatKey(event)">
@@ -629,7 +629,7 @@
 
     function exportToPDF() { window.print(); }
 
-    // دوال تشغيل شات المساعد الذكي المطور بعمق
+    // دوال تشغيل شات المساعد الذكي المستقر والنهائي
     function toggleChatBox() {
         const box = document.getElementById('chatBoxContainer');
         box.classList.toggle('d-none');
@@ -648,7 +648,7 @@
         input.value = '';
 
         setTimeout(() => {
-            processDeepAIQuery(text);
+            processStableAIQuery(text);
         }, 300);
     }
 
@@ -664,12 +664,12 @@
         body.scrollTop = body.scrollHeight;
     }
 
-    // محرك التحليل والذكاء المعمّق (Deep Semantic Query Processor)
-    function processDeepAIQuery(query) {
+    // محرك التحليل الثابت والدقيق (Stable Semantic Query Processor)
+    function processStableAIQuery(query) {
         let q = query.toLowerCase();
         let reply = "";
 
-        // 1. تجميع بيانات المسؤولين
+        // 1. تجميع بيانات المسؤولين (ترتيب تنازلي من الأفضل لأقل مبيعاً)
         let ownerSummary = {};
         rawData.forEach(d => {
             if (!ownerSummary[d.Owner]) ownerSummary[d.Owner] = { rev: 0, qty: 0, count: 0 };
@@ -677,90 +677,59 @@
             ownerSummary[d.Owner].qty += d.Quantity;
             ownerSummary[d.Owner].count += 1;
         });
-        let sortedOwners = Object.keys(ownerSummary).sort((a, b) => ownerSummary[b].rev - ownerSummary[a].rev);
+        // ترتيب تنازلي للأفضل
+        let sortedOwnersDesc = Object.keys(ownerSummary).sort((a, b) => ownerSummary[b].rev - ownerSummary[a].rev);
+        // ترتيب تصاعدي للأسوأ (الأقل)
+        let sortedOwnersAsc = Object.keys(ownerSummary).sort((a, b) => ownerSummary[a].rev - ownerSummary[b].rev);
 
         // 2. تجميع بيانات الدول
         let countrySummary = {};
         rawData.forEach(d => {
-            if (!countrySummary[d.Country]) countrySummary[d.Country] = { rev: 0, qty: 0, count: 0 };
+            if (!countrySummary[d.Country]) countrySummary[d.Country] = { rev: 0, qty: 0 };
             countrySummary[d.Country].rev += d.Net_Revenue;
             countrySummary[d.Country].qty += d.Quantity;
-            countrySummary[d.Country].count += 1;
         });
-        let sortedCountries = Object.keys(countrySummary).sort((a, b) => countrySummary[b].rev - countrySummary[a].rev);
+        let sortedCountriesDesc = Object.keys(countrySummary).sort((a, b) => countrySummary[b].rev - countrySummary[a].rev);
+        let sortedCountriesAsc = Object.keys(countrySummary).sort((a, b) => countrySummary[a].rev - countrySummary[b].rev);
 
-        // فحص ما إذا كان هناك اسم دولة مذكور صراحة في السؤال
-        let mentionedCountry = sortedCountries.find(c => q.includes(c.toLowerCase()));
-        // فحص ما إذا كان هناك اسم مسؤول مذكور صراحة في السؤال
-        let mentionedOwner = sortedOwners.find(o => q.includes(o.toLowerCase()));
+        // --- تحليل نوع السؤال بدقة منعاً للتداخل ---
 
-        // --- حالة أ: السؤال يتضمن (دولة + مسؤول معاً) مثل: "مين أحسن بياع في الارجنتين؟" ---
-        if (mentionedCountry && (q.includes('بياع') || q.includes('مسؤول') || mentionedOwner)) {
-            let targetCountryData = rawData.filter(d => d.Country.toLowerCase() === mentionedCountry.toLowerCase());
-            let subOwners = {};
-            targetCountryData.forEach(d => {
-                if (!subOwners[d.Owner]) subOwners[d.Owner] = { rev: 0, qty: 0 };
-                subOwners[d.Owner].rev += d.Net_Revenue;
-                subOwners[d.Owner].qty += d.Quantity;
-            });
-            let sortedSubOwners = Object.keys(subOwners).sort((a, b) => subOwners[b].rev - subOwners[a].rev);
-            
-            if (mentionedOwner) {
-                let dO = subOwners[mentionedOwner];
-                reply = `👤 أداء المسؤول (${mentionedOwner}) في دولة (${mentionedCountry}):<br>` +
-                        `- صافي المبيعات: <strong>${Math.round(dO ? dO.rev : 0).toLocaleString()} $</strong><br>` +
-                        `- الكمية المباعة: ${(dO ? dO.qty : 0).toLocaleString()} طن`;
-            } else if (sortedSubOwners.length > 0) {
-                let topO = sortedSubOwners[0];
-                reply = `🏆 أفضل مسؤول في دولة <strong>(${mentionedCountry})</strong> هو (${topO}) بإجمالي عوائد ${Math.round(subOwners[topO].rev).toLocaleString()} $.`;
-            } else {
-                reply = `لا توجد مبيعات مسجلة في دولة (${mentionedCountry}) لهذا المسؤول.`;
-            }
-        }
-        // --- حالة ب: السؤال عن الدول (أفضل أو أسوأ بلد) ---
-        else if (q.includes('بلد') || q.includes('دولة') || q.includes('دول')) {
+        // أ. إذا كان السؤال عن "بلد" أو "دولة"
+        if (q.includes('بلد') || q.includes('دولة') || q.includes('دول')) {
             if (q.includes('أسوأ') || q.includes('اسوء') || q.includes('اقل') || q.includes('أقل')) {
-                let worstC = sortedCountries[sortedCountries.length - 1];
+                let worstC = sortedCountriesAsc[0];
                 reply = `⚠️ أسوأ دولة / بلد (الأقل في العوائد):<br>` +
                         `- الدولة: <strong>${worstC}</strong><br>` +
                         `- إجمالي العائد الصافي: ${Math.round(countrySummary[worstC].rev).toLocaleString()} $<br>` +
                         `- الكمية: ${countrySummary[worstC].qty.toLocaleString()} طن`;
             } else {
-                let topC = sortedCountries[0];
+                let topC = sortedCountriesDesc[0];
                 reply = `🌍 أفضل دولة سحبت مني:<br>` +
                         `- الدولة: <strong>${topC}</strong><br>` +
                         `- إجمالي العائد الصافي: <strong>${Math.round(countrySummary[topC].rev).toLocaleString()} $</strong><br>` +
                         `- إجمالي الكميات: ${countrySummary[topC].qty.toLocaleString()} طن`;
             }
         }
-        // --- حالة ج: السؤال عن المسؤولين (البياعين) وترتيبهم (الأول، الثاني، الثالث، أو بالاسم) ---
-        else if (q.includes('بياع') || q.includes('مسؤول') || q.includes('بائع') || mentionedOwner || q.includes('الثاني') || q.includes('الثالث') || q.includes('الأول') || q.includes('تاني') || q.includes('تالت') || q.includes('اول')) {
-            
-            let rank = 1;
-            if (mentionedOwner) {
-                rank = sortedOwners.indexOf(mentionedOwner) + 1;
-            } else if (q.includes('تاني') || q.includes('ثاني') || q.includes('الثاني')) {
-                rank = 2;
-            } else if (q.includes('تالت') || q.includes('ثالث') || q.includes('الثالث')) {
-                rank = 3;
-            } else if (q.includes('رابع')) {
-                rank = 4;
-            } else if (q.includes('اول') || q.includes('أول') || q.includes('الأول')) {
-                rank = 1;
-            }
+        // ب. إذا كان السؤال عن "مسؤول" أو "بياع" أو ترتيبهم
+        else if (q.includes('بياع') || q.includes('مسؤول') || q.includes('بائع')) {
+            let isWorst = q.includes('أسوأ') || q.includes('اسوء') || q.includes('اقل') || q.includes('أقل') || q.includes('اكثر واحد باع قليل');
+            let targetList = isWorst ? sortedOwnersAsc : sortedOwnersDesc;
 
-            let targetOwner = sortedOwners[rank - 1];
-            if (targetOwner) {
-                let dataO = ownerSummary[targetOwner];
-                reply = `🏆 مسؤول المبيعات رقم (${rank}) هو (${targetOwner}):<br>` +
-                        `- إجمالي صافي المبيعات: <strong>${Math.round(dataO.rev).toLocaleString()} $</strong><br>` +
-                        `- إجمالي الكميات المباعة: ${dataO.qty.toLocaleString()} طن<br>` +
-                        `- عدد الصفقات: ${dataO.count}`;
-            } else {
-                reply = `عذراً، لم أجد مسؤولاً بهذا الترتيب.`;
-            }
+            let rank = 1;
+            if (q.includes('تاني') || q.includes('ثاني') || q.includes('الثاني')) rank = 2;
+            else if (q.includes('تالت') || q.includes('ثالث') || q.includes('الثالث')) rank = 3;
+            else if (q.includes('رابع')) rank = 4;
+
+            let targetOwner = targetList[rank - 1];
+            let dataO = ownerSummary[targetOwner];
+
+            let titlePrefix = isWorst ? `⚠️ المسؤول الأقل مبيعاً (رقم ${rank})` : `🏆 مسؤول المبيعات رقم (${rank})`;
+            reply = `${titlePrefix} هو (${targetOwner}):<br>` +
+                    `- إجمالي صافي المبيعات: <strong>${Math.round(dataO.rev).toLocaleString()} $</strong><br>` +
+                    `- إجمالي الكميات المباعة: ${dataO.qty.toLocaleString()} طن<br>` +
+                    `- عدد الصفقات: ${dataO.count}`;
         }
-        // --- حالة د: السؤال عن العملاء (أفضل أو أسوأ عميل) ---
+        // ج. إذا كان السؤال عن "عميل"
         else if (q.includes('عميل')) {
             if (q.includes('أسوأ') || q.includes('اسوء') || q.includes('اقل') || q.includes('أقل')) {
                 let sortedWorst = [...rawData].sort((a, b) => a.Net_Revenue - b.Net_Revenue);
@@ -780,7 +749,7 @@
                         `- صافي العائد: <strong>${Math.round(best.Net_Revenue).toLocaleString()} $</strong>`;
             }
         }
-        // --- حالة هـ: الإحصائيات العامة ---
+        // د. الإحصائيات العامة
         else {
             let totalQ = rawData.reduce((s, x) => s + x.Quantity, 0);
             let totalV = rawData.reduce((s, x) => s + x.Net_Revenue, 0);
