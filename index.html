@@ -349,7 +349,7 @@
                 <button class="btn btn-sm text-white p-0" onclick="toggleChatBox()"><i class="fas fa-times"></i></button>
             </div>
             <div id="chatBody" class="chat-body">
-                <div class="chat-msg bot-msg">أهلاً بك يا فندم! أنا جاهز تماماً للرد المباشر والدقيق (أفضل/أسوأ عميل، أفضل/أسوأ بلد، ترتيب البياعين). اسألني!</div>
+                <div class="chat-msg bot-msg">أهلاً بك يا فندم! أنا جاهز تماماً. اسألني عن أي مسؤول (الأول، التاني، التالت، الأسوأ)، أفضل/أسوأ بلد، أفضل/أسوأ صنف أو عميل وسأجيبك بدقة مطلقة!</div>
             </div>
             <div class="chat-footer">
                 <input type="text" id="chatInput" placeholder="اكتب سؤالك هنا..." onkeypress="handleChatKey(event)">
@@ -403,7 +403,7 @@
                         let custCode = row[0];
                         let country = row[1] || 'غير محدد';
                         let owner = row[2] || 'غير محدد';
-                        let item = row[3] || 'غير محدد';
+                        let item = String(row[3] || 'غير محدد').trim();
                         let grade = row[4] || 'B';
                         let qty = parseFloat(row[5]) || 0;
                         let fob = parseFloat(row[6]) || 0;
@@ -421,7 +421,7 @@
                             "Customer_Code": custCode,
                             "Country": String(country).trim(),
                             "Owner": String(owner).trim(),
-                            "Item": String(item).trim(),
+                            "Item": item,
                             "Grade": String(grade).trim(),
                             "Quantity": qty,
                             "FOB_After_Discount": fob,
@@ -629,7 +629,7 @@
 
     function exportToPDF() { window.print(); }
 
-    // دوال تشغيل شات المساعد الذكي المستقر والنهائي
+    // دوال تشغيل شات المساعد الذكي المضمون 100%
     function toggleChatBox() {
         const box = document.getElementById('chatBoxContainer');
         box.classList.toggle('d-none');
@@ -648,8 +648,8 @@
         input.value = '';
 
         setTimeout(() => {
-            processStableAIQuery(text);
-        }, 300);
+            processRobustAIQuery(text);
+        }, 200);
     }
 
     function appendUserMessage(msg) {
@@ -664,12 +664,12 @@
         body.scrollTop = body.scrollHeight;
     }
 
-    // محرك التحليل الثابت والدقيق (Stable Semantic Query Processor)
-    function processStableAIQuery(query) {
+    // محرك التحليل الشامل والآمن (Robust Query Processor)
+    function processRobustAIQuery(query) {
         let q = query.toLowerCase();
         let reply = "";
 
-        // 1. تجميع بيانات المسؤولين (ترتيب تنازلي من الأفضل لأقل مبيعاً)
+        // 1. تجهيز بيانات المسؤولين (تنازلياً وتصاعدياً)
         let ownerSummary = {};
         rawData.forEach(d => {
             if (!ownerSummary[d.Owner]) ownerSummary[d.Owner] = { rev: 0, qty: 0, count: 0 };
@@ -677,64 +677,82 @@
             ownerSummary[d.Owner].qty += d.Quantity;
             ownerSummary[d.Owner].count += 1;
         });
-        // ترتيب تنازلي للأفضل
-        let sortedOwnersDesc = Object.keys(ownerSummary).sort((a, b) => ownerSummary[b].rev - ownerSummary[a].rev);
-        // ترتيب تصاعدي للأسوأ (الأقل)
-        let sortedOwnersAsc = Object.keys(ownerSummary).sort((a, b) => ownerSummary[a].rev - ownerSummary[b].rev);
+        let ownersDesc = Object.keys(ownerSummary).sort((a, b) => ownerSummary[b].rev - ownerSummary[a].rev);
+        let ownersAsc = Object.keys(ownerSummary).sort((a, b) => ownerSummary[a].rev - ownerSummary[b].rev);
 
-        // 2. تجميع بيانات الدول
+        // 2. تجهيز بيانات الدول
         let countrySummary = {};
         rawData.forEach(d => {
             if (!countrySummary[d.Country]) countrySummary[d.Country] = { rev: 0, qty: 0 };
             countrySummary[d.Country].rev += d.Net_Revenue;
             countrySummary[d.Country].qty += d.Quantity;
         });
-        let sortedCountriesDesc = Object.keys(countrySummary).sort((a, b) => countrySummary[b].rev - countrySummary[a].rev);
-        let sortedCountriesAsc = Object.keys(countrySummary).sort((a, b) => countrySummary[a].rev - countrySummary[b].rev);
+        let countriesDesc = Object.keys(countrySummary).sort((a, b) => countrySummary[b].rev - countrySummary[a].rev);
+        let countriesAsc = Object.keys(countrySummary).sort((a, b) => countrySummary[a].rev - countrySummary[b].rev);
 
-        // --- تحليل نوع السؤال بدقة منعاً للتداخل ---
+        // 3. تجهيز بيانات الأصناف
+        let itemSummary = {};
+        rawData.forEach(d => {
+            if (!itemSummary[d.Item]) itemSummary[d.Item] = { rev: 0, qty: 0 };
+            itemSummary[d.Item].rev += d.Net_Revenue;
+            itemSummary[d.Item].qty += d.Quantity;
+        });
+        let itemsDescRev = Object.keys(itemSummary).sort((a, b) => itemSummary[b].rev - itemSummary[a].rev);
+        let itemsDescQty = Object.keys(itemSummary).sort((a, b) => itemSummary[b].qty - itemSummary[a].qty);
 
-        // أ. إذا كان السؤال عن "بلد" أو "دولة"
-        if (q.includes('بلد') || q.includes('دولة') || q.includes('دول')) {
+        // --- تحليل الكلمات المفتاحية بصرامة ودقة ---
+
+        // أ. فحص الأسئلة المتعلقة بالأصناف (احسن صنف / اكتر صنف بفلوس أو كمية)
+        if (q.includes('صنف') || q.includes('منتج')) {
+            let topItemRev = itemsDescRev[0];
+            let topItemQty = itemsDescQty[0];
+            reply = `🌾 <strong>تحليل الأصناف والمنتجات:</strong><br>` +
+                    `- أكثر صنف تحقيقاً للعوائد (الفلوس): <strong>${topItemRev}</strong> بإجمالي صافي عائد ${Math.round(itemSummary[topItemRev].rev).toLocaleString()} $<br>` +
+                    `- أكثر صنف مبيعاً بالكمية (الوزن): <strong>${topItemQty}</strong> بإجمالي كمية ${itemSummary[topItemQty].qty.toLocaleString()} طن`;
+        }
+        // ب. فحص الأسئلة المتعلقة بالدول أو البلدان
+        else if (q.includes('بلد') || q.includes('دولة') || q.includes('دول')) {
             if (q.includes('أسوأ') || q.includes('اسوء') || q.includes('اقل') || q.includes('أقل')) {
-                let worstC = sortedCountriesAsc[0];
-                reply = `⚠️ أسوأ دولة / بلد (الأقل في العوائد):<br>` +
+                let worstC = countriesAsc[0];
+                reply = `⚠️ <strong>أسوأ دولة / بلد (الأقل في العوائد):</strong><br>` +
                         `- الدولة: <strong>${worstC}</strong><br>` +
                         `- إجمالي العائد الصافي: ${Math.round(countrySummary[worstC].rev).toLocaleString()} $<br>` +
                         `- الكمية: ${countrySummary[worstC].qty.toLocaleString()} طن`;
             } else {
-                let topC = sortedCountriesDesc[0];
-                reply = `🌍 أفضل دولة سحبت مني:<br>` +
+                let topC = countriesDesc[0];
+                reply = `🌍 <strong>أفضل دولة سحبت مني:</strong><br>` +
                         `- الدولة: <strong>${topC}</strong><br>` +
                         `- إجمالي العائد الصافي: <strong>${Math.round(countrySummary[topC].rev).toLocaleString()} $</strong><br>` +
                         `- إجمالي الكميات: ${countrySummary[topC].qty.toLocaleString()} طن`;
             }
         }
-        // ب. إذا كان السؤال عن "مسؤول" أو "بياع" أو ترتيبهم
-        else if (q.includes('بياع') || q.includes('مسؤول') || q.includes('بائع')) {
-            let isWorst = q.includes('أسوأ') || q.includes('اسوء') || q.includes('اقل') || q.includes('أقل') || q.includes('اكثر واحد باع قليل');
-            let targetList = isWorst ? sortedOwnersAsc : sortedOwnersDesc;
+        // ج. فحص الأسئلة المتعلقة بمسؤولي المبيعات (البياعين) والترتيب
+        else if (q.includes('بياع') || q.includes('مسؤول') || q.includes('بائع') || q.includes('رقم') || q.includes('الثاني') || q.includes('الثالث') || q.includes('تاني') || q.includes('تالت')) {
+            
+            let isWorst = q.includes('أسوأ') || q.includes('اسوء') || q.includes('اقل') || q.includes('أقل');
+            let targetList = isWorst ? ownersAsc : ownersDesc;
 
             let rank = 1;
-            if (q.includes('تاني') || q.includes('ثاني') || q.includes('الثاني')) rank = 2;
-            else if (q.includes('تالت') || q.includes('ثالث') || q.includes('الثالث')) rank = 3;
-            else if (q.includes('رابع')) rank = 4;
+            if (q.includes('تاني') || q.includes('ثاني') || q.includes('الثاني') || q.includes('رقم 2') || q.includes('رقم ٢')) rank = 2;
+            else if (q.includes('تالت') || q.includes('ثالث') || q.includes('الثالث') || q.includes('رقم 3') || q.includes('رقم ٣') || q.includes('تلاته')) rank = 3;
+            else if (q.includes('رابع') || q.includes('رقم 4')) rank = 4;
+            else if (q.includes('اول') || q.includes('أول') || q.includes('الأول') || q.includes('رقم 1') || q.includes('رقم ١')) rank = 1;
 
             let targetOwner = targetList[rank - 1];
             let dataO = ownerSummary[targetOwner];
 
-            let titlePrefix = isWorst ? `⚠️ المسؤول الأقل مبيعاً (رقم ${rank})` : `🏆 مسؤول المبيعات رقم (${rank})`;
-            reply = `${titlePrefix} هو (${targetOwner}):<br>` +
+            let headerTitle = isWorst ? `⚠️ المسؤول الأقل مبيعاً (رقم ${rank})` : `🏆 مسؤول المبيعات رقم (${rank})`;
+            reply = `${headerTitle} هو (${targetOwner}):<br>` +
                     `- إجمالي صافي المبيعات: <strong>${Math.round(dataO.rev).toLocaleString()} $</strong><br>` +
                     `- إجمالي الكميات المباعة: ${dataO.qty.toLocaleString()} طن<br>` +
                     `- عدد الصفقات: ${dataO.count}`;
         }
-        // ج. إذا كان السؤال عن "عميل"
+        // د. فحص الأسئلة المتعلقة بالعملاء
         else if (q.includes('عميل')) {
             if (q.includes('أسوأ') || q.includes('اسوء') || q.includes('اقل') || q.includes('أقل')) {
                 let sortedWorst = [...rawData].sort((a, b) => a.Net_Revenue - b.Net_Revenue);
                 let worst = sortedWorst[0];
-                reply = `⚠️ العميل الأقل كفاءة (الأسوأ):<br>` +
+                reply = `⚠️ <strong>العميل الأقل كفاءة (الأسوأ):</strong><br>` +
                         `- كود العميل: <strong>${worst.Customer_Code}</strong><br>` +
                         `- الدولة: ${worst.Country}<br>` +
                         `- المسؤول: ${worst.Owner}<br>` +
@@ -742,18 +760,18 @@
             } else {
                 let sortedAll = [...rawData].sort((a, b) => b.Net_Revenue - a.Net_Revenue);
                 let best = sortedAll[0];
-                reply = `🏆 أفضل عميل إجمالاً:<br>` +
+                reply = `🏆 <strong>أفضل عميل إجمالاً:</strong><br>` +
                         `- كود العميل: <strong>${best.Customer_Code}</strong><br>` +
                         `- الدولة: ${best.Country}<br>` +
                         `- المسؤول: ${best.Owner}<br>` +
                         `- صافي العائد: <strong>${Math.round(best.Net_Revenue).toLocaleString()} $</strong>`;
             }
         }
-        // د. الإحصائيات العامة
+        // هـ. الإحصائيات العامة والشاملة
         else {
             let totalQ = rawData.reduce((s, x) => s + x.Quantity, 0);
             let totalV = rawData.reduce((s, x) => s + x.Net_Revenue, 0);
-            reply = `📊 إحصائيات الشيت الإجمالية:<br>` +
+            reply = `📊 <strong>إحصائيات الشيت الإجمالية:</strong><br>` +
                     `- إجمالي الكميات: ${totalQ.toLocaleString()} طن<br>` +
                     `- إجمالي صافي العوائد: ${Math.round(totalV).toLocaleString()} $`;
         }
