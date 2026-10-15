@@ -98,8 +98,8 @@
             position: absolute;
             bottom: 65px;
             left: 0;
-            width: 360px;
-            height: 480px;
+            width: 380px;
+            height: 500px;
             background: #ffffff;
             border-radius: 12px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.4);
@@ -130,8 +130,8 @@
         .chat-msg {
             padding: 10px 12px;
             border-radius: 8px;
-            max-width: 85%;
-            line-height: 1.4;
+            max-width: 90%;
+            line-height: 1.5;
         }
         .bot-msg { background: #e2e8f0; color: #1e293b; align-self: flex-start; }
         .user-msg { background: #059669; color: white; align-self: flex-end; }
@@ -193,7 +193,6 @@
     <!-- محتوى لوحة التحكم -->
     <div id="dashboardContent" class="container-fluid py-4 px-4 d-none">
         
-        <!-- رأس الداش بورد -->
         <div class="header-section p-3 mb-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
             <div>
                 <span class="badge bg-warning text-dark mb-1 fw-bold">GO Digital - GO Paperless</span>
@@ -342,7 +341,7 @@
         </div>
     </div>
 
-    <!-- ميزة المساعد الذكي الداخلي (Chatbot Assistant) -->
+    <!-- ميزة المساعد الذكي الداخلي (Chatbot AI) -->
     <div id="aiChatWidget" class="no-print d-none">
         <div id="chatBoxContainer" class="chat-box d-none">
             <div class="chat-header">
@@ -350,10 +349,10 @@
                 <button class="btn btn-sm text-white p-0" onclick="toggleChatBox()"><i class="fas fa-times"></i></button>
             </div>
             <div id="chatBody" class="chat-body">
-                <div class="chat-msg bot-msg">أهلاً بك يا فندم! أنا مساعدك الذكي لتحليل بيانات الشيت. اسألني عن أي عميل، دولة، صنف، أو مسؤول وسأجيبك فوراً!</div>
+                <div class="chat-msg bot-msg">أهلاً بك يا فندم! أنا مساعدك الذكي لتحليل بيانات الشيت. اسألني عن أفضل أو أسوأ عميل في أي صنف أو دولة وسأجيبك فوراً بالأرقام!</div>
             </div>
             <div class="chat-footer">
-                <input type="text" id="chatInput" placeholder="اكتب سؤالك هنا..." onkeypress="handleChatKey(event)">
+                <input type="text" id="chatInput" placeholder="اكتب سؤالك هنا (مثال: مين احسن عميل في البرتقال؟)..." onkeypress="handleChatKey(event)">
                 <button onclick="sendChatMessage()"><i class="fas fa-paper-plane"></i></button>
             </div>
         </div>
@@ -410,6 +409,7 @@
                         let fob = parseFloat(row[6]) || 0;
                         let disc = parseFloat(row[7]) || 0;
                         if (disc > 1) disc = disc / 100;
+                        let netRev = qty * fob * (1 - disc);
 
                         let segment = 'A';
                         if (disc > 0.25 || grade === 'D') segment = 'D (Blacklist)';
@@ -426,6 +426,7 @@
                             "Quantity": qty,
                             "FOB_After_Discount": fob,
                             "Discount_Rate": disc,
+                            "Net_Revenue": netRev,
                             "Segment": segment
                         });
                     }
@@ -437,8 +438,8 @@
             .catch(error => {
                 console.warn("بيانات افتراضية تجريبية", error);
                 rawData = [
-                    {"Customer_Code": 101200, "Country": "السعوديه", "Owner": "زياد", "Item": "بسره", "Grade": "D", "Quantity": 21.6, "FOB_After_Discount": 410.28, "Discount_Rate": 0.0, "Segment": "D (Blacklist)"},
-                    {"Customer_Code": 101430, "Country": "السعوديه", "Owner": "زياد", "Item": "بسره", "Grade": "B", "Quantity": 49.92, "FOB_After_Discount": 675.13, "Discount_Rate": 0.0, "Segment": "A"}
+                    {"Customer_Code": 101200, "Country": "السعوديه", "Owner": "زياد", "Item": "بسره", "Grade": "D", "Quantity": 21.6, "FOB_After_Discount": 410.28, "Discount_Rate": 0.0, "Net_Revenue": 8862, "Segment": "D (Blacklist)"},
+                    {"Customer_Code": 101430, "Country": "السعوديه", "Owner": "زياد", "Item": "بسره", "Grade": "B", "Quantity": 49.92, "FOB_After_Discount": 675.13, "Discount_Rate": 0.0, "Net_Revenue": 33700, "Segment": "A"}
                 ];
                 initDropdowns();
                 filterData();
@@ -534,7 +535,7 @@
 
         for (let key in map) {
             let group = map[key];
-            group.sort((a, b) => (b.FOB_After_Discount * b.Quantity * (1 - b.Discount_Rate)) - (a.FOB_After_Discount * a.Quantity * (1 - a.Discount_Rate)));
+            group.sort((a, b) => b.Net_Revenue - a.Net_Revenue);
             let best = group[0];
             let worst = group[group.length - 1];
             let totalQ = group.reduce((s, x) => s + x.Quantity, 0);
@@ -562,7 +563,7 @@
             if (!map[key]) map[key] = {};
             let owner = d.Owner;
             if (!map[key][owner]) map[key][owner] = { revenue: 0, qty: 0 };
-            map[key][owner].revenue += (d.FOB_After_Discount * d.Quantity);
+            map[key][owner].revenue += d.Net_Revenue;
             map[key][owner].qty += d.Quantity;
         });
 
@@ -604,11 +605,11 @@
 
         for (let k in countryGradeMap) {
             let group = countryGradeMap[k];
-            group.sort((a, b) => (b.FOB_After_Discount * b.Quantity * (1 - b.Discount_Rate)) - (a.FOB_After_Discount * a.Quantity * (1 - a.Discount_Rate)));
+            group.sort((a, b) => b.Net_Revenue - a.Net_Revenue);
             let best = group[0];
             let worst = group[group.length - 1];
 
-            bestListHTML += `<li class="mb-1"><strong>${k}:</strong> العميل المميز <span class="badge bg-success">كود: ${best.Customer_Code}</span> (عائد: ${Math.round(best.FOB_After_Discount)} $).</li>`;
+            bestListHTML += `<li class="mb-1"><strong>${k}:</strong> العميل المميز <span class="badge bg-success">كود: ${best.Customer_Code}</span> (عائد: ${Math.round(best.Net_Revenue)} $).</li>`;
             worstListHTML += `<li class="mb-1"><strong>${k}:</strong> العميل الأقل كفاءة <span class="badge bg-danger">كود: ${worst.Customer_Code}</span> (خصم: ${(worst.Discount_Rate*100).toFixed(0)}%).</li>`;
         }
 
@@ -629,7 +630,7 @@
 
     function exportToPDF() { window.print(); }
 
-    // دوظائف تشغيل شات المساعد الذكي الداخلي (Chatbot AI)
+    // دوال تشغيل شات المساعد الذكي الداخلي المطور (Smart AI Chatbot)
     function toggleChatBox() {
         const box = document.getElementById('chatBoxContainer');
         box.classList.toggle('d-none');
@@ -648,7 +649,7 @@
         input.value = '';
 
         setTimeout(() => {
-            processAIQuery(text);
+            processSmartAIQuery(text);
         }, 400);
     }
 
@@ -664,56 +665,91 @@
         body.scrollTop = body.scrollHeight;
     }
 
-    // معالجة أسئلة المستخدم بالذكاء الاصطناعي بناءً على بيانات الشيت الفعلية
-    function processAIQuery(query) {
-        q = query.toLowerCase();
-        let reply = "عذراً يا فندم، لم أتمكن من العثور على إجابة مطابقة لسؤالك في بيانات الشيت الحالي. جرب السؤال عن دولة معينة، كود عميل، أو صنف.";
+    // محرك الذكاء الاصطناعي الفعلي المطور لتحليل الشيت
+    function processSmartAIQuery(query) {
+        let q = query.toLowerCase();
+        let reply = "";
 
-        if (q.includes('إجمالي') || q.includes('كميات') || q.includes('كام')) {
-            let totalQ = rawData.reduce((s, x) => s + x.Quantity, 0);
-            let totalV = rawData.reduce((s, x) => s + (x.FOB_After_Discount * x.Quantity), 0);
-            reply = `إجمالي الكميات المسحوبة في الشيت بالكامل هو <strong>${totalQ.toLocaleString()} طن</strong>، بإجمالي عوائد صافية FOB تبلغ <strong>${Math.round(totalV).toLocaleString()} $</strong>.`;
-        } 
-        else if (q.includes('عميل') || q.includes('كود')) {
-            // البحث برقم العميل إذا وجد في السوال
-            let matchCode = query.match(/\d+/);
-            if (matchCode) {
-                let code = parseInt(matchCode[0]);
-                let matches = rawData.filter(d => d.Customer_Code == code);
-                if (matches.length > 0) {
-                    let m = matches[0];
-                    reply = `العميل برقم <strong>${code}</strong>:<br>
-                    - الدولة: ${m.Country}<br>
-                    - المسؤول: ${m.Owner}<br>
-                    - الصنف: ${m.Item} (درجة ${m.Grade})<br>
-                    - الكمية: ${m.Quantity} طن<br>
-                    - نسبة الخصم: ${(m.Discount_Rate*100).toFixed(1)}%<br>
-                    - التصنيف: <span class="badge bg-secondary">${m.Segment}</span>`;
+        // 1. سؤال عن أفضل عميل بشكل عام أو في صنف معين
+        if (q.includes('أفضل') || q.includes('احسن') || q.includes('أحسن')) {
+            let targetItem = null;
+            // التحقق من الأصناف مثل البرتقال (بسرة، بلدي، صيفي، موركيت...)
+            let itemsList = [...new Set(rawData.map(d => d.Item))];
+            
+            if (q.includes('برتقال') || q.includes('برتقالة')) {
+                // تصفية عملاء البرتقال (بسرة، بلدي، صيفي، إلخ)
+                let orangeData = rawData.filter(d => ['بسره', 'بلدي', 'صيفي', 'سالوستيانا', 'موركيت اسباني', 'موركيت اسبانى'].some(i => d.Item.includes(i)));
+                if (orangeData.length > 0) {
+                    orangeData.sort((a, b) => b.Net_Revenue - a.Net_Revenue);
+                    let best = orangeData[0];
+                    reply = `🍊 <strong>أفضل عميل في البرتقال والأصناف التابعة له:</strong><br>
+                    - كود العميل: <strong>${best.Customer_Code}</strong><br>
+                    - الدولة: ${best.Country}<br>
+                    - الصنف: ${best.Item} (درجة ${best.Grade})<br>
+                    - المسؤول: ${best.Owner}<br>
+                    - إجمالي صافي العائد: <strong>${Math.round(best.Net_Revenue).toLocaleString()} $</strong> (كمية: ${best.Quantity} طن)`;
                 } else {
-                    reply = `عذراً، لم أجد أي سجل للعميل برقم ${code} في الشيت.`;
+                    reply = `عذراً، لم أجد بيانات تخص البرتقال في الشيت.`;
                 }
             } else {
-                reply = `يرجى تحديد رقم أو كود العميل المطلوب البحث عنه بدقة (مثال: "عميل 101200").`;
+                // البحث عما إذا كان هناك صنف محدد مذكور في السؤال
+                let foundItem = itemsList.find(i => q.includes(i.toLowerCase()));
+                let subset = foundItem ? rawData.filter(d => d.Item.toLowerCase() === foundItem.toLowerCase()) : rawData;
+                
+                subset.sort((a, b) => b.Net_Revenue - a.Net_Revenue);
+                let best = subset[0];
+                reply = `🏆 <strong>أفضل عميل ${foundItem ? 'في صنف (' + foundItem + ')' : 'بشكل عام في جميع المنتجات'}:</strong><br>
+                - كود العميل: <strong>${best.Customer_Code}</strong><br>
+                - الدولة: ${best.Country}<br>
+                - الصنف: ${best.Item} (درجة ${best.Grade})<br>
+                - المسؤول: ${best.Owner}<br>
+                - صافي العائد المحقق: <strong>${Math.round(best.Net_Revenue).toLocaleString()} $</strong>`;
             }
         }
-        else if (q.includes('الإمارات') || q.includes('السعودية') || q.includes('روسيا') || q.includes('الصين')) {
-            let countryName = q.includes('الإمارات') ? 'الامارات' : (q.includes('السعودية') ? 'السعوديه' : (q.includes('روسيا') ? 'روسيا' : 'الصين'));
-            let countryData = rawData.filter(d => d.Country.includes(countryName));
-            if (countryData.length > 0) {
-                let totalC_Q = countryData.reduce((s, x) => s + x.Quantity, 0);
-                reply = `بيانات دولة <strong>${countryName}</strong>:<br>
-                - عدد الصفقات: ${countryData.length}<br>
-                - إجمالي الكميات: ${totalC_Q.toLocaleString()} طن<br>
-                - المسؤولون عن السوق: ${[...new Set(countryData.map(d => d.Owner))].join(', ')}`;
+        // 2. سؤال عن أسوأ عميل
+        else if (q.includes('أسوأ') || q.includes('اسوء') || q.includes('اقل') || q.includes('أقل')) {
+            let sortedWorst = [...rawData].sort((a, b) => {
+                // ترتيب تصاعدي حسب صافي العائد أو أعلى نسبة خصم
+                return (a.Net_Revenue - b.Net_Revenue) || (b.Discount_Rate - a.Discount_Rate);
+            });
+            let worst = sortedWorst[0];
+            reply = `⚠️ <strong>العميل الأقل كفاءة (الأسوأ):</strong><br>
+            - كود العميل: <strong>${worst.Customer_Code}</strong><br>
+            - الدولة: ${worst.Country}<br>
+            - الصنف: ${worst.Item} (درجة ${worst.Grade})<br>
+            - نسبة الخصم الممنوحة: <span class="text-danger fw-bold">${(worst.Discount_Rate * 100).toFixed(1)}%</span><br>
+            - صافي العائد: ${Math.round(worst.Net_Revenue).toLocaleString()} $`;
+        }
+        // 3. سؤال عن إجمالي الكميات أو العوائد
+        else if (q.includes('إجمالي') || q.includes('كميات') || q.includes('مبيعات') || q.includes('كام')) {
+            let totalQ = rawData.reduce((s, x) => s + x.Quantity, 0);
+            let totalV = rawData.reduce((s, x) => s + x.Net_Revenue, 0);
+            reply = `📊 <strong>إحصائيات عامة من الشيت:</strong><br>
+            - إجمالي الكميات المسحوبة: <strong>${totalQ.toLocaleString()} طن</strong><br>
+            - إجمالي صافي العوائد (Net Revenue): <strong>${Math.round(totalV).toLocaleString()} $</strong><br>
+            - إجمالي عدد الصفقات: ${rawData.length}`;
+        }
+        // 4. البحث بكود عميل محدد
+        else if (q.match(/\d+/)) {
+            let code = parseInt(q.match(/\d+/)[0]);
+            let matches = rawData.filter(d => d.Customer_Code == code);
+            if (matches.length > 0) {
+                let text = `📋 <strong>بيانات العميل رقم (${code}):</strong><br>`;
+                matches.forEach(m => {
+                    text += `- الدولة: ${m.Country} | الصنف: ${m.Item} (${m.Grade}) | كمية: ${m.Quantity} طن | خصم: ${(m.Discount_Rate*100).toFixed(1)}%<br>`;
+                });
+                reply = text;
             } else {
-                reply = `لا توجد بيانات مسجلة لهذه الدولة في الشيت الحالي.`;
+                reply = `عذراً، لم أجد أي سجل للعميل برقم ${code}.`;
             }
         }
-        else if (q.includes('أسوأ') || q.includes('خاسر')) {
-            reply = `يمكنك الاطلاع على <strong>"قائمة أسوأ العملاء لكل درجة على مستوى الدولة"</strong> مع تفاصيل نسب الخصم وأسباب التصنيف مباشرة في قسم رؤى الذكاء الاصطناعي وسط الداش بورد!`;
-        }
-        else if (q.includes('أفضل') || q.includes('ممتاز')) {
-            reply = `أفضل العملاء هم من يسحبون بكميات مرتفعة وبدون خصومات (الفئة A). يمكنك مراجعة تقرير أفضل العملاء لكل دولة ودرجة في الجداول المخصصة بالصفحة.`;
+        // رد افتراضي ذكي يوضح إمكانياته
+        else {
+            reply = `أهلاً بك يا فندم! يمكنك سؤالي بأي صيغة طبيعية مثل:<br>
+            - "مين أحسن عميل في البرتقال؟"<br>
+            - "مين أفضل عميل في جميع المنتجات؟"<br>
+            - "مين أسوأ عميل؟"<br>
+            - "ما هو إجمالي الكميات؟"`;
         }
 
         appendBotMessage(reply);
