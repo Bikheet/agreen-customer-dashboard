@@ -349,10 +349,10 @@
                 <button class="btn btn-sm text-white p-0" onclick="toggleChatBox()"><i class="fas fa-times"></i></button>
             </div>
             <div id="chatBody" class="chat-body">
-                <div class="chat-msg bot-msg">أهلاً بك يا فندم! أنا مساعدك الذكي لتحليل بيانات الشيت. اسألني عن أفضل أو أسوأ عميل في أي صنف أو دولة وسأجيبك فوراً بالأرقام!</div>
+                <div class="chat-msg bot-msg">أهلاً بك يا فندم! أنا مساعدك الذكي المطور. اسألني عن مبيعات أي مسؤول (زي زياد)، أفضل دولة، أو أفضل وأسوأ عميل وسأجيبك بدقة!</div>
             </div>
             <div class="chat-footer">
-                <input type="text" id="chatInput" placeholder="اكتب سؤالك هنا (مثال: مين احسن عميل في البرتقال؟)..." onkeypress="handleChatKey(event)">
+                <input type="text" id="chatInput" placeholder="اكتب سؤالك هنا (مثال: زياد باع بكام؟)..." onkeypress="handleChatKey(event)">
                 <button onclick="sendChatMessage()"><i class="fas fa-paper-plane"></i></button>
             </div>
         </div>
@@ -399,7 +399,8 @@
                 let parsedData = [];
                 for (let i = 1; i < jsonRows.length; i++) {
                     let row = jsonRows[i];
-                    if (row && row.length >= 6 && row[0] !== undefined) {
+                    // التأكد من أن السطر بيانات حقيقية وكود العميل رقمي صحيح
+                    if (row && row.length >= 6 && row[0] !== undefined && !isNaN(row[0])) {
                         let custCode = row[0];
                         let country = row[1] || 'غير محدد';
                         let owner = row[2] || 'غير محدد';
@@ -438,8 +439,7 @@
             .catch(error => {
                 console.warn("بيانات افتراضية تجريبية", error);
                 rawData = [
-                    {"Customer_Code": 101200, "Country": "السعوديه", "Owner": "زياد", "Item": "بسره", "Grade": "D", "Quantity": 21.6, "FOB_After_Discount": 410.28, "Discount_Rate": 0.0, "Net_Revenue": 8862, "Segment": "D (Blacklist)"},
-                    {"Customer_Code": 101430, "Country": "السعوديه", "Owner": "زياد", "Item": "بسره", "Grade": "B", "Quantity": 49.92, "FOB_After_Discount": 675.13, "Discount_Rate": 0.0, "Net_Revenue": 33700, "Segment": "A"}
+                    {"Customer_Code": 101200, "Country": "السعوديه", "Owner": "زياد", "Item": "بسره", "Grade": "D", "Quantity": 21.6, "FOB_After_Discount": 410.28, "Discount_Rate": 0.0, "Net_Revenue": 8862, "Segment": "D (Blacklist)"}
                 ];
                 initDropdowns();
                 filterData();
@@ -630,7 +630,7 @@
 
     function exportToPDF() { window.print(); }
 
-    // دوال تشغيل شات المساعد الذكي الداخلي المطور (Smart AI Chatbot)
+    // دوال تشغيل شات المساعد الذكي المطور (Smart AI Chatbot)
     function toggleChatBox() {
         const box = document.getElementById('chatBoxContainer');
         box.classList.toggle('d-none');
@@ -665,91 +665,103 @@
         body.scrollTop = body.scrollHeight;
     }
 
-    // محرك الذكاء الاصطناعي الفعلي المطور لتحليل الشيت
+    // محرك تحليل استعلامات المستخدم بذكاء وبدون أخطاء
     function processSmartAIQuery(query) {
         let q = query.toLowerCase();
         let reply = "";
 
-        // 1. سؤال عن أفضل عميل بشكل عام أو في صنف معين
-        if (q.includes('أفضل') || q.includes('احسن') || q.includes('أحسن')) {
-            let targetItem = null;
-            // التحقق من الأصناف مثل البرتقال (بسرة، بلدي، صيفي، موركيت...)
-            let itemsList = [...new Set(rawData.map(d => d.Item))];
-            
+        // 1. السؤال عن المسؤولين (مثل: زياد باع بكام؟)
+        let allOwners = [...new Set(rawData.map(d => d.Owner))];
+        let foundOwner = allOwners.find(o => q.includes(o.toLowerCase()));
+        
+        if (foundOwner || q.includes('باع') || q.includes('مسؤول') || q.includes('مبيعات')) {
+            if (foundOwner) {
+                let ownerRows = rawData.filter(d => d.Owner.toLowerCase() === foundOwner.toLowerCase());
+                let totalRev = ownerRows.reduce((s, x) => s + x.Net_Revenue, 0);
+                let totalQty = ownerRows.reduce((s, x) => s + x.Quantity, 0);
+                reply = `👤 <strong>تقرير أداء المسؤول (${foundOwner}):</strong><br>
+                - إجمالي صافي المبيعات: <strong>${Math.round(totalRev).toLocaleString()} $</strong><br>
+                - إجمالي الكميات المباعة: ${totalQty.toLocaleString()} طن<br>
+                - عدد الصفقات المسجلة: ${ownerRows.length}`;
+            } else {
+                // عرض ملخص سريع لأفضل مسؤول أو كل المسؤولين
+                let ownerSummary = {};
+                rawData.forEach(d => {
+                    if (!ownerSummary[d.Owner]) ownerSummary[d.Owner] = { rev: 0, qty: 0 };
+                    ownerSummary[d.Owner].rev += d.Net_Revenue;
+                    ownerSummary[d.Owner].qty += d.Quantity;
+                });
+                let bestO = Object.keys(ownerSummary).reduce((a, b) => ownerSummary[a].rev > ownerSummary[b].rev ? a : b);
+                reply = `🏆 <strong>أفضل مسؤول مبيعات إجمالاً هو (${bestO})</strong> بإجمالي عوائد ${Math.round(ownerSummary[bestO].rev).toLocaleString()} $. (يمكنك ذكر اسم المسؤول صراحةً مثل: "زياد باع بكام؟").`;
+            }
+        }
+        // 2. السؤال عن الدولة (أفضل دولة / مبيعات دولة)
+        else if (q.includes('دولة') || q.includes('دول') || q.includes('أفضل دولة')) {
+            let countrySummary = {};
+            rawData.forEach(d => {
+                if (!countrySummary[d.Country]) countrySummary[d.Country] = { rev: 0, qty: 0 };
+                countrySummary[d.Country].rev += d.Net_Revenue;
+                countrySummary[d.Country].qty += d.Quantity;
+            });
+            let sortedCountries = Object.keys(countrySummary).sort((a, b) => countrySummary[b].rev - countrySummary[a].rev);
+            let topC = sortedCountries[0];
+            reply = `🌍 <strong>أفضل دولة سحبت مني وتحقيقاً للعوائد:</strong><br>
+            - الدولة: <strong>${topC}</strong><br>
+            - إجمالي العائد الصافي: ${Math.round(countrySummary[topC].rev).toLocaleString()} $<br>
+            - إجمالي الكميات: ${countrySummary[topC].qty.toLocaleString()} طن<br><br>
+            <em>أبرز الدول الأخرى: ${sortedCountries.slice(1, 4).join(', ')}</em>`;
+        }
+        // 3. السؤال عن أفضل عميل أو البرتقال
+        else if (q.includes('أفضل') || q.includes('احسن') || q.includes('أحسن')) {
             if (q.includes('برتقال') || q.includes('برتقالة')) {
-                // تصفية عملاء البرتقال (بسرة، بلدي، صيفي، إلخ)
                 let orangeData = rawData.filter(d => ['بسره', 'بلدي', 'صيفي', 'سالوستيانا', 'موركيت اسباني', 'موركيت اسبانى'].some(i => d.Item.includes(i)));
                 if (orangeData.length > 0) {
                     orangeData.sort((a, b) => b.Net_Revenue - a.Net_Revenue);
                     let best = orangeData[0];
-                    reply = `🍊 <strong>أفضل عميل في البرتقال والأصناف التابعة له:</strong><br>
+                    reply = `🍊 <strong>أفضل عميل في البرتقال والأصناف التابعة:</strong><br>
                     - كود العميل: <strong>${best.Customer_Code}</strong><br>
                     - الدولة: ${best.Country}<br>
                     - الصنف: ${best.Item} (درجة ${best.Grade})<br>
                     - المسؤول: ${best.Owner}<br>
-                    - إجمالي صافي العائد: <strong>${Math.round(best.Net_Revenue).toLocaleString()} $</strong> (كمية: ${best.Quantity} طن)`;
-                } else {
-                    reply = `عذراً، لم أجد بيانات تخص البرتقال في الشيت.`;
+                    - إجمالي صافي العائد: <strong>${Math.round(best.Net_Revenue).toLocaleString()} $</strong>`;
                 }
             } else {
-                // البحث عما إذا كان هناك صنف محدد مذكور في السؤال
-                let foundItem = itemsList.find(i => q.includes(i.toLowerCase()));
-                let subset = foundItem ? rawData.filter(d => d.Item.toLowerCase() === foundItem.toLowerCase()) : rawData;
-                
-                subset.sort((a, b) => b.Net_Revenue - a.Net_Revenue);
-                let best = subset[0];
-                reply = `🏆 <strong>أفضل عميل ${foundItem ? 'في صنف (' + foundItem + ')' : 'بشكل عام في جميع المنتجات'}:</strong><br>
+                let sortedAll = [...rawData].sort((a, b) => b.Net_Revenue - a.Net_Revenue);
+                let best = sortedAll[0];
+                reply = `🏆 <strong>أفضل عميل بشكل عام في جميع المنتجات:</strong><br>
                 - كود العميل: <strong>${best.Customer_Code}</strong><br>
                 - الدولة: ${best.Country}<br>
                 - الصنف: ${best.Item} (درجة ${best.Grade})<br>
                 - المسؤول: ${best.Owner}<br>
-                - صافي العائد المحقق: <strong>${Math.round(best.Net_Revenue).toLocaleString()} $</strong>`;
+                - صافي العائد: <strong>${Math.round(best.Net_Revenue).toLocaleString()} $</strong>`;
             }
         }
-        // 2. سؤال عن أسوأ عميل
+        // 4. السؤال عن أسوأ عميل
         else if (q.includes('أسوأ') || q.includes('اسوء') || q.includes('اقل') || q.includes('أقل')) {
-            let sortedWorst = [...rawData].sort((a, b) => {
-                // ترتيب تصاعدي حسب صافي العائد أو أعلى نسبة خصم
-                return (a.Net_Revenue - b.Net_Revenue) || (b.Discount_Rate - a.Discount_Rate);
-            });
+            let sortedWorst = [...rawData].sort((a, b) => a.Net_Revenue - b.Net_Revenue);
             let worst = sortedWorst[0];
             reply = `⚠️ <strong>العميل الأقل كفاءة (الأسوأ):</strong><br>
             - كود العميل: <strong>${worst.Customer_Code}</strong><br>
             - الدولة: ${worst.Country}<br>
             - الصنف: ${worst.Item} (درجة ${worst.Grade})<br>
-            - نسبة الخصم الممنوحة: <span class="text-danger fw-bold">${(worst.Discount_Rate * 100).toFixed(1)}%</span><br>
+            - نسبة الخصم: <span class="text-danger fw-bold">${(worst.Discount_Rate * 100).toFixed(1)}%</span><br>
             - صافي العائد: ${Math.round(worst.Net_Revenue).toLocaleString()} $`;
         }
-        // 3. سؤال عن إجمالي الكميات أو العوائد
+        // 5. السؤال عن الإحصائيات العامة
         else if (q.includes('إجمالي') || q.includes('كميات') || q.includes('مبيعات') || q.includes('كام')) {
             let totalQ = rawData.reduce((s, x) => s + x.Quantity, 0);
             let totalV = rawData.reduce((s, x) => s + x.Net_Revenue, 0);
             reply = `📊 <strong>إحصائيات عامة من الشيت:</strong><br>
             - إجمالي الكميات المسحوبة: <strong>${totalQ.toLocaleString()} طن</strong><br>
-            - إجمالي صافي العوائد (Net Revenue): <strong>${Math.round(totalV).toLocaleString()} $</strong><br>
+            - إجمالي صافي العوائد: <strong>${Math.round(totalV).toLocaleString()} $</strong><br>
             - إجمالي عدد الصفقات: ${rawData.length}`;
         }
-        // 4. البحث بكود عميل محدد
-        else if (q.match(/\d+/)) {
-            let code = parseInt(q.match(/\d+/)[0]);
-            let matches = rawData.filter(d => d.Customer_Code == code);
-            if (matches.length > 0) {
-                let text = `📋 <strong>بيانات العميل رقم (${code}):</strong><br>`;
-                matches.forEach(m => {
-                    text += `- الدولة: ${m.Country} | الصنف: ${m.Item} (${m.Grade}) | كمية: ${m.Quantity} طن | خصم: ${(m.Discount_Rate*100).toFixed(1)}%<br>`;
-                });
-                reply = text;
-            } else {
-                reply = `عذراً، لم أجد أي سجل للعميل برقم ${code}.`;
-            }
-        }
-        // رد افتراضي ذكي يوضح إمكانياته
         else {
-            reply = `أهلاً بك يا فندم! يمكنك سؤالي بأي صيغة طبيعية مثل:<br>
+            reply = `أهلاً بك يا فندم! يمكنك سؤالي بكل سهولة عن:<br>
+            - "زياد باع بكام؟"<br>
+            - "مين أفضل دولة سحبت مني؟"<br>
             - "مين أحسن عميل في البرتقال؟"<br>
-            - "مين أفضل عميل في جميع المنتجات؟"<br>
-            - "مين أسوأ عميل؟"<br>
-            - "ما هو إجمالي الكميات؟"`;
+            - "مين أسوأ عميل؟"`;
         }
 
         appendBotMessage(reply);
