@@ -10,60 +10,17 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts Cairo -->
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- SheetJS (XLSX Reader) لقراءة ملفات الإكسل أوتوماتيكياً -->
+    <!-- SheetJS (XLSX Reader) -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
-        body {
-            font-family: 'Cairo', sans-serif;
-            background-color: #042f2e;
-            color: #2c3e50;
-            margin: 0;
-            overflow-x: hidden;
-        }
-        .video-background {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            object-fit: cover;
-            z-index: -2;
-        }
-        .video-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(4, 47, 46, 0.75);
-            backdrop-filter: blur(3px);
-            z-index: -1;
-        }
-        #loginOverlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            display: flex; justify-content: center; align-items: center;
-            z-index: 9999; padding: 15px;
-        }
-        .login-card {
-            background: rgba(255, 255, 255, 0.94);
-            backdrop-filter: blur(10px);
-            padding: 40px; border-radius: 16px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-            width: 100%; max-width: 400px; text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-        .header-section {
-            background: linear-gradient(135deg, #065f46 0%, #047857 100%);
-            color: white; border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-        .kpi-card, .filter-box, .ai-insights-box, .owner-best-box, .chart-container, .table-box {
-            background: #ffffff; border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.03); padding: 20px;
-            margin-bottom: 20px;
-        }
-        .ai-card-item {
-            background: #f8fafc; border-right: 4px solid #059669;
-            padding: 15px; border-radius: 8px; margin-bottom: 12px;
-            border: 1px solid #e2e8f0; border-right-width: 4px;
-        }
+        body { font-family: 'Cairo', sans-serif; background-color: #042f2e; color: #2c3e50; margin: 0; overflow-x: hidden; }
+        .video-background { position: fixed; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; }
+        .video-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(4, 47, 46, 0.75); backdrop-filter: blur(3px); z-index: -1; }
+        #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; z-index: 9999; padding: 15px; }
+        .login-card { background: rgba(255, 255, 255, 0.94); backdrop-filter: blur(10px); padding: 40px; border-radius: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.4); width: 100%; max-width: 400px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.3); }
+        .header-section { background: linear-gradient(135deg, #065f46 0%, #047857 100%); color: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .kpi-card, .filter-box, .ai-insights-box, .owner-best-box, .table-box { background: #ffffff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); padding: 20px; margin-bottom: 20px; }
+        .ai-card-item { background: #f8fafc; border-right: 4px solid #059669; padding: 15px; border-radius: 8px; margin-bottom: 12px; border: 1px solid #e2e8f0; border-right-width: 4px; }
         .ai-card-warning { border-right-color: #dc2626; }
         .badge-a { background-color: #198754; color: #fff; padding: 5px 10px; border-radius: 6px; font-size: 0.85rem; }
         .badge-b { background-color: #0dcaf0; color: #000; padding: 5px 10px; border-radius: 6px; font-size: 0.85rem; }
@@ -71,112 +28,31 @@
         .badge-d { background-color: #dc3545; color: #fff; padding: 5px 10px; border-radius: 6px; font-size: 0.85rem; }
         .table th { background-color: #065f46 !important; color: white; text-align: center; }
         .table td { text-align: center; vertical-align: middle; }
-
-        /* تصميم شات مساعد الـ AI العائم */
-        #aiChatWidget {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            z-index: 9998;
-        }
-        .chat-toggle-btn {
-            background-color: #059669;
-            color: white;
-            border: none;
-            border-radius: 50px;
-            padding: 12px 20px;
-            font-weight: bold;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-        .chat-toggle-btn:hover { transform: scale(1.05); background-color: #047857; }
-        .chat-box {
-            position: absolute;
-            bottom: 65px;
-            left: 0;
-            width: 380px;
-            height: 500px;
-            background: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            border: 1px solid #cbd5e1;
-        }
-        .chat-header {
-            background: #065f46;
-            color: white;
-            padding: 12px 15px;
-            font-weight: bold;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .chat-body {
-            flex: 1;
-            padding: 15px;
-            overflow-y: auto;
-            background: #f8fafc;
-            font-size: 0.85rem;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        .chat-msg {
-            padding: 10px 12px;
-            border-radius: 8px;
-            max-width: 90%;
-            line-height: 1.5;
-        }
+        #aiChatWidget { position: fixed; bottom: 20px; left: 20px; z-index: 9998; }
+        .chat-toggle-btn { background-color: #059669; color: white; border: none; border-radius: 50px; padding: 12px 20px; font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 8px; cursor: pointer; }
+        .chat-box { position: absolute; bottom: 65px; left: 0; width: 380px; height: 500px; background: #ffffff; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); display: flex; flex-direction: column; overflow: hidden; border: 1px solid #cbd5e1; }
+        .chat-header { background: #065f46; color: white; padding: 12px 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+        .chat-body { flex: 1; padding: 15px; overflow-y: auto; background: #f8fafc; font-size: 0.85rem; display: flex; flex-direction: column; gap: 10px; }
+        .chat-msg { padding: 10px 12px; border-radius: 8px; max-width: 90%; line-height: 1.5; }
         .bot-msg { background: #e2e8f0; color: #1e293b; align-self: flex-start; }
         .user-msg { background: #059669; color: white; align-self: flex-end; }
-        .chat-footer {
-            padding: 10px;
-            background: #ffffff;
-            border-top: 1px solid #e2e8f0;
-            display: flex;
-            gap: 6px;
-        }
-        .chat-footer input {
-            flex: 1;
-            padding: 8px 12px;
-            border: 1px solid #cbd5e1;
-            border-radius: 6px;
-            font-size: 0.85rem;
-        }
-        .chat-footer button {
-            background: #059669;
-            color: white;
-            border: none;
-            padding: 8px 14px;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-
-        @media print {
-            .no-print, #aiChatWidget { display: none !important; }
-        }
+        .chat-footer { padding: 10px; background: #ffffff; border-top: 1px solid #e2e8f0; display: flex; gap: 6px; }
+        .chat-footer input { flex: 1; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem; }
+        .chat-footer button { background: #059669; color: white; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; }
+        @media print { .no-print, #aiChatWidget { display: none !important; } }
     </style>
 </head>
 <body>
 
     <video autoplay muted loop playsinline preload="metadata" class="video-background">
         <source src="animo-spiral-stream-720p.mp4" type="video/mp4">
-        متصفحك لا يدعم عرض الفيديو.
     </video>
     <div class="video-overlay"></div>
 
-    <!-- شاشة تسجيل الدخول -->
     <div id="loginOverlay">
         <div class="login-card">
             <h3 class="fw-bold text-success mb-2"><i class="fas fa-leaf me-2"></i> AGREEN</h3>
             <p class="text-muted small fw-bold mb-2">GO Digital - GO Paperless</p>
-            <p class="text-muted small mb-4">لوحة تحليل وتصنيف العملاء المتقدمة</p>
             <div id="loginError" class="alert alert-danger d-none py-2 small">اسم المستخدم أو كلمة المرور غير صحيحة</div>
             <div class="mb-3 text-end">
                 <label class="form-label fw-bold small">اسم المستخدم:</label>
@@ -190,171 +66,69 @@
         </div>
     </div>
 
-    <!-- محتوى لوحة التحكم -->
     <div id="dashboardContent" class="container-fluid py-4 px-4 d-none">
-        
         <div class="header-section p-3 mb-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
             <div>
                 <span class="badge bg-warning text-dark mb-1 fw-bold">GO Digital - GO Paperless</span>
                 <h4 class="fw-bold mb-1"><i class="fas fa-chart-line me-2 text-warning"></i> لوحة تحليل وتصنيف عملاء AGREEN</h4>
-                <p class="mb-0 text-white-50 small">ملف الشيت المعتمد: IT تصفية العملاء.xlsx | نظام التحليل الجغرافي والمالي الذكي</p>
             </div>
             <div class="d-flex gap-2 no-print">
-                <button class="btn btn-warning btn-sm fw-bold text-dark shadow-sm" onclick="exportToPDF()"><i class="fas fa-file-pdf me-1"></i> تصدير تقرير PDF</button>
+                <button class="btn btn-warning btn-sm fw-bold text-dark shadow-sm" onclick="exportToPDF()"><i class="fas fa-file-pdf me-1"></i> تصدير PDF</button>
                 <button class="btn btn-light btn-sm fw-bold text-danger" onclick="logout()"><i class="fas fa-sign-out-alt me-1"></i> خروج</button>
             </div>
         </div>
 
-        <!-- فلاتر التحكم الشاملة -->
         <div class="filter-box no-print mb-4">
-            <h6 class="fw-bold text-success mb-3"><i class="fas fa-filter me-2"></i> فلاتر التحليل المقارن (حسب الدولة، الصنف، الفئة، والمسؤول)</h6>
+            <h6 class="fw-bold text-success mb-3"><i class="fas fa-filter me-2"></i> فلاتر التحليل المقارن</h6>
             <div class="row g-3">
-                <div class="col-md-3">
-                    <label class="form-label small fw-bold text-muted">الدولة:</label>
-                    <select id="filterCountry" class="form-select form-select-sm" onchange="filterData()">
-                        <option value="">كل الدول</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label small fw-bold text-muted">فئة العميل:</label>
-                    <select id="filterSegment" class="form-select form-select-sm" onchange="filterData()">
-                        <option value="">كل الفئات</option>
-                        <option value="A">الفئة A (ممتاز)</option>
-                        <option value="B">الفئة B (جيد)</option>
-                        <option value="C">الفئة C (مقبول)</option>
-                        <option value="D (Blacklist)">الفئة D (القائمة السوداء)</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label small fw-bold text-muted">الصنف الزراعي:</label>
-                    <select id="filterItem" class="form-select form-select-sm" onchange="filterData()">
-                        <option value="">كل الأصناف</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label small fw-bold text-muted">المسؤول عن العميل:</label>
-                    <select id="filterOwner" class="form-select form-select-sm" onchange="filterData()">
-                        <option value="">كل المسؤولين</option>
-                    </select>
-                </div>
+                <div class="col-md-3"><select id="filterCountry" class="form-select form-select-sm" onchange="filterData()"><option value="">كل الدول</option></select></div>
+                <div class="col-md-3"><select id="filterSegment" class="form-select form-select-sm" onchange="filterData()"><option value="">كل الفئات</option><option value="A">الفئة A</option><option value="B">الفئة B</option><option value="C">الفئة C</option><option value="D (Blacklist)">القائمة السوداء</option></select></div>
+                <div class="col-md-3"><select id="filterItem" class="form-select form-select-sm" onchange="filterData()"><option value="">كل الأصناف</option></select></div>
+                <div class="col-md-3"><select id="filterOwner" class="form-select form-select-sm" onchange="filterData()"><option value="">كل المسؤولين</option></select></div>
             </div>
         </div>
 
-        <!-- مؤشرات الأداء KPI -->
         <div class="row g-3 mb-4">
-            <div class="col-md-3">
-                <div class="kpi-card border-start border-4 border-success">
-                    <div class="text-muted small fw-bold">إجمالي الصفقات / السطور</div>
-                    <div class="fs-4 fw-bold text-dark mt-1" id="kpiTotalTrans">0</div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="kpi-card border-start border-4 border-primary">
-                    <div class="text-muted small fw-bold">إجمالي قيم FOB ($) بعد الخصم</div>
-                    <div class="fs-4 fw-bold text-primary mt-1" id="kpiTotalVal">0</div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="kpi-card border-start border-4 border-warning">
-                    <div class="text-muted small fw-bold">إجمالي الكميات المسحوبة (طن)</div>
-                    <div class="fs-4 fw-bold text-warning mt-1" id="kpiTotalQty">0</div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="kpi-card border-start border-4 border-danger">
-                    <div class="text-muted small fw-bold">عملاء القائمة السوداء (الخاسرون)</div>
-                    <div class="fs-4 fw-bold text-danger mt-1" id="kpiBlacklist">0</div>
-                </div>
-            </div>
+            <div class="col-md-3"><div class="kpi-card border-start border-4 border-success"><div class="text-muted small fw-bold">إجمالي الصفقات</div><div class="fs-4 fw-bold text-dark mt-1" id="kpiTotalTrans">0</div></div></div>
+            <div class="col-md-3"><div class="kpi-card border-start border-4 border-primary"><div class="text-muted small fw-bold">إجمالي قيم FOB ($)</div><div class="fs-4 fw-bold text-primary mt-1" id="kpiTotalVal">0</div></div></div>
+            <div class="col-md-3"><div class="kpi-card border-start border-4 border-warning"><div class="text-muted small fw-bold">إجمالي الكميات (طن)</div><div class="fs-4 fw-bold text-warning mt-1" id="kpiTotalQty">0</div></div></div>
+            <div class="col-md-3"><div class="kpi-card border-start border-4 border-danger"><div class="text-muted small fw-bold">عملاء القائمة السوداء</div><div class="fs-4 fw-bold text-danger mt-1" id="kpiBlacklist">0</div></div></div>
         </div>
 
-        <!-- تحليل الأداء حسب الدولة -->
         <div class="owner-best-box mb-4">
-            <h5 class="fw-bold text-success mb-2"><i class="fas fa-globe me-2 text-warning"></i> مقارنة الدول ودرجات المنتجات (أفضل وأسوأ عميل لكل دولة ودرجة)</h5>
-            <div class="table-responsive">
-                <table class="table table-bordered table-striped align-middle small">
-                    <thead>
-                        <tr>
-                            <th>الدولة</th>
-                            <th>الصنف والدرجة</th>
-                            <th>أفضل عميل (أعلى عائد وكفاءة)</th>
-                            <th>أسوأ عميل (الأكثر خسارة / خصماً)</th>
-                            <th>إجمالي كميات الدرجة</th>
-                            <th>متوسط FOB بعد الخصم</th>
-                        </tr>
-                    </thead>
-                    <tbody id="countryGradeTableBody"></tbody>
-                </table>
-            </div>
+            <h5 class="fw-bold text-success mb-2"><i class="fas fa-globe me-2 text-warning"></i> مقارنة الدول ودرجات المنتجات</h5>
+            <div class="table-responsive"><table class="table table-bordered table-striped align-middle small"><thead><tr><th>الدولة</th><th>الصنف والدرجة</th><th>أفضل عميل</th><th>أسوأ عميل</th><th>إجمالي الكمية</th><th>متوسط FOB</th></tr></thead><tbody id="countryGradeTableBody"></tbody></table></div>
         </div>
 
-        <!-- جدول أفضل المسؤولين -->
         <div class="owner-best-box mb-4">
-            <h5 class="fw-bold text-success mb-2"><i class="fas fa-user-tie me-2 text-warning"></i> تحليل كفاءة مسؤولي المبيعات (الأفضل حسب الصنف ودرجة المنتج)</h5>
-            <div class="table-responsive">
-                <table class="table table-bordered table-striped align-middle small">
-                    <thead>
-                        <tr>
-                            <th>الصنف الزراعي</th>
-                            <th>درجة المنتج</th>
-                            <th>أفضل مسؤول مبيعات</th>
-                            <th>إجمالي العائد المحقق ($)</th>
-                            <th>إجمالي الكميات المباعة</th>
-                        </tr>
-                    </thead>
-                    <tbody id="bestOwnerTableBody"></tbody>
-                </table>
-            </div>
+            <h5 class="fw-bold text-success mb-2"><i class="fas fa-user-tie me-2 text-warning"></i> تحليل كفاءة مسؤولي المبيعات</h5>
+            <div class="table-responsive"><table class="table table-bordered table-striped align-middle small"><thead><tr><th>الصنف</th><th>الدرجة</th><th>أفضل مسؤول</th><th>إجمالي العائد ($)</th><th>الكمية</th></tr></thead><tbody id="bestOwnerTableBody"></tbody></table></div>
         </div>
 
-        <!-- توصيات الذكاء الاصطناعي -->
         <div class="ai-insights-box mb-4">
-            <h5 class="fw-bold text-success mb-3"><i class="fas fa-brain me-2 text-warning"></i> رؤى وتحليلات الذكاء الاصطناعي المتقدمة</h5>
+            <h5 class="fw-bold text-success mb-3"><i class="fas fa-brain me-2 text-warning"></i> رؤى وتحليلات الذكاء الاصطناعي</h5>
             <div class="row g-3" id="aiRecommendationsContainer"></div>
         </div>
 
-        <!-- جدول التفاصيل -->
         <div class="table-box">
             <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-                <h6 class="fw-bold text-secondary mb-0"><i class="fas fa-table text-success me-2"></i> جدول بيانات الشيت (IT تصفية العملاء)</h6>
+                <h6 class="fw-bold text-secondary mb-0">بيانات الشيت التفصيلية</h6>
                 <input type="text" id="searchBox" class="form-control form-control-sm w-auto no-print" style="min-width: 250px;" placeholder="بحث برقم العميل، الدولة، أو المسؤول..." onkeyup="filterData()">
             </div>
             <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
                 <table class="table table-hover table-bordered align-middle small">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>كود العميل</th>
-                            <th>اسم المسؤول</th>
-                            <th>الدولة</th>
-                            <th>الصنف</th>
-                            <th>الدرجة</th>
-                            <th>الكمية</th>
-                            <th>FOB بعد الخصم ($)</th>
-                            <th>نسبة الخصم</th>
-                            <th>التصنيف</th>
-                        </tr>
-                    </thead>
+                    <thead><tr><th>#</th><th>كود العميل</th><th>المسؤول</th><th>الدولة</th><th>الصنف</th><th>الدرجة</th><th>الكمية</th><th>FOB</th><th>نسبة الخصم</th><th>التصنيف</th></tr></thead>
                     <tbody id="tableBody"></tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <!-- ميزة المساعد الذكي الداخلي (Chatbot AI) -->
     <div id="aiChatWidget" class="no-print d-none">
         <div id="chatBoxContainer" class="chat-box d-none">
-            <div class="chat-header">
-                <span><i class="fas fa-robot me-1"></i> مساعد AGREEN الذكي المطور</span>
-                <button class="btn btn-sm text-white p-0" onclick="toggleChatBox()"><i class="fas fa-times"></i></button>
-            </div>
-            <div id="chatBody" class="chat-body">
-                <div class="chat-msg bot-msg">أهلاً بك يا فندم! أنا جاهز تماماً. اسألني عن المسؤولين، الدول، كميات الأطنان، أو الأصناف وسأجيبك فوراً بدقة!</div>
-            </div>
-            <div class="chat-footer">
-                <input type="text" id="chatInput" placeholder="اكتب سؤالك هنا..." onkeypress="handleChatKey(event)">
-                <button onclick="sendChatMessage()"><i class="fas fa-paper-plane"></i></button>
-            </div>
+            <div class="chat-header"><span><i class="fas fa-robot me-1"></i> مساعد AGREEN الذكي</span><button class="btn btn-sm text-white p-0" onclick="toggleChatBox()"><i class="fas fa-times"></i></button></div>
+            <div id="chatBody" class="chat-body"><div class="chat-msg bot-msg">أهلاً بك يا فندم! جاهز للإجابة عن أي استفسار بخصوص المبيعات، الدول، أو المسؤولين.</div></div>
+            <div class="chat-footer"><input type="text" id="chatInput" placeholder="اكتب سؤالك هنا..." onkeypress="handleChatKey(event)"><button onclick="sendChatMessage()"><i class="fas fa-paper-plane"></i></button></div>
         </div>
         <button class="chat-toggle-btn" onclick="toggleChatBox()"><i class="fas fa-comment-dots fa-lg"></i> المساعد الذكي</button>
     </div>
@@ -363,9 +137,7 @@
     let rawData = [];
 
     function checkLogin() {
-        const u = document.getElementById('username').value.trim();
-        const p = document.getElementById('password').value.trim();
-        if(u === 'khaled' && p === '1235') {
+        if(document.getElementById('username').value.trim() === 'khaled' && document.getElementById('password').value.trim() === '1235') {
             document.getElementById('loginOverlay').style.display = 'none';
             document.getElementById('dashboardContent').classList.remove('d-none');
             document.getElementById('aiChatWidget').classList.remove('d-none');
@@ -379,337 +151,175 @@
         document.getElementById('loginOverlay').style.display = 'flex';
         document.getElementById('dashboardContent').classList.add('d-none');
         document.getElementById('aiChatWidget').classList.add('d-none');
-        document.getElementById('username').value = '';
-        document.getElementById('password').value = '';
     }
 
     function loadSheetAutomatically() {
-        const excelFileName = 'IT تصفية العملاء.xlsx'; 
-        fetch(excelFileName)
-            .then(response => {
-                if (!response.ok) throw new Error("تعذّر العثور على ملف الشيت أوتوماتيكياً");
-                return response.arrayBuffer();
-            })
-            .then(buffer => {
-                const data = new Uint8Array(buffer);
-                const workbook = XLSX.read(data, {type: 'array'});
-                const worksheet = workbook.Sheets['الاجمالى'] || workbook.Sheets[workbook.SheetNames[0]];
-                const jsonRows = XLSX.utils.sheet_to_json(worksheet, {header: 1});
-                
-                let parsedData = [];
-                for (let i = 1; i < jsonRows.length; i++) {
-                    let row = jsonRows[i];
-                    if (row && row.length >= 6 && row[0] !== undefined && !isNaN(row[0])) {
-                        let custCode = row[0];
-                        let country = row[1] || 'غير محدد';
-                        let owner = row[2] || 'غير محدد';
-                        let item = String(row[3] || 'غير محدد').trim();
-                        let grade = row[4] || 'B';
-                        let qty = parseFloat(row[5]) || 0;
-                        let fob = parseFloat(row[6]) || 0;
-                        let disc = parseFloat(row[7]) || 0;
+        fetch('IT تصفية العملاء.xlsx')
+            .then(res => res.arrayBuffer())
+            .then(buf => {
+                let workbook = XLSX.read(new Uint8Array(buf), {type: 'array'});
+                let sheet = workbook.Sheets['الاجمالى'] || workbook.Sheets[workbook.SheetNames[0]];
+                let rows = XLSX.utils.sheet_to_json(sheet, {header: 1});
+                let parsed = [];
+                for (let i = 1; i < rows.length; i++) {
+                    let r = rows[i];
+                    if (r && r.length >= 6 && r[0] !== undefined && !isNaN(r[0])) {
+                        let disc = parseFloat(r[7]) || 0;
                         if (disc > 1) disc = disc / 100;
-                        let netRev = qty * fob * (1 - disc);
-
-                        let segment = 'A';
-                        if (disc > 0.25 || grade === 'D') segment = 'D (Blacklist)';
-                        else if (disc >= 0.10) segment = 'C';
-                        else if (disc > 0) segment = 'B';
-                        else segment = 'A';
-
-                        parsedData.push({
-                            "Customer_Code": custCode,
-                            "Country": String(country).trim(),
-                            "Owner": String(owner).trim(),
-                            "Item": item,
-                            "Grade": String(grade).trim(),
-                            "Quantity": qty,
-                            "FOB_After_Discount": fob,
-                            "Discount_Rate": disc,
-                            "Net_Revenue": netRev,
-                            "Segment": segment
+                        let qty = parseFloat(r[5]) || 0;
+                        let fob = parseFloat(r[6]) || 0;
+                        let net = qty * fob * (1 - disc);
+                        let seg = (disc > 0.25 || r[4] === 'D') ? 'D (Blacklist)' : (disc >= 0.10 ? 'C' : (disc > 0 ? 'B' : 'A'));
+                        parsed.push({
+                            Customer_Code: r[0], Country: String(r[1] || 'غير محدد').trim(),
+                            Owner: String(r[2] || 'غير محدد').trim(), Item: String(r[3] || 'غير محدد').trim(),
+                            Grade: String(r[4] || 'B').trim(), Quantity: qty, FOB_After_Discount: fob,
+                            Discount_Rate: disc, Net_Revenue: net, Segment: seg
                         });
                     }
                 }
-                rawData = parsedData;
+                rawData = parsed;
                 initDropdowns();
                 filterData();
             })
-            .catch(error => {
-                console.warn("بيانات افتراضية تجريبية", error);
-                rawData = [
-                    {"Customer_Code": 101200, "Country": "السعوديه", "Owner": "زياد", "Item": "بسره", "Grade": "D", "Quantity": 21.6, "FOB_After_Discount": 410.28, "Discount_Rate": 0.0, "Net_Revenue": 8862, "Segment": "D (Blacklist)"}
-                ];
-                initDropdowns();
-                filterData();
+            .catch(err => {
+                console.error(err);
+                alert("تعذّر قراءة ملف الإكسل أوتوماتيكياً. تأكد أن الملف اسمه 'IT تصفية العملاء.xlsx' وموجود في نفس المجلد.");
             });
     }
 
     function initDropdowns() {
-        const countries = [...new Set(rawData.map(d => d.Country))].sort();
-        const items = [...new Set(rawData.map(d => d.Item))].sort();
-        const owners = [...new Set(rawData.map(d => d.Owner))].sort();
-
-        fillSelect('filterCountry', countries, 'كل الدول');
-        fillSelect('filterItem', items, 'كل الأصناف');
-        fillSelect('filterOwner', owners, 'كل المسؤولين');
+        fillSelect('filterCountry', [...new Set(rawData.map(d => d.Country))].sort(), 'كل الدول');
+        fillSelect('filterItem', [...new Set(rawData.map(d => d.Item))].sort(), 'كل الأصناف');
+        fillSelect('filterOwner', [...new Set(rawData.map(d => d.Owner))].sort(), 'كل المسؤولين');
     }
 
-    function fillSelect(elementId, arr, defaultText) {
-        const sel = document.getElementById(elementId);
-        sel.innerHTML = `<option value="">${defaultText}</option>`;
-        arr.forEach(val => {
-            if(val) {
-                let opt = document.createElement('option');
-                opt.value = val;
-                opt.textContent = val;
-                sel.appendChild(opt);
-            }
-        });
+    function fillSelect(id, arr, def) {
+        let sel = document.getElementById(id);
+        sel.innerHTML = `<option value="">${def}</option>`;
+        arr.forEach(v => { if(v) sel.innerHTML += `<option value="${v}">${v}</option>`; });
     }
 
     function filterData() {
-        const countryF = document.getElementById('filterCountry').value;
-        const segF = document.getElementById('filterSegment').value;
-        const itemF = document.getElementById('filterItem').value;
-        const ownerF = document.getElementById('filterOwner').value;
-        const searchVal = document.getElementById('searchBox').value.toLowerCase();
+        let cF = document.getElementById('filterCountry').value;
+        let sF = document.getElementById('filterSegment').value;
+        let iF = document.getElementById('filterItem').value;
+        let oF = document.getElementById('filterOwner').value;
+        let sV = document.getElementById('searchBox').value.toLowerCase();
 
-        const filtered = rawData.filter(d => {
-            return (!countryF || d.Country === countryF) &&
-                   (!segF || d.Segment === segF) &&
-                   (!itemF || d.Item === itemF) &&
-                   (!ownerF || d.Owner === ownerF) &&
-                   (!searchVal || String(d.Customer_Code).toLowerCase().includes(searchVal) || d.Country.toLowerCase().includes(searchVal) || d.Owner.toLowerCase().includes(searchVal) || d.Item.toLowerCase().includes(searchVal));
-        });
-
+        let filtered = rawData.filter(d => 
+            (!cF || d.Country === cF) && (!sF || d.Segment === sF) && 
+            (!iF || d.Item === iF) && (!oF || d.Owner === oF) && 
+            (!sV || String(d.Customer_Code).toLowerCase().includes(sV) || d.Country.toLowerCase().includes(sV) || d.Owner.toLowerCase().includes(sV) || d.Item.toLowerCase().includes(sV))
+        );
         updateUI(filtered);
     }
 
     function updateUI(data) {
-        const totalTrans = data.length;
-        const totalVal = data.reduce((sum, d) => sum + ((d.FOB_After_Discount || 0) * (d.Quantity || 0)), 0);
-        const totalQty = data.reduce((sum, d) => sum + (d.Quantity || 0), 0);
-        const blacklistCount = new Set(data.filter(d => d.Segment === 'D (Blacklist)').map(d => d.Customer_Code)).size;
+        document.getElementById('kpiTotalTrans').textContent = data.length.toLocaleString();
+        document.getElementById('kpiTotalVal').textContent = Math.round(data.reduce((s, d) => s + (d.FOB_After_Discount * d.Quantity), 0)).toLocaleString() + ' $';
+        document.getElementById('kpiTotalQty').textContent = Math.round(data.reduce((s, d) => s + d.Quantity, 0)).toLocaleString() + ' طن';
+        document.getElementById('kpiBlacklist').textContent = new Set(data.filter(d => d.Segment === 'D (Blacklist)').map(d => d.Customer_Code)).size;
 
-        document.getElementById('kpiTotalTrans').textContent = totalTrans.toLocaleString();
-        document.getElementById('kpiTotalVal').textContent = Math.round(totalVal).toLocaleString() + ' $';
-        document.getElementById('kpiTotalQty').textContent = totalQty.toLocaleString() + ' طن';
-        document.getElementById('kpiBlacklist').textContent = blacklistCount;
-
-        generateCountryGradeAnalysis(data);
-        generateBestOwnerAnalysis(data);
-        generateAIRecommendations(data);
-
-        const tbody = document.getElementById('tableBody');
-        tbody.innerHTML = '';
-        data.slice(0, 500).forEach((d, index) => {
-            let badgeClass = d.Segment === 'A' ? 'badge-a' : (d.Segment === 'B' ? 'badge-b' : (d.Segment === 'C' ? 'badge-c' : 'badge-d'));
-            tbody.insertAdjacentHTML('beforeend', `<tr>
-                <td class="text-muted fw-bold">${index + 1}</td>
-                <td><strong>${d.Customer_Code}</strong></td>
-                <td><span class="text-dark fw-bold">${d.Owner}</span></td>
-                <td><span class="badge bg-light text-dark border">${d.Country}</span></td>
-                <td>${d.Item}</td>
-                <td><span class="badge bg-secondary">${d.Grade}</span></td>
-                <td>${d.Quantity.toLocaleString()}</td>
-                <td class="text-primary fw-bold">${d.FOB_After_Discount.toLocaleString()} $</td>
-                <td class="text-danger fw-bold">${(d.Discount_Rate * 100).toFixed(1)}%</td>
-                <td><span class="${badgeClass}">${d.Segment}</span></td>
-            </tr>`);
-        });
+        generateTables(data);
     }
 
-    function generateCountryGradeAnalysis(data) {
-        const tbody = document.getElementById('countryGradeTableBody');
-        tbody.innerHTML = '';
-        if (!data.length) return;
-
+    function generateTables(data) {
+        let cgTbody = document.getElementById('countryGradeTableBody');
+        cgTbody.innerHTML = '';
         let map = {};
         data.forEach(d => {
-            let key = `${d.Country} | ${d.Item} | ${d.Grade}`;
-            if (!map[key]) map[key] = [];
-            map[key].push(d);
+            let k = `${d.Country} | ${d.Item} | ${d.Grade}`;
+            if (!map[k]) map[k] = [];
+            map[k].push(d);
         });
 
-        for (let key in map) {
-            let group = map[key];
-            group.sort((a, b) => b.Net_Revenue - a.Net_Revenue);
-            let best = group[0];
-            let worst = group[group.length - 1];
-            let totalQ = group.reduce((s, x) => s + x.Quantity, 0);
-            let avgFob = group.reduce((s, x) => s + x.FOB_After_Discount, 0) / group.length;
-            let parts = key.split(' | ');
-
-            tbody.insertAdjacentHTML('beforeend', `<tr>
-                <td><strong>${parts[0]}</strong></td>
-                <td>${parts[1]} - <span class="badge bg-info text-dark">${parts[2]}</span></td>
-                <td><span class="badge bg-success">عميل: ${best.Customer_Code}</span> <br><small class="text-muted">مسؤول: ${best.Owner}</small></td>
-                <td><span class="badge bg-danger">عميل: ${worst.Customer_Code}</span> <br><small class="text-muted">خصم: ${(worst.Discount_Rate*100).toFixed(0)}%</small></td>
-                <td>${totalQ.toLocaleString()} طن</td>
-                <td class="text-primary fw-bold">${Math.round(avgFob).toLocaleString()} $</td>
-            </tr>`);
+        for (let k in map) {
+            let g = map[k].sort((a, b) => b.Net_Revenue - a.Net_Revenue);
+            let totQ = g.reduce((s, x) => s + x.Quantity, 0);
+            let avgF = g.reduce((s, x) => s + x.FOB_After_Discount, 0) / g.length;
+            let p = k.split(' | ');
+            cgTbody.innerHTML += `<tr><td><strong>${p[0]}</strong></td><td>${p[1]} - <span class="badge bg-info text-dark">${p[2]}</span></td><td><span class="badge bg-success">${g[0].Customer_Code}</span> (${g[0].Owner})</td><td><span class="badge bg-danger">${g[g.length-1].Customer_Code}</span></td><td>${totQ.toLocaleString()} طن</td><td class="text-primary fw-bold">${Math.round(avgF).toLocaleString()} $</td></tr>`;
         }
-    }
 
-    function generateBestOwnerAnalysis(data) {
-        const tbody = document.getElementById('bestOwnerTableBody');
-        tbody.innerHTML = '';
-        let map = {};
-
+        let boTbody = document.getElementById('bestOwnerTableBody');
+        boTbody.innerHTML = '';
+        let oMap = {};
         data.forEach(d => {
-            let key = `${d.Item} | درجة: ${d.Grade}`;
-            if (!map[key]) map[key] = {};
-            let owner = d.Owner;
-            if (!map[key][owner]) map[key][owner] = { revenue: 0, qty: 0 };
-            map[key][owner].revenue += d.Net_Revenue;
-            map[key][owner].qty += d.Quantity;
+            let k = `${d.Item} | ${d.Grade}`;
+            if (!oMap[k]) oMap[k] = {};
+            if (!oMap[k][d.Owner]) oMap[k][d.Owner] = { rev: 0, qty: 0 };
+            oMap[k][d.Owner].rev += d.Net_Revenue;
+            oMap[k][d.Owner].qty += d.Quantity;
         });
 
-        for (let key in map) {
-            let owners = map[key];
-            let bestOwner = '';
-            let maxRev = -1;
-            let totalQty = 0;
-            for (let o in owners) {
-                if (owners[o].revenue > maxRev) {
-                    maxRev = owners[o].revenue;
-                    bestOwner = o;
-                    totalQty = owners[o].qty;
-                }
-            }
-            tbody.insertAdjacentHTML('beforeend', `<tr>
-                <td><strong>${key.split(' | ')[0]}</strong></td>
-                <td><span class="badge bg-secondary">${key.split(' | ')[1]}</span></td>
-                <td><span class="badge bg-success fs-6"><i class="fas fa-user-check me-1"></i> ${bestOwner}</span></td>
-                <td class="text-primary fw-bold">${Math.round(maxRev).toLocaleString()} $</td>
-                <td>${totalQty.toLocaleString()} طن</td>
-            </tr>`);
+        for (let k in oMap) {
+            let bestO = Object.keys(oMap[k]).reduce((a, b) => oMap[k][a].rev > oMap[k][b].rev ? a : b);
+            let p = k.split(' | ');
+            boTbody.innerHTML += `<tr><td><strong>${p[0]}</strong></td><td><span class="badge bg-secondary">${p[1]}</span></td><td><span class="badge bg-success">${bestO}</span></td><td class="text-primary fw-bold">${Math.round(oMap[k][bestO].rev).toLocaleString()} $</td><td>${oMap[k][bestO].qty.toLocaleString()} طن</td></tr>`;
         }
-    }
 
-    function generateAIRecommendations(data) {
-        const container = document.getElementById('aiRecommendationsContainer');
-        if (!data.length) return;
-
-        let countryGradeMap = {};
-        data.forEach(d => {
-            let k = `${d.Country} - درجة (${d.Grade})`;
-            if (!countryGradeMap[k]) countryGradeMap[k] = [];
-            countryGradeMap[k].push(d);
+        let tBody = document.getElementById('tableBody');
+        tBody.innerHTML = '';
+        data.slice(0, 300).forEach((d, i) => {
+            let cls = d.Segment === 'A' ? 'badge-a' : (d.Segment === 'B' ? 'badge-b' : (d.Segment === 'C' ? 'badge-c' : 'badge-d'));
+            tBody.innerHTML += `<tr><td class="text-muted">${i+1}</td><td><strong>${d.Customer_Code}</strong></td><td>${d.Owner}</td><td>${d.Country}</td><td>${d.Item}</td><td><span class="badge bg-secondary">${d.Grade}</span></td><td>${d.Quantity.toLocaleString()}</td><td class="text-primary">${d.FOB_After_Discount.toLocaleString()} $</td><td class="text-danger">${(d.Discount_Rate*100).toFixed(1)}%</td><td><span class="${cls}">${d.Segment}</span></td></tr>`;
         });
 
-        let bestListHTML = "";
-        let worstListHTML = "";
-
-        for (let k in countryGradeMap) {
-            let group = countryGradeMap[k];
-            group.sort((a, b) => b.Net_Revenue - a.Net_Revenue);
-            let best = group[0];
-            let worst = group[group.length - 1];
-
-            bestListHTML += `<li class="mb-1"><strong>${k}:</strong> العميل المميز <span class="badge bg-success">كود: ${best.Customer_Code}</span> (عائد: ${Math.round(best.Net_Revenue)} $).</li>`;
-            worstListHTML += `<li class="mb-1"><strong>${k}:</strong> العميل الأقل كفاءة <span class="badge bg-danger">كود: ${worst.Customer_Code}</span> (خصم: ${(worst.Discount_Rate*100).toFixed(0)}%).</li>`;
-        }
-
-        container.innerHTML = `
-            <div class="col-md-6">
-                <div class="ai-card-item">
-                    <h6 class="fw-bold text-success mb-2"><i class="fas fa-medal me-1"></i> قائمة أفضل العملاء لكل درجة على مستوى الدولة</h6>
-                    <div class="small text-muted mb-2" style="max-height: 200px; overflow-y: auto;"><ul class="ps-3 mb-0">${bestListHTML}</ul></div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="ai-card-item ai-card-warning">
-                    <h6 class="fw-bold text-danger mb-2"><i class="fas fa-exclamation-triangle me-1"></i> قائمة أسوأ العملاء لكل درجة على مستوى الدولة</h6>
-                    <div class="small text-muted mb-2" style="max-height: 200px; overflow-y: auto;"><ul class="ps-3 mb-0">${worstListHTML}</ul></div>
-                </div>
-            </div>`;
+        let aiC = document.getElementById('aiRecommendationsContainer');
+        aiC.innerHTML = `<div class="col-md-6"><div class="ai-card-item"><h6 class="fw-bold text-success mb-2">إجمالي الصفقات المعالجة</h6><p class="small text-muted mb-0">تم تحليل عدد ${data.length} صفقة ومطابقتها مع محايير الفئات بدقة.</p></div></div><div class="col-md-6"><div class="ai-card-item ai-card-warning"><h6 class="fw-bold text-danger mb-2">تنبيه القائمة السوداء</h6><p class="small text-muted mb-0">إجمالي عملاء القائمة السوداء في النطاق الحالي: ${new Set(data.filter(d=>d.Segment==='D (Blacklist)').map(d=>d.Customer_Code)).size} عميل.</p></div></div>`;
     }
 
     function exportToPDF() { window.print(); }
-
-    // دوال تشغيل شات المساعد الذكي المطور والمجمع نهائياً
-    function toggleChatBox() {
-        const box = document.getElementById('chatBoxContainer');
-        box.classList.toggle('d-none');
-    }
-
-    function handleChatKey(e) {
-        if (e.key === 'Enter') sendChatMessage();
-    }
+    function toggleChatBox() { document.getElementById('chatBoxContainer').classList.toggle('d-none'); }
+    function handleChatKey(e) { if (e.key === 'Enter') sendChatMessage(); }
 
     function sendChatMessage() {
-        const input = document.getElementById('chatInput');
-        const text = input.value.trim();
+        let input = document.getElementById('chatInput');
+        let text = input.value.trim();
         if (!text) return;
-
-        appendUserMessage(text);
+        let body = document.getElementById('chatBody');
+        body.innerHTML += `<div class="chat-msg user-msg">${text}</div>`;
         input.value = '';
+        body.scrollTop = body.scrollHeight;
 
         setTimeout(() => {
-            processUnifiedAIQuery(text);
+            let q = text.toLowerCase();
+            let reply = "عذراً يا فندم، لم أتمكن من فهم السؤال بدقة، اسألني عن أفضل دولة، أطنان صنف معين، أو ترتيب مسؤولي المبيعات!";
+            
+            let oSum = {};
+            rawData.forEach(d => {
+                if (!oSum[d.Owner]) oSum[d.Owner] = {rev:0, qty:0};
+                oSum[d.Owner].rev += d.Net_Revenue;
+                oSum[d.Owner].qty += d.Quantity;
+            });
+            let oDesc = Object.keys(oSum).sort((a,b) => oSum[b].rev - oSum[a].rev);
+            let oAsc = Object.keys(oSum).sort((a,b) => oSum[a].rev - oSum[b].rev);
+
+            if (q.includes('بياع') || q.includes('مسؤول') || q.includes('رقم') || q.includes('الثاني') || q.includes('الثالث') || q.includes('أول')) {
+                let isW = q.includes('أسوأ') || q.includes('اسوء') || q.includes('اقل');
+                let list = isW ? oAsc : oDesc;
+                let rank = 1;
+                if (q.includes('تاني') || q.includes('ثاني')) rank = 2;
+                else if (q.includes('تالت') || q.includes('ثالث')) rank = 3;
+                else if (q.includes('رابع')) rank = 4;
+                let target = list[rank-1];
+                reply = `🏆 مسؤول المبيعات رقم (${rank}) هو <strong>${target}</strong> بإجمالي عوائد ${Math.round(oSum[target].rev).toLocaleString()} $`;
+            } else if (q.includes('دولة') || q.includes('بلد')) {
+                let cMap = {};
+                rawData.forEach(d => {
+                    if (!cMap[d.Country]) cMap[d.Country] = {rev:0, qty:0};
+                    cMap[d.Country].rev += d.Net_Revenue;
+                    cMap[d.Country].qty += d.Quantity;
+                });
+                let topC = Object.keys(cMap).reduce((a,b) => cMap[a].rev > cMap[b].rev ? a : b);
+                reply = `🌍 أفضل دولة من حيث العوائد هي <strong>${topC}</strong> بإجمالي كمية ${cMap[topC].qty.toLocaleString()} طن وعوائد ${Math.round(cMap[topC].rev).toLocaleString()} $`;
+            }
+
+            body.innerHTML += `<div class="chat-msg bot-msg">${reply}</div>`;
+            body.scrollTop = body.scrollHeight;
         }, 200);
     }
-
-    function appendUserMessage(msg) {
-        const body = document.getElementById('chatBody');
-        body.insertAdjacentHTML('beforeend', `<div class="chat-msg user-msg">${msg}</div>`);
-        body.scrollTop = body.scrollHeight;
-    }
-
-    function appendBotMessage(msg) {
-        const body = document.getElementById('chatBody');
-        body.insertAdjacentHTML('beforeend', `<div class="chat-msg bot-msg">${msg}</div>`);
-        body.scrollTop = body.scrollHeight;
-    }
-
-    // محرك التحليل الموحد والشامل لكافة الأسئلة (Unified Query Processor)
-    function processUnifiedAIQuery(query) {
-        let q = query.toLowerCase();
-        let reply = "";
-
-        // 1. تجهيز بيانات المسؤولين
-        let ownerSummary = {};
-        rawData.forEach(d => {
-            if (!ownerSummary[d.Owner]) ownerSummary[d.Owner] = { rev: 0, qty: 0, count: 0 };
-            ownerSummary[d.Owner].rev += d.Net_Revenue;
-            ownerSummary[d.Owner].qty += d.Quantity;
-            ownerSummary[d.Owner].count += 1;
-        });
-        let ownersDesc = Object.keys(ownerSummary).sort((a, b) => ownerSummary[b].rev - ownerSummary[a].rev);
-        let ownersAsc = Object.keys(ownerSummary).sort((a, b) => ownerSummary[a].rev - ownerSummary[b].rev);
-
-        // 2. تجهيز بيانات الدول
-        let countrySummary = {};
-        rawData.forEach(d => {
-            let cName = d.Country.toLowerCase();
-            if (!countrySummary[cName]) countrySummary[cName] = { name: d.Country, rev: 0, qty: 0 };
-            countrySummary[cName].rev += d.Net_Revenue;
-            countrySummary[cName].qty += d.Quantity;
-        });
-        let countriesDesc = Object.values(countrySummary).sort((a, b) => b.rev - a.rev);
-        let countriesAsc = Object.values(countrySummary).sort((a, b) => a.rev - b.rev);
-
-        let foundCountryKey = Object.keys(countrySummary).find(c => q.includes(c));
-
-        // 3. تجهيز بيانات الأصناف
-        let itemSummary = {};
-        rawData.forEach(d => {
-            let iName = d.Item.toLowerCase();
-            if (!itemSummary[iName]) itemSummary[iName] = { name: d.Item, rev: 0, qty: 0 };
-            itemSummary[iName].rev += d.Net_Revenue;
-            itemSummary[iName].qty += d.Quantity;
-        });
-        let itemsDescRev = Object.values(itemSummary).sort((a, b) => b.rev - a.rev);
-
-        let isOrangeQuery = q.includes('برتقال') || q.includes('بسره') || q.includes('بلدي') || q.includes('صيفي');
-
-        // --- المعالجة الدقيقة للأسئلة ---
-        if (foundCountryKey) {
-            let cObj = countrySummary[foundCountryKey];
-            reply = `🌍 <strong>إحصائيات دولة (${cObj.name}):</strong><br>` +
-                    `- إجمالي الكميات المباعة: <strong>${cObj.qty.toLocaleString()} طن</strong><br>` +
-                    `- إجمالي صافي العوائد: ${Math.round(cObj.rev).toLocaleString()} $`;
-        }
-        else if (isOrangeQuery && (q.includes('مسؤول
+</script>
+</body>
+</html>
