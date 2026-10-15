@@ -349,7 +349,7 @@
                 <button class="btn btn-sm text-white p-0" onclick="toggleChatBox()"><i class="fas fa-times"></i></button>
             </div>
             <div id="chatBody" class="chat-body">
-                <div class="chat-msg bot-msg">أهلاً بك يا فندم! أنا جاهز تماماً. اسألني عن المسؤولين (الأول، التاني، التالت، الأسوأ)، الدول وكمياتها، أو الأصناف وسأجيبك فوراً بدقة!</div>
+                <div class="chat-msg bot-msg">أهلاً بك يا فندم! أنا جاهز تماماً. اسألني عن المسؤولين، الدول، كميات الأطنان، أو الأصناف وسأجيبك فوراً بدقة!</div>
             </div>
             <div class="chat-footer">
                 <input type="text" id="chatInput" placeholder="اكتب سؤالك هنا..." onkeypress="handleChatKey(event)">
@@ -691,7 +691,6 @@
         let countriesDesc = Object.values(countrySummary).sort((a, b) => b.rev - a.rev);
         let countriesAsc = Object.values(countrySummary).sort((a, b) => a.rev - b.rev);
 
-        // البحث عما إذا كانت دولة معينة مذكورة في السؤال (مثل: الأرجنتين، السعودية، إلخ)
         let foundCountryKey = Object.keys(countrySummary).find(c => q.includes(c));
 
         // 3. تجهيز بيانات الأصناف
@@ -704,57 +703,13 @@
         });
         let itemsDescRev = Object.values(itemSummary).sort((a, b) => b.rev - a.rev);
 
-        // التحقق من الأصناف مثل البرتقال / بسره
         let isOrangeQuery = q.includes('برتقال') || q.includes('بسره') || q.includes('بلدي') || q.includes('صيفي');
 
         // --- المعالجة الدقيقة للأسئلة ---
-
-        // أ. إذا تم ذكر دولة معينة في السؤال (مثل: كم طن في الأرجنتين أو السعودية)
         if (foundCountryKey) {
             let cObj = countrySummary[foundCountryKey];
             reply = `🌍 <strong>إحصائيات دولة (${cObj.name}):</strong><br>` +
                     `- إجمالي الكميات المباعة: <strong>${cObj.qty.toLocaleString()} طن</strong><br>` +
                     `- إجمالي صافي العوائد: ${Math.round(cObj.rev).toLocaleString()} $`;
         }
-        // ب. إذا كان السؤال عن أفضل المسؤولين في صنف معين (مثل: أفضل مسؤول في البرتقال أو بسره)
-        else if (isOrangeQuery && (q.includes('مسؤول') || q.includes('بياع') || q.includes('مين'))) {
-            let orangeRows = rawData.filter(d => ['بسره', 'بلدي', 'صيفي', 'سالوستيانا', 'موركيت اسباني', 'موركيت اسبانى', 'ميراف', 'لان ليت', 'ميخال', 'دبلو موركيت'].some(i => d.Item.toLowerCase().includes(i)));
-            let oSummary = {};
-            orangeRows.forEach(d => {
-                if (!oSummary[d.Owner]) oSummary[d.Owner] = { rev: 0, qty: 0 };
-                oSummary[d.Owner].rev += d.Net_Revenue;
-                oSummary[d.Owner].qty += d.Quantity;
-            });
-            let sortedO = Object.keys(oSummary).sort((a, b) => oSummary[b].rev - oSummary[a].rev);
-            let topOwner = sortedO[0];
-            reply = `🍊 <strong>أفضل مسؤول في البرتقال والموالح هو (${topOwner}):</strong><br>` +
-                    `- صافي العائد المحقق: <strong>${Math.round(oSummary[topOwner].rev).toLocaleString()} $</strong><br>` +
-                    `- الكمية المباعة: ${oSummary[topOwner].qty.toLocaleString()} طن`;
-        }
-        // ج. إذا كان السؤال عن الدول / البلدان (أفضل أو أسوأ بلد)
-        else if (q.includes('بلد') || q.includes('دولة') || q.includes('دول')) {
-            if (q.includes('أسوأ') || q.includes('اسوء') || q.includes('اقل') || q.includes('أقل')) {
-                let worstC = countriesAsc[0];
-                reply = `⚠️ <strong>أسوأ دولة / بلد (الأقل في العوائد):</strong><br>` +
-                        `- الدولة: <strong>${worstC.name}</strong><br>` +
-                        `- إجمالي العائد الصافي: ${Math.round(worstC.rev).toLocaleString()} $<br>` +
-                        `- الكمية: ${worstC.qty.toLocaleString()} طن`;
-            } else {
-                let topC = countriesDesc[0];
-                reply = `🌍 <strong>أفضل دولة سحبت مني:</strong><br>` +
-                        `- الدولة: <strong>${topC.name}</strong><br>` +
-                        `- إجمالي العائد الصافي: <strong>${Math.round(topC.rev).toLocaleString()} $</strong><br>` +
-                        `- إجمالي الكميات: ${topC.qty.toLocaleString()} طن`;
-            }
-        }
-        // د. إذا كان السؤال عن مسؤولي المبيعات (البياعين) وترتيبهم بدقة
-        else if (q.includes('بياع') || q.includes('مسؤول') || q.includes('بائع') || q.includes('رقم') || q.includes('الثاني') || q.includes('الثالث') || q.includes('تاني') || q.includes('تالت') || q.includes('احسن')) {
-            
-            let isWorst = q.includes('أسوأ') || q.includes('اسوء') || q.includes('اقل') || q.includes('أقل');
-            let targetList = isWorst ? ownersAsc : ownersDesc;
-
-            let rank = 1;
-            if (q.includes('تاني') || q.includes('ثاني') || q.includes('الثاني') || q.includes('رقم 2') || q.includes('رقم ٢')) rank = 2;
-            else if (q.includes('تالت') || q.includes('ثالث') || q.includes('الثالث') || q.includes('رقم 3') || q.includes('رقم ٣') || q.includes('تلاته')) rank = 3;
-            else if (q.includes('رابع') || q.includes('رقم 4')) rank = 4;
-            else if (q.includes('اول') || q.includes('أول') || q.includes('الأول') || q.includes('رقم 1') || q.
+        else if (isOrangeQuery && (q.includes('مسؤول
