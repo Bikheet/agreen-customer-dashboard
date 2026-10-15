@@ -267,7 +267,7 @@
         });
 
         let aiC = document.getElementById('aiRecommendationsContainer');
-        aiC.innerHTML = `<div class="col-md-6"><div class="ai-card-item"><h6 class="fw-bold text-success mb-2">إجمالي الصفقات المعالجة</h6><p class="small text-muted mb-0">تم تحليل عدد ${data.length} صفقة ومطابقتها مع محايير الفئات بدقة.</p></div></div><div class="col-md-6"><div class="ai-card-item ai-card-warning"><h6 class="fw-bold text-danger mb-2">تنبيه القائمة السوداء</h6><p class="small text-muted mb-0">إجمالي عملاء القائمة السوداء في النطاق الحالي: ${new Set(data.filter(d=>d.Segment==='D (Blacklist)').map(d=>d.Customer_Code)).size} عميل.</p></div></div>`;
+        aiC.innerHTML = `<div class="col-md-6"><div class="ai-card-item"><h6 class="fw-bold text-success mb-2">إجمالي الصفقات المعالجة</h6><p class="small text-muted mb-0">تم تحليل عدد ${data.length} صفقة ومطابقتها مع معايير الفئات بدقة.</p></div></div><div class="col-md-6"><div class="ai-card-item ai-card-warning"><h6 class="fw-bold text-danger mb-2">تنبيه القائمة السوداء</h6><p class="small text-muted mb-0">إجمالي عملاء القائمة السوداء في النطاق الحالي: ${new Set(data.filter(d=>d.Segment==='D (Blacklist)').map(d=>d.Customer_Code)).size} عميل.</p></div></div>`;
     }
 
     function exportToPDF() { window.print(); }
@@ -285,8 +285,9 @@
 
         setTimeout(() => {
             let q = text.toLowerCase();
-            let reply = "عذراً يا فندم، لم أتمكن من فهم السؤال بدقة، اسألني عن أفضل دولة، أطنان صنف معين، أو ترتيب مسؤولي المبيعات!";
+            let reply = "عذراً يا فندم، لم أتمكن من فهم السؤال بدقة، اسألني عن أفضل مسؤول مبيعات، أفضل أو أسوأ دولة، أكثر الأصناف ربحية، أو ترتيب البياعين!";
             
+            // تجميع بيانات المسؤولين
             let oSum = {};
             rawData.forEach(d => {
                 if (!oSum[d.Owner]) oSum[d.Owner] = {rev:0, qty:0};
@@ -296,24 +297,65 @@
             let oDesc = Object.keys(oSum).sort((a,b) => oSum[b].rev - oSum[a].rev);
             let oAsc = Object.keys(oSum).sort((a,b) => oSum[a].rev - oSum[b].rev);
 
-            if (q.includes('بياع') || q.includes('مسؤول') || q.includes('رقم') || q.includes('الثاني') || q.includes('الثالث') || q.includes('أول')) {
-                let isW = q.includes('أسوأ') || q.includes('اسوء') || q.includes('اقل');
-                let list = isW ? oAsc : oDesc;
-                let rank = 1;
-                if (q.includes('تاني') || q.includes('ثاني')) rank = 2;
-                else if (q.includes('تالت') || q.includes('ثالث')) rank = 3;
-                else if (q.includes('رابع')) rank = 4;
-                let target = list[rank-1];
-                reply = `🏆 مسؤول المبيعات رقم (${rank}) هو <strong>${target}</strong> بإجمالي عوائد ${Math.round(oSum[target].rev).toLocaleString()} $`;
-            } else if (q.includes('دولة') || q.includes('بلد')) {
-                let cMap = {};
-                rawData.forEach(d => {
-                    if (!cMap[d.Country]) cMap[d.Country] = {rev:0, qty:0};
-                    cMap[d.Country].rev += d.Net_Revenue;
-                    cMap[d.Country].qty += d.Quantity;
+            // تجميع بيانات الدول
+            let cMap = {};
+            rawData.forEach(d => {
+                let cName = d.Country.trim();
+                if (!cMap[cName]) cMap[cName] = {rev:0, qty:0};
+                cMap[cName].rev += d.Net_Revenue;
+                cMap[cName].qty += d.Quantity;
+            });
+            let cDesc = Object.keys(cMap).sort((a,b) => cMap[b].rev - cMap[a].rev);
+            let cAsc = Object.keys(cMap).sort((a,b) => cMap[a].rev - cMap[b].rev);
+
+            // تجميع بيانات الأصناف
+            let iMap = {};
+            rawData.forEach(d => {
+                let iName = d.Item.trim();
+                if (!iMap[iName]) iMap[iName] = {rev:0, qty:0};
+                iMap[iName].rev += d.Net_Revenue;
+                iMap[iName].qty += d.Quantity;
+            });
+            let iDesc = Object.keys(iMap).sort((a,b) => iMap[b].rev - iMap[a].rev);
+
+            // البحث عن دولة مذكورة في السؤال (مثل الأرجنتين، هولندا، السعودية، إلخ)
+            let foundCountry = cDesc.find(c => q.includes(c.toLowerCase()));
+
+            if (foundCountry && (q.includes('بياع') || q.includes('مسؤول') || q.includes('مين'))) {
+                let countryRows = rawData.filter(d => d.Country.trim().toLowerCase() === foundCountry.toLowerCase());
+                let countryOwners = {};
+                countryRows.forEach(d => {
+                    if (!countryOwners[d.Owner]) countryOwners[d.Owner] = {rev:0, qty:0};
+                    countryOwners[d.Owner].rev += d.Net_Revenue;
+                    countryOwners[d.Owner].qty += d.Quantity;
                 });
-                let topC = Object.keys(cMap).reduce((a,b) => cMap[a].rev > cMap[b].rev ? a : b);
-                reply = `🌍 أفضل دولة من حيث العوائد هي <strong>${topC}</strong> بإجمالي كمية ${cMap[topC].qty.toLocaleString()} طن وعوائد ${Math.round(cMap[topC].rev).toLocaleString()} $`;
+                let bestCoOwner = Object.keys(countryOwners).reduce((a,b) => countryOwners[a].rev > countryOwners[b].rev ? a : b);
+                reply = `🏆 أفضل مسؤول مبيعات في دولة <strong>${foundCountry}</strong> هو <strong>${bestCoOwner}</strong> بإجمالي عوائد ${Math.round(countryOwners[bestCoOwner].rev).toLocaleString()} $`;
+            }
+            else if (q.includes('بياع') || q.includes('مسؤول') || q.includes('رقم') || q.includes('الثاني') || q.includes('الثالث') || q.includes('أسوأ') || q.includes('اسوء') || q.includes('اقل') || q.includes('أول') || q.includes('احسن')) {
+                let isWorst = q.includes('أسوأ') || q.includes('اسوء') || q.includes('اقل') || q.includes('أقل');
+                let list = isWorst ? oAsc : oDesc;
+                let rank = 1;
+                if (q.includes('تاني') || q.includes('ثاني') || q.includes('رقم 2')) rank = 2;
+                else if (q.includes('تالت') || q.includes('ثالث') || q.includes('رقم 3')) rank = 3;
+                else if (q.includes('رابع') || q.includes('رقم 4')) rank = 4;
+                
+                let target = list[rank-1];
+                let title = isWorst ? `⚠️ أسوأ مسؤول مبيعات` : `🏆 مسؤول المبيعات رقم (${rank})`;
+                reply = `${title} هو <strong>${target}</strong> بإجمالي عوائد ${Math.round(oSum[target].rev).toLocaleString()} $`;
+            } 
+            else if (q.includes('دولة') || q.includes('بلد')) {
+                if (q.includes('أسوأ') || q.includes('اسوء') || q.includes('اقل') || q.includes('أقل')) {
+                    let worstC = cAsc[0];
+                    reply = `⚠️ أسوأ دولة من حيث العوائد هي <strong>${worstC}</strong> بإجمالي كمية ${cMap[worstC].qty.toLocaleString()} طن وعوائد ${Math.round(cMap[worstC].rev).toLocaleString()} $`;
+                } else {
+                    let topC = cDesc[0];
+                    reply = `🌍 أفضل دولة من حيث العوائد هي <strong>${topC}</strong> بإجمالي كمية ${cMap[topC].qty.toLocaleString()} طن وعوائد ${Math.round(cMap[topC].rev).toLocaleString()} $`;
+                }
+            }
+            else if (q.includes('صنف') || q.includes('فلوس') || q.includes('أكثر') || q.includes('اكتر')) {
+                let topI = iDesc[0];
+                reply = `🍊 أكثر صنف تم بيعه وحقق أعلى عوائد مالية هو <strong>${topI}</strong> بإجمالي عوائد ${Math.round(iMap[topI].rev).toLocaleString()} $ و كمية ${iMap[topI].qty.toLocaleString()} طن`;
             }
 
             body.innerHTML += `<div class="chat-msg bot-msg">${reply}</div>`;
