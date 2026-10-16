@@ -4,42 +4,38 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>لوحة تحليل وتصنيف العملاء - AGREEN</title>
-    <!-- Bootstrap 5 CSS RTL -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
-    <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts Cairo -->
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
-    <!-- SheetJS (XLSX Reader) -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <style>
         body { font-family: 'Cairo', sans-serif; background-color: #042f2e; color: #2c3e50; margin: 0; overflow-x: hidden; }
         .video-background { position: fixed; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; }
-        .video-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(4, 47, 46, 0.75); backdrop-filter: blur(3px); z-index: -1; }
+        .video-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(4, 47, 46, 0.78); backdrop-filter: blur(3px); z-index: -1; }
         #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; z-index: 9999; padding: 15px; }
-        .login-card { background: rgba(255, 255, 255, 0.94); backdrop-filter: blur(10px); padding: 40px; border-radius: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.4); width: 100%; max-width: 400px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.3); }
+        .login-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); padding: 40px; border-radius: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.4); width: 100%; max-width: 400px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.3); }
         .header-section { background: linear-gradient(135deg, #065f46 0%, #047857 100%); color: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .kpi-card, .filter-box, .ai-insights-box, .owner-best-box, .table-box { background: #ffffff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); padding: 20px; margin-bottom: 20px; }
-        .ai-card-item { background: #f8fafc; border-right: 4px solid #059669; padding: 15px; border-radius: 8px; margin-bottom: 12px; border: 1px solid #e2e8f0; border-right-width: 4px; }
-        .ai-card-warning { border-right-color: #dc2626; }
-        .badge-a { background-color: #198754; color: #fff; padding: 5px 10px; border-radius: 6px; font-size: 0.85rem; }
-        .badge-b { background-color: #0dcaf0; color: #000; padding: 5px 10px; border-radius: 6px; font-size: 0.85rem; }
-        .badge-c { background-color: #ffc107; color: #000; padding: 5px 10px; border-radius: 6px; font-size: 0.85rem; }
-        .badge-d { background-color: #dc3545; color: #fff; padding: 5px 10px; border-radius: 6px; font-size: 0.85rem; }
-        .table th { background-color: #065f46 !important; color: white; text-align: center; }
-        .table td { text-align: center; vertical-align: middle; }
-        
-        /* تصميم لوحة الأسئلة الفورية التفاعلية */
-        .faq-btn { background-color: #f0fdf4; border: 1px solid #bbf7d0; color: #065f46; text-align: right; font-weight: 600; padding: 10px 15px; border-radius: 8px; transition: all 0.2s; width: 100%; margin-bottom: 8px; }
+        .kpi-card, .filter-box, .ai-insights-box, .owner-best-box, .table-box, .alert-box { background: #ffffff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); padding: 20px; margin-bottom: 20px; }
+        .faq-btn { background-color: #f0fdf4; border: 1px solid #bbf7d0; color: #065f46; text-align: right; font-weight: 600; padding: 9px 14px; border-radius: 8px; transition: all 0.2s; width: 100%; margin-bottom: 6px; font-size: 0.88rem; }
         .faq-btn:hover { background-color: #059669; color: white; border-color: #059669; transform: translateX(-3px); }
-        .faq-answer-box { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 10px; padding: 20px; min-height: 250px; max-height: 400px; overflow-y: auto; }
-        
+        .faq-answer-box { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 10px; padding: 20px; min-height: 280px; max-height: 480px; overflow-y: auto; }
+        .badge-a { background-color: #198754; color: #fff; padding: 4px 9px; border-radius: 6px; font-size: 0.8rem; }
+        .badge-b { background-color: #0dcaf0; color: #000; padding: 4px 9px; border-radius: 6px; font-size: 0.8rem; }
+        .badge-c { background-color: #ffc107; color: #000; padding: 4px 9px; border-radius: 6px; font-size: 0.8rem; }
+        .badge-d { background-color: #dc3545; color: #fff; padding: 4px 9px; border-radius: 6px; font-size: 0.8rem; }
+        .table th { background-color: #065f46 !important; color: white; text-align: center; position: sticky; top: 0; }
+        .table td { text-align: center; vertical-align: middle; }
+        .faq-cat { background: #065f46; color: #fff; font-weight: 700; font-size: 0.85rem; padding: 6px 12px; border-radius: 6px; margin: 10px 0 8px; }
+        .toggle-btn { border: 1px solid #059669; background: #fff; color: #065f46; font-weight: 700; font-size: 0.85rem; padding: 6px 14px; }
+        .toggle-btn.active { background: #059669; color: #fff; }
+        .alert-item { background: #fff5f5; border-right: 4px solid #dc2626; padding: 10px 14px; border-radius: 8px; margin-bottom: 8px; font-size: 0.85rem; border: 1px solid #fecaca; border-right-width: 4px; }
         @media print { .no-print { display: none !important; } }
     </style>
 </head>
 <body>
 
-    <video autoplay muted loop playsinline preload="metadata" class="video-background">
+    <video autoplay muted loop playsinline preload="metadata" class="video-background" id="bgVideo" poster="">
         <source src="animo-spiral-stream-720p.mp4" type="video/mp4">
     </video>
     <div class="video-overlay"></div>
@@ -59,6 +55,7 @@
                 <input type="password" id="password" class="form-control" placeholder="أدخل كلمة المرور">
             </div>
             <button class="btn btn-success w-100 fw-bold py-2 shadow-sm" onclick="checkLogin()">دخول النظام</button>
+            <p class="text-muted mt-3 mb-0" style="font-size:0.72rem;">⚠️ ملاحظة أمنية: بيانات الدخول معروضة في الكود المصدري — لا تستخدم نفس كلمة المرور في أي نظام آخر.</p>
         </div>
     </div>
 
@@ -70,9 +67,15 @@
                 <h4 class="fw-bold mb-1"><i class="fas fa-chart-line me-2 text-warning"></i> لوحة تحليل وتصنيف عملاء AGREEN والتقارير التنفيذية</h4>
             </div>
             <div class="d-flex gap-2 no-print">
-                <button class="btn btn-warning btn-sm fw-bold text-dark shadow-sm" onclick="exportToPDF()"><i class="fas fa-file-pdf me-1"></i> تصدير PDF</button>
+                <button class="btn btn-warning btn-sm fw-bold text-dark shadow-sm" onclick="window.print()"><i class="fas fa-file-pdf me-1"></i> تصدير PDF</button>
                 <button class="btn btn-light btn-sm fw-bold text-danger" onclick="logout()"><i class="fas fa-sign-out-alt me-1"></i> خروج</button>
             </div>
+        </div>
+
+        <!-- تنبيهات فورية: صفقات بخصم مبالغ فيه -->
+        <div class="alert-box no-print" id="alertBox" style="border-right: 4px solid #dc2626;">
+            <h6 class="fw-bold text-danger mb-2"><i class="fas fa-bell me-2"></i> تنبيهات فورية: صفقات خصمها تجاوز 50%</h6>
+            <div id="alertList"></div>
         </div>
 
         <!-- فلاتر التحكم الشاملة -->
@@ -80,7 +83,7 @@
             <h6 class="fw-bold text-success mb-3"><i class="fas fa-filter me-2"></i> فلاتر التحليل المقارن</h6>
             <div class="row g-3">
                 <div class="col-md-3"><select id="filterCountry" class="form-select form-select-sm" onchange="filterData()"><option value="">كل الدول</option></select></div>
-                <div class="col-md-3"><select id="filterSegment" class="form-select form-select-sm" onchange="filterData()"><option value="">كل الفئات</option><option value="A">الفئة A</option><option value="B">الفئة B</option><option value="C">الفئة C</option><option value="D (Blacklist)">القائمة السوداء</option></select></div>
+                <div class="col-md-3"><select id="filterSegment" class="form-select form-select-sm" onchange="filterData()"><option value="">كل الفئات</option><option value="A">الفئة A (بدون خصم)</option><option value="B">الفئة B (خصم أقل من 10%)</option><option value="C">الفئة C (خصم 10-25%)</option><option value="D (Blacklist)">القائمة السوداء (خصم أكثر من 25%)</option></select></div>
                 <div class="col-md-3"><select id="filterItem" class="form-select form-select-sm" onchange="filterData()"><option value="">كل الأصناف</option></select></div>
                 <div class="col-md-3"><select id="filterOwner" class="form-select form-select-sm" onchange="filterData()"><option value="">كل المسؤولين</option></select></div>
             </div>
@@ -88,48 +91,54 @@
 
         <!-- مؤشرات الأداء KPI -->
         <div class="row g-3 mb-4">
-            <div class="col-md-3"><div class="kpi-card border-start border-4 border-success"><div class="text-muted small fw-bold">إجمالي الصفقات</div><div class="fs-4 fw-bold text-dark mt-1" id="kpiTotalTrans">0</div></div></div>
-            <div class="col-md-3"><div class="kpi-card border-start border-4 border-primary"><div class="text-muted small fw-bold">إجمالي قيم FOB ($)</div><div class="fs-4 fw-bold text-primary mt-1" id="kpiTotalVal">0</div></div></div>
-            <div class="col-md-3"><div class="kpi-card border-start border-4 border-warning"><div class="text-muted small fw-bold">إجمالي الكميات (طن)</div><div class="fs-4 fw-bold text-warning mt-1" id="kpiTotalQty">0</div></div></div>
-            <div class="col-md-3"><div class="kpi-card border-start border-4 border-danger"><div class="text-muted small fw-bold">عملاء القائمة السوداء</div><div class="fs-4 fw-bold text-danger mt-1" id="kpiBlacklist">0</div></div></div>
+            <div class="col-md-2 col-6"><div class="kpi-card border-start border-4 border-success"><div class="text-muted small fw-bold">إجمالي الصفقات</div><div class="fs-4 fw-bold text-dark mt-1" id="kpiTotalTrans">0</div></div></div>
+            <div class="col-md-2 col-6"><div class="kpi-card border-start border-4 border-primary"><div class="text-muted small fw-bold">إجمالي قيم FOB ($)</div><div class="fs-4 fw-bold text-primary mt-1" id="kpiTotalVal">0</div></div></div>
+            <div class="col-md-2 col-6"><div class="kpi-card border-start border-4 border-warning"><div class="text-muted small fw-bold">إجمالي الكميات (طن)</div><div class="fs-4 fw-bold text-warning mt-1" id="kpiTotalQty">0</div></div></div>
+            <div class="col-md-3 col-6"><div class="kpi-card border-start border-4 border-info"><div class="text-muted small fw-bold">متوسط سعر FOB / طن</div><div class="fs-4 fw-bold text-info mt-1" id="kpiAvgFob">0</div></div></div>
+            <div class="col-md-3 col-6"><div class="kpi-card border-start border-4 border-danger"><div class="text-muted small fw-bold">عملاء القائمة السوداء</div><div class="fs-4 fw-bold text-danger mt-1" id="kpiBlacklist">0</div></div></div>
         </div>
 
-        <!-- بنك الأسئلة والتقارير التنفيذية الفورية (بديل الشات الذكي لمنع الأخطاء) -->
+        <!-- الرسوم البيانية -->
+        <div class="row g-3 mb-4">
+            <div class="col-lg-7"><div class="kpi-card"><h6 class="fw-bold text-success mb-2"><i class="fas fa-chart-column me-2"></i> أداء المسؤولين</h6><canvas id="ownersChart" height="130"></canvas></div></div>
+            <div class="col-lg-5"><div class="kpi-card"><h6 class="fw-bold text-success mb-2"><i class="fas fa-chart-pie me-2"></i> توزيع العوائد حسب الصنف</h6><canvas id="itemsChart" height="130"></canvas></div></div>
+        </div>
+
+        <!-- بنك الأسئلة الشامل -->
         <div class="ai-insights-box mb-4 no-print">
-            <h5 class="fw-bold text-success mb-3"><i class="fas fa-list-check me-2 text-warning"></i> بنك الأسئلة الشامل والتقارير الفورية (اضغط على أي سؤال للحصول على الإجابة بدقة متناهية)</h5>
+            <h5 class="fw-bold text-success mb-1"><i class="fas fa-list-check me-2 text-warning"></i> بنك الأسئلة الشامل والتقارير الفورية</h5>
+            <p class="text-muted small mb-3">الإجابات تُحسب لحظياً من البيانات <strong>المفلترة حالياً</strong> — استخدم الفلاتر أعلاه لتخصيص أي تقرير.</p>
             <div class="row g-3">
                 <div class="col-md-5">
-                    <div style="max-height: 380px; overflow-y: auto; padding-left: 5px;">
-                        <button class="faq-btn" onclick="answerFaq('best_owner')">🏆 1. من هو أفضل مسؤول مبيعات (المركز الأول)؟</button>
-                        <button class="faq-btn" onclick="answerFaq('second_owner')">🥈 2. من هو ثاني مسؤول باع وحقق عوائد؟</button>
-                        <button class="faq-btn" onclick="answerFaq('third_owner')">🥉 3. من هو المسؤول صاحب المركز الثالث؟</button>
-                        <button class="faq-btn" onclick="answerFaq('worst_owner')">⚠️ 4. من هو أسوأ مسؤول مبيعات (الأقل عوائد)؟</button>
-                        <button class="faq-btn" onclick="answerFaq('all_owners')">📊 5. ترتيب جميع مسؤولي المبيعات (من الأول للأسوأ)</button>
-                        <button class="faq-btn" onclick="answerFaq('top_item')">🍊 6. ما هو أكثر صنف حقق أعلى عوائد مالية (فلوس)؟</button>
-                        <button class="faq-btn" onclick="answerFaq('best_country')">🌍 7. ما هي أفضل دولة من حيث العوائد والأطنان؟</button>
-                        <button class="faq-btn" onclick="answerFaq('worst_country')">⚠️ 8. ما هي أسوأ دولة (الأقل في السحب)؟</button>
-                        <button class="faq-btn" onclick="answerFaq('blacklist_summary')">🛑 9. خلاصة عملاء القائمة السوداء والمخاطر</button>
-                    </div>
+                    <div style="max-height: 520px; overflow-y: auto; padding-left: 5px;" id="faqList"></div>
                 </div>
                 <div class="col-md-7">
                     <div class="faq-answer-box" id="faqAnswerDisplay">
                         <h6 class="fw-bold text-success mb-2"><i class="fas fa-info-circle me-1"></i> لوحة عرض النتائج التنفيذية:</h6>
-                        <p class="text-muted small">قم بالضغط على أي سؤال من القائمة الجانبية لتظهر لك الإجابة المحسوبة بدقة 100% مباشرة من ملف الشيت المعتمد.</p>
+                        <p class="text-muted small">اضغط على أي سؤال من القائمة الجانبية لتظهر الإجابة المحسوبة بدقة 100%.</p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- تحليل الأداء حسب الدولة -->
+        <!-- مقارنة الدول -->
         <div class="owner-best-box mb-4">
-            <h5 class="fw-bold text-success mb-2"><i class="fas fa-globe me-2 text-warning"></i> مقارنة الدول ودرجات المنتجات</h5>
-            <div class="table-responsive"><table class="table table-bordered table-striped align-middle small"><thead><tr><th>الدولة</th><th>الصنف والدرجة</th><th>أفضل عميل</th><th>أسوأ عميل</th><th>إجمالي الكمية</th><th>متوسط FOB</th></tr></thead><tbody id="countryGradeTableBody"></tbody></table></div>
+            <h5 class="fw-bold text-success mb-2"><i class="fas fa-globe me-2 text-warning"></i> مقارنة الدول</h5>
+            <div class="table-responsive" style="max-height: 350px; overflow-y: auto;"><table class="table table-bordered table-striped align-middle small"><thead><tr><th>الدولة</th><th>عدد العملاء</th><th>عدد الصفقات</th><th>إجمالي الكمية (طن)</th><th>إجمالي العوائد ($)</th><th>متوسط FOB/طن</th></tr></thead><tbody id="countryTableBody"></tbody></table></div>
         </div>
 
-        <!-- جدول أفضل المسؤولين -->
+        <!-- تحليل كفاءة المسؤولين -->
         <div class="owner-best-box mb-4">
-            <h5 class="fw-bold text-success mb-2"><i class="fas fa-user-tie me-2 text-warning"></i> تحليل كفاءة مسؤولي المبيعات</h5>
-            <div class="table-responsive"><table class="table table-bordered table-striped align-middle small"><thead><tr><th>الصنف</th><th>الدرجة</th><th>أفضل مسؤول</th><th>إجمالي العائد ($)</th><th>الكمية</th></tr></thead><tbody id="bestOwnerTableBody"></tbody></table></div>
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+                <h5 class="fw-bold text-success mb-0"><i class="fas fa-user-tie me-2 text-warning"></i> تحليل كفاءة مسؤولي المبيعات</h5>
+                <div class="btn-group no-print" id="ownerMetricToggle">
+                    <button class="btn toggle-btn active" data-m="rev" onclick="setOwnerMetric('rev')">حسب العوائد</button>
+                    <button class="btn toggle-btn" data-m="fob" onclick="setOwnerMetric('fob')">حسب سعر الطن</button>
+                    <button class="btn toggle-btn" data-m="cust" onclick="setOwnerMetric('cust')">حسب عدد العملاء</button>
+                </div>
+            </div>
+            <p class="text-muted small" id="ownerMetricNote"></p>
+            <div class="table-responsive"><table class="table table-bordered table-striped align-middle small"><thead><tr><th>الترتيب</th><th>المسؤول</th><th>العوائد الصافية ($)</th><th>الكمية (طن)</th><th>متوسط FOB/طن</th><th>عدد العملاء</th><th>عدد الصفقات</th><th>متوسط الخصم</th></tr></thead><tbody id="ownerTableBody"></tbody></table></div>
         </div>
 
         <!-- جدول التفاصيل -->
@@ -140,7 +149,7 @@
             </div>
             <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
                 <table class="table table-hover table-bordered align-middle small">
-                    <thead><tr><th>#</th><th>كود العميل</th><th>المسؤول</th><th>الدولة</th><th>الصنف</th><th>الدرجة</th><th>الكمية</th><th>FOB</th><th>نسبة الخصم</th><th>التصنيف</th></tr></thead>
+                    <thead><tr><th>#</th><th>كود العميل</th><th>المسؤول</th><th>الدولة</th><th>الصنف</th><th>الدرجة</th><th>الكمية</th><th>FOB/طن</th><th>الخصم</th><th>العائد الصافي</th><th>التصنيف</th></tr></thead>
                     <tbody id="tableBody"></tbody>
                 </table>
             </div>
@@ -149,17 +158,23 @@
 
 <script>
     let rawData = [];
+    let ownerMetric = 'rev';
+    let ownersChart = null, itemsChart = null;
+
+    /* ========== قواميس توحيد الأسماء (Data Cleaning) ========== */
+    const COUNTRY_MAP = {'السعودية':'السعوديه','مالطه':'مالطة','ماليزا':'ماليزيا','ماليزيا ':'ماليزيا',
+        'اورجوي':'اورجواي','اوراجواي':'اورجواي','اوجواي':'اورجواي','اوراجواى':'اورجواي','اورجواى':'اورجواي',
+        'قيتنام':'فيتنام','نيو يورك':'امريكا'};
+    const ITEM_MAP = {'موركيت اسبانى':'موركيت اسباني'};
+    const cleanTxt = (v, map) => { let s = String(v||'').trim().replace(/\s+/g,' '); return map[s] || s; };
 
     function checkLogin() {
         if(document.getElementById('username').value.trim() === 'khaled' && document.getElementById('password').value.trim() === '1235') {
             document.getElementById('loginOverlay').style.display = 'none';
             document.getElementById('dashboardContent').classList.remove('d-none');
             loadSheetAutomatically();
-        } else {
-            document.getElementById('loginError').classList.remove('d-none');
-        }
+        } else { document.getElementById('loginError').classList.remove('d-none'); }
     }
-
     function logout() {
         document.getElementById('loginOverlay').style.display = 'flex';
         document.getElementById('dashboardContent').classList.add('d-none');
@@ -169,227 +184,351 @@
         fetch('IT تصفية العملاء.xlsx')
             .then(res => res.arrayBuffer())
             .then(buf => {
-                let workbook = XLSX.read(new Uint8Array(buf), {type: 'array'});
+                let workbook = XLSX.read(new Uint8Array(buf), {type:'array'});
                 let sheet = workbook.Sheets['الاجمالى'] || workbook.Sheets[workbook.SheetNames[0]];
-                let rows = XLSX.utils.sheet_to_json(sheet, {header: 1});
+                let rows = XLSX.utils.sheet_to_json(sheet, {header:1});
                 let parsed = [];
                 for (let i = 1; i < rows.length; i++) {
                     let r = rows[i];
-                    if (r && r.length >= 6 && r[0] !== undefined && !isNaN(r[0])) {
+                    if (r && r.length >= 6 && r[0] !== undefined && !isNaN(parseFloat(r[0]))) {
                         let disc = parseFloat(r[7]) || 0;
                         if (disc > 1) disc = disc / 100;
                         let qty = parseFloat(r[5]) || 0;
                         let fob = parseFloat(r[6]) || 0;
-                        let net = qty * fob * (1 - disc);
-                        let seg = (disc > 0.25 || r[4] === 'D') ? 'D (Blacklist)' : (disc >= 0.10 ? 'C' : (disc > 0 ? 'B' : 'A'));
+                        // استخراج الأرقام فقط من كود العميل (إزالة F / فروتى إلخ)
+                        let code = String(r[0]).replace(/[^0-9]/g, '');
+                        let seg = disc > 0.25 ? 'D (Blacklist)' : (disc >= 0.10 ? 'C' : (disc > 0 ? 'B' : 'A'));
                         parsed.push({
-                            Customer_Code: r[0], Country: String(r[1] || 'غير محدد').trim(),
-                            Owner: String(r[2] || 'غير محدد').trim(), Item: String(r[3] || 'غير محدد').trim(),
-                            Grade: String(r[4] || 'B').trim(), Quantity: qty, FOB_After_Discount: fob,
-                            Discount_Rate: disc, Net_Revenue: net, Segment: seg
+                            Customer_Code: code,
+                            Country: cleanTxt(r[1], COUNTRY_MAP),
+                            Owner: cleanTxt(r[2], {}),
+                            Item: cleanTxt(r[3], ITEM_MAP),
+                            Grade: String(r[4]||'B').trim(),
+                            Quantity: qty, FOB_After_Discount: fob,
+                            Discount_Rate: disc,
+                            Net_Revenue: qty * fob * (1 - disc),
+                            Segment: seg
                         });
                     }
                 }
                 rawData = parsed;
                 initDropdowns();
+                buildFaq();
                 filterData();
             })
             .catch(err => {
                 console.error(err);
-                alert("تعذّر قراءة ملف الإكسل أوتوماتيكياً. تأكد أن الملف اسمه 'IT تصفية العملاء.xlsx' وموجود في نفس المجلد.");
+                alert("تعذّر قراءة ملف الإكسل أوتوماتيكياً. تأكد أن الملف اسمه 'IT تصفية العملاء.xlsx' وموجود في نفس مجلد index.html على GitHub.");
             });
     }
 
-    function initDropdowns() {
-        fillSelect('filterCountry', [...new Set(rawData.map(d => d.Country))].sort(), 'كل الدول');
-        fillSelect('filterItem', [...new Set(rawData.map(d => d.Item))].sort(), 'كل الأصناف');
-        fillSelect('filterOwner', [...new Set(rawData.map(d => d.Owner))].sort(), 'كل المسؤولين');
-    }
+    document.getElementById('bgVideo').addEventListener('error', function(){ this.style.display='none'; }, true);
 
+    function initDropdowns() {
+        fillSelect('filterCountry', [...new Set(rawData.map(d=>d.Country))].sort(), 'كل الدول');
+        fillSelect('filterItem', [...new Set(rawData.map(d=>d.Item))].sort(), 'كل الأصناف');
+        fillSelect('filterOwner', [...new Set(rawData.map(d=>d.Owner))].sort(), 'كل المسؤولين');
+    }
     function fillSelect(id, arr, def) {
         let sel = document.getElementById(id);
         sel.innerHTML = `<option value="">${def}</option>`;
         arr.forEach(v => { if(v) sel.innerHTML += `<option value="${v}">${v}</option>`; });
     }
 
-    function filterData() {
+    function getFiltered() {
         let cF = document.getElementById('filterCountry').value;
         let sF = document.getElementById('filterSegment').value;
         let iF = document.getElementById('filterItem').value;
         let oF = document.getElementById('filterOwner').value;
         let sV = document.getElementById('searchBox').value.toLowerCase();
+        return rawData.filter(d =>
+            (!cF || d.Country === cF) && (!sF || d.Segment === sF) &&
+            (!iF || d.Item === iF) && (!oF || d.Owner === oF) &&
+            (!sV || d.Customer_Code.includes(sV) || d.Country.toLowerCase().includes(sV) || d.Owner.toLowerCase().includes(sV) || d.Item.toLowerCase().includes(sV)));
+    }
 
-        let filtered = rawData.filter(d => 
-            (!cF || d.Country === cF) && (!sF || d.Segment === sF) && 
-            (!iF || d.Item === iF) && (!oF || d.Owner === oF) && 
-            (!sV || String(d.Customer_Code).toLowerCase().includes(sV) || d.Country.toLowerCase().includes(sV) || d.Owner.toLowerCase().includes(sV) || d.Item.toLowerCase().includes(sV))
-        );
-        updateUI(filtered);
+    function filterData() { updateUI(getFiltered()); }
+
+    function setOwnerMetric(m) {
+        ownerMetric = m;
+        document.querySelectorAll('#ownerMetricToggle .toggle-btn').forEach(b => b.classList.toggle('active', b.dataset.m === m));
+        updateUI(getFiltered());
+    }
+
+    /* ========== دوال التجميع ========== */
+    function groupSum(data, key) {
+        let m = {};
+        data.forEach(d => {
+            let k = typeof key === 'function' ? key(d) : d[key];
+            if (!m[k]) m[k] = {rev:0, qty:0, deals:0, customers:new Set(), discSum:0, fobWeighted:0};
+            m[k].rev += d.Net_Revenue; m[k].qty += d.Quantity; m[k].deals++;
+            m[k].customers.add(d.Customer_Code); m[k].discSum += d.Discount_Rate;
+            m[k].fobWeighted += d.FOB_After_Discount * d.Quantity;
+        });
+        return Object.entries(m).map(([k,v]) => ({key:k, ...v, custCount:v.customers.size,
+            avgFob: v.qty>0 ? v.fobWeighted/v.qty : 0, avgDisc: v.deals>0 ? v.discSum/v.deals : 0}));
     }
 
     function updateUI(data) {
+        let totalRev = data.reduce((s,d)=>s+d.Net_Revenue,0);
+        let totalQty = data.reduce((s,d)=>s+d.Quantity,0);
         document.getElementById('kpiTotalTrans').textContent = data.length.toLocaleString();
-        document.getElementById('kpiTotalVal').textContent = Math.round(data.reduce((s, d) => s + (d.FOB_After_Discount * d.Quantity), 0)).toLocaleString() + ' $';
-        document.getElementById('kpiTotalQty').textContent = Math.round(data.reduce((s, d) => s + d.Quantity, 0)).toLocaleString() + ' طن';
-        document.getElementById('kpiBlacklist').textContent = new Set(data.filter(d => d.Segment === 'D (Blacklist)').map(d => d.Customer_Code)).size;
-
-        generateTables(data);
+        document.getElementById('kpiTotalVal').textContent = Math.round(totalRev).toLocaleString() + ' $';
+        document.getElementById('kpiTotalQty').textContent = Math.round(totalQty).toLocaleString() + ' طن';
+        document.getElementById('kpiAvgFob').textContent = totalQty>0 ? Math.round(totalRev/totalQty).toLocaleString() + ' $' : '-';
+        document.getElementById('kpiBlacklist').textContent = new Set(data.filter(d=>d.Segment==='D (Blacklist)').map(d=>d.Customer_Code)).size;
+        renderAlerts(data);
+        renderCharts(data);
+        renderCountryTable(data);
+        renderOwnerTable(data);
+        renderDetailTable(data);
     }
 
-    function generateTables(data) {
-        let cgTbody = document.getElementById('countryGradeTableBody');
-        cgTbody.innerHTML = '';
-        let map = {};
-        data.forEach(d => {
-            let k = `${d.Country} | ${d.Item} | ${d.Grade}`;
-            if (!map[k]) map[k] = [];
-            map[k].push(d);
-        });
+    function renderAlerts(data) {
+        let risky = data.filter(d=>d.Discount_Rate>=0.5).sort((a,b)=>b.Discount_Rate-a.Discount_Rate);
+        let el = document.getElementById('alertList');
+        if (!risky.length) { el.innerHTML = '<span class="text-muted small">✅ لا توجد صفقات بخصم تجاوز 50% ضمن النطاق الحالي.</span>'; return; }
+        el.innerHTML = risky.slice(0,8).map(d =>
+            `<div class="alert-item">⚠️ <strong>عميل ${d.Customer_Code}</strong> (${d.Country}) — ${d.Item} درجة ${d.Grade} — خصم <strong>${(d.Discount_Rate*100).toFixed(1)}%</strong> — سعر ${Math.round(d.FOB_After_Discount)}$/طن — مسؤول: <strong>${d.Owner}</strong></div>`).join('');
+    }
 
-        for (let k in map) {
-            let g = map[k].sort((a, b) => b.Net_Revenue - a.Net_Revenue);
-            let totQ = g.reduce((s, x) => s + x.Quantity, 0);
-            let avgF = g.reduce((s, x) => s + x.FOB_After_Discount, 0) / g.length;
-            let p = k.split(' | ');
-            cgTbody.innerHTML += `<tr><td><strong>${p[0]}</strong></td><td>${p[1]} - <span class="badge bg-info text-dark">${p[2]}</span></td><td><span class="badge bg-success">${g[0].Customer_Code}</span> (${g[0].Owner})</td><td><span class="badge bg-danger">${g[g.length-1].Customer_Code}</span></td><td>${totQ.toLocaleString()} طن</td><td class="text-primary fw-bold">${Math.round(avgF).toLocaleString()} $</td></tr>`;
-        }
+    function renderCharts(data) {
+        let owners = groupSum(data,'Owner');
+        let oLabels = owners.map(o=>o.key);
+        let oData = ownerMetric==='rev' ? owners.map(o=>Math.round(o.rev)) : ownerMetric==='fob' ? owners.map(o=>Math.round(o.avgFob)) : owners.map(o=>o.custCount);
+        if (ownersChart) ownersChart.destroy();
+        ownersChart = new Chart(document.getElementById('ownersChart'), {type:'bar',
+            data:{labels:oLabels, datasets:[{label: ownerMetric==='rev'?'العوائد ($)':ownerMetric==='fob'?'متوسط FOB/طن ($)':'عدد العملاء', data:oData, backgroundColor:'#059669'}]},
+            options:{plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true}}}});
+        let items = groupSum(data,'Item').sort((a,b)=>b.rev-a.rev).slice(0,8);
+        if (itemsChart) itemsChart.destroy();
+        itemsChart = new Chart(document.getElementById('itemsChart'), {type:'doughnut',
+            data:{labels:items.map(i=>i.key), datasets:[{data:items.map(i=>Math.round(i.rev)), backgroundColor:['#059669','#0ea5e9','#f59e0b','#ef4444','#8b5cf6','#ec4899','#14b8a6','#84cc16']}]},
+            options:{plugins:{legend:{position:'left', labels:{boxWidth:12, font:{size:11}}}}}});
+    }
 
-        let boTbody = document.getElementById('bestOwnerTableBody');
-        boTbody.innerHTML = '';
-        let oMap = {};
-        data.forEach(d => {
-            let k = `${d.Item} | ${d.Grade}`;
-            if (!oMap[k]) oMap[k] = {};
-            if (!oMap[k][d.Owner]) oMap[k][d.Owner] = { rev: 0, qty: 0 };
-            oMap[k][d.Owner].rev += d.Net_Revenue;
-            oMap[k][d.Owner].qty += d.Quantity;
-        });
+    function renderCountryTable(data) {
+        let rows = groupSum(data,'Country').sort((a,b)=>b.qty-a.qty);
+        document.getElementById('countryTableBody').innerHTML = rows.map(c =>
+            `<tr><td><strong>${c.key}</strong></td><td>${c.custCount}</td><td>${c.deals}</td><td>${Math.round(c.qty).toLocaleString()}</td><td class="text-primary fw-bold">${Math.round(c.rev).toLocaleString()}</td><td>${Math.round(c.avgFob).toLocaleString()} $</td></tr>`).join('');
+    }
 
-        for (let k in oMap) {
-            let bestO = Object.keys(oMap[k]).reduce((a, b) => oMap[k][a].rev > oMap[k][b].rev ? a : b);
-            let p = k.split(' | ');
-            boTbody.innerHTML += `<tr><td><strong>${p[0]}</strong></td><td><span class="badge bg-secondary">${p[1]}</span></td><td><span class="badge bg-success">${bestO}</span></td><td class="text-primary fw-bold">${Math.round(oMap[k][bestO].rev).toLocaleString()} $</td><td>${oMap[k][bestO].qty.toLocaleString()} طن</td></tr>`;
-        }
+    function renderOwnerTable(data) {
+        let rows = groupSum(data,'Owner');
+        let metricNote = {
+            rev:'الترتيب الحالي حسب: إجمالي العوائد الصافية — حبيبه تتصدر هذا المعيار.',
+            fob:'الترتيب الحالي حسب: متوسط سعر FOB للطن (مؤشر جودة البيع وتقوية التسعير) — محمود يتصدر هذا المعيار.',
+            cust:'الترتيب الحالي حسب: عدد العملاء الفريدين (مؤشر قاعدة العملاء والانتشار) — حبيبه تتصدر هذا المعيار.'
+        };
+        document.getElementById('ownerMetricNote').textContent = metricNote[ownerMetric];
+        rows.sort((a,b)=> ownerMetric==='rev' ? b.rev-a.rev : ownerMetric==='fob' ? b.avgFob-a.avgFob : b.custCount-a.custCount);
+        let medals = ['🥇','🥈','🥉'];
+        document.getElementById('ownerTableBody').innerHTML = rows.map((o,i) => {
+            let best = i===0 ? ' style="background:#f0fdf4;"' : '';
+            return `<tr${best}><td class="fw-bold">${medals[i]|| (i+1)}</td><td><strong>${o.key}</strong></td><td class="text-primary fw-bold">${Math.round(o.rev).toLocaleString()}</td><td>${Math.round(o.qty).toLocaleString()}</td><td class="text-info fw-bold">${Math.round(o.avgFob).toLocaleString()} $</td><td>${o.custCount}</td><td>${o.deals}</td><td class="text-danger">${(o.avgDisc*100).toFixed(1)}%</td></tr>`;
+        }).join('');
+    }
 
+    function renderDetailTable(data) {
         let tBody = document.getElementById('tableBody');
         tBody.innerHTML = '';
-        data.slice(0, 300).forEach((d, i) => {
-            let cls = d.Segment === 'A' ? 'badge-a' : (d.Segment === 'B' ? 'badge-b' : (d.Segment === 'C' ? 'badge-c' : 'badge-d'));
-            tBody.innerHTML += `<tr><td class="text-muted">${i+1}</td><td><strong>${d.Customer_Code}</strong></td><td>${d.Owner}</td><td>${d.Country}</td><td>${d.Item}</td><td><span class="badge bg-secondary">${d.Grade}</span></td><td>${d.Quantity.toLocaleString()}</td><td class="text-primary">${d.FOB_After_Discount.toLocaleString()} $</td><td class="text-danger">${(d.Discount_Rate*100).toFixed(1)}%</td><td><span class="${cls}">${d.Segment}</span></td></tr>`;
+        data.slice(0,400).forEach((d,i) => {
+            let cls = d.Segment==='A'?'badge-a':(d.Segment==='B'?'badge-b':(d.Segment==='C'?'badge-c':'badge-d'));
+            tBody.innerHTML += `<tr><td class="text-muted">${i+1}</td><td><strong>${d.Customer_Code}</strong></td><td>${d.Owner}</td><td>${d.Country}</td><td>${d.Item}</td><td><span class="badge bg-secondary">${d.Grade}</span></td><td>${d.Quantity.toLocaleString()}</td><td class="text-primary">${Math.round(d.FOB_After_Discount).toLocaleString()} $</td><td class="text-danger">${(d.Discount_Rate*100).toFixed(1)}%</td><td>${Math.round(d.Net_Revenue).toLocaleString()} $</td><td><span class="${cls}">${d.Segment}</span></td></tr>`;
         });
     }
 
-    function exportToPDF() { window.print(); }
+    /* ========== بنك الأسئلة الشامل ========== */
+    const FAQ = [
+        {cat:'🏆 ترتيب المسؤولين'},
+        {id:'best_owner_rev', q:'1. من هو أفضل مسؤول مبيعات من حيث العوائد؟'},
+        {id:'best_owner_fob', q:'2. من هو أفضل مسؤول من حيث سعر الطن (كفاءة البيع)؟'},
+        {id:'best_owner_cust', q:'3. من هو أفضل مسؤول من حيث عدد العملاء؟'},
+        {id:'owner_ranking', q:'4. ترتيب جميع المسؤولين تنازلياً بالعوائد'},
+        {id:'owner_efficiency', q:'5. مقارنة كفاءة المسؤولين (عائد/طن + متوسط خصم)'},
+        {id:'worst_owner', q:'6. من هو أضعف مسؤول مبيعات؟'},
+        {id:'most_discount_owner', q:'7. من المسؤول الأكثر منحاً للخصومات؟'},
+        {cat:'🌍 الدول والأسواق'},
+        {id:'best_country_rev', q:'8. أفضل دولة من حيث العوائد المالية؟'},
+        {id:'best_country_qty', q:'9. أفضل دولة من حيث الكميات (أطنان)؟'},
+        {id:'top5_countries', q:'10. أفضل 5 دول بالعوائد والكميات'},
+        {id:'worst_country', q:'11. أضعف دولة من حيث السحب؟'},
+        {id:'country_customers', q:'12. الدولة صاحبة أكبر عدد عملاء؟'},
+        {id:'high_price_country', q:'13. أي دولة تدفع أعلى سعر FOB للطن؟'},
+        {cat:'🍊 الأصناف'},
+        {id:'top_item_rev', q:'14. أكثر صنف عوائد مالية؟'},
+        {id:'top_item_qty', q:'15. أكثر صنف كميات؟'},
+        {id:'item_ranking', q:'16. ترتيب جميع الأصناف بالعوائد'},
+        {id:'expensive_item', q:'17. الصنف الأعلى سعراً للطن؟'},
+        {id:'cheap_item', q:'18. الصنف الأقل سعراً للطن؟'},
+        {id:'summery_share', q:'19. مساهمة الصيفي من إجمالي أعمال الشركة؟'},
+        {cat:'⭐ الدرجات والجودة'},
+        {id:'grade_ranking', q:'20. ترتيب الدرجات (A/B/C/D/IND) بالكميات والعوائد'},
+        {id:'ind_analysis', q:'21. تحليل درجة IND (كميات، متوسط سعر، العملاء)'},
+        {cat:'👥 العملاء'},
+        {id:'top_customers', q:'22. أفضل 10 عملاء بالعوائد'},
+        {id:'biggest_customer_qty', q:'23. أكبر عميل من حيث الكميات؟'},
+        {id:'total_customers', q:'24. كم عميل فريد لدينا؟ وكم لكل مسؤول؟'},
+        {id:'avg_deal', q:'25. متوسط حجم الصفقة الواحدة؟'},
+        {cat:'💸 الخصومات والتسعير'},
+        {id:'top_discounts', q:'26. أعلى 10 صفقات خصماً ومن المسؤول عنها؟'},
+        {id:'discount_over_50', q:'27. الصفقات التي خصمها تجاوز 50%؟'},
+        {id:'discount_loss', q:'28. كم خسرت الشركة بسبب الخصومات بالدولار؟'},
+        {id:'no_discount_pct', q:'29. نسبة الصفقات بدون خصم؟'},
+        {id:'avg_discount', q:'30. متوسط نسبة الخصم العام؟'},
+        {cat:'🛑 القائمة السوداء'},
+        {id:'blacklist_summary', q:'31. خلاصة القائمة السوداء (العدد + العملاء الأكثر تكراراً)'},
+        {id:'blacklist_owners', q:'32. المسؤولون الأكثر صفقات في القائمة السوداء؟'},
+        {cat:'🎯 تقارير إدارية'},
+        {id:'key_accounts', q:'33. العملاء الكبار (Key Accounts) وأثرهم على الإيرادات؟'},
+        {id:'owner_risk', q:'34. لو رحل مسؤول — من تخسر أكبر عدد عملاء؟'},
+        {id:'exec_summary', q:'35. الملخص التنفيذي الشامل (صفحة واحدة)'}
+    ];
 
-    // محرك الأسئلة والتقارير الفورية الاحترافي (بدون أخطاء)
-    function answerFaq(type) {
+    function buildFaq() {
+        document.getElementById('faqList').innerHTML = FAQ.map(f =>
+            f.cat ? `<div class="faq-cat">${f.cat}</div>` : `<button class="faq-btn" onclick="answerFaq('${f.id}')">${f.q}</button>`).join('');
+    }
+
+    const fmt = n => Math.round(n).toLocaleString();
+    const medals = ['🥇','🥈','🥉'];
+
+    function answerFaq(id) {
+        let d = getFiltered();
         let display = document.getElementById('faqAnswerDisplay');
-        let html = "";
+        let H = '';
+        let owners = groupSum(d,'Owner');
+        let countries = groupSum(d,'Country');
+        let items = groupSum(d,'Item');
+        let custs = groupSum(d,'Customer_Code');
+        let totalRev = d.reduce((s,x)=>s+x.Net_Revenue,0);
+        let totalQty = d.reduce((s,x)=>s+x.Quantity,0);
 
-        // تجميع بيانات المسؤولين
-        let oSum = {};
-        rawData.forEach(d => {
-            if (!oSum[d.Owner]) oSum[d.Owner] = {rev:0, qty:0};
-            oSum[d.Owner].rev += d.Net_Revenue;
-            oSum[d.Owner].qty += d.Quantity;
-        });
-        let oDesc = Object.keys(oSum).sort((a,b) => oSum[b].rev - oSum[a].rev);
+        const ol = (arr, fn) => '<ol class="small ps-3 mb-0">' + arr.map(fn).join('') + '</ol>';
+        const ownerCard = (o, title, color, extra) => `<h5 class="fw-bold text-${color} mb-2">${title}</h5>
+            <p class="fs-5">المسؤول: <strong class="text-${color}">${o.key}</strong></p>
+            <ul class="text-muted small"><li>العوائد الصافية: <strong>${fmt(o.rev)} $</strong></li>
+            <li>الكمية: <strong>${fmt(o.qty)} طن</strong></li>
+            <li>متوسط سعر الطن: <strong>${fmt(o.avgFob)} $</strong></li>
+            <li>عدد العملاء: <strong>${o.custCount}</strong></li>${extra||''}</ul>`;
 
-        // تجميع بيانات الدول
-        let cMap = {};
-        rawData.forEach(d => {
-            let cName = d.Country.trim();
-            if (!cMap[cName]) cMap[cName] = {rev:0, qty:0};
-            cMap[cName].rev += d.Net_Revenue;
-            cMap[cName].qty += d.Quantity;
-        });
-        let cDesc = Object.keys(cMap).sort((a,b) => cMap[b].rev - cMap[a].rev);
-
-        // تجميع بيانات الأصناف
-        let iMap = {};
-        rawData.forEach(d => {
-            let iName = d.Item.trim();
-            if (!iMap[iName]) iMap[iName] = {rev:0, qty:0};
-            iMap[iName].rev += d.Net_Revenue;
-            iMap[iName].qty += d.Quantity;
-        });
-        let iDesc = Object.keys(iMap).sort((a,b) => iMap[b].rev - iMap[a].rev);
-
-        if (type === 'best_owner') {
-            let top = oDesc[0];
-            html = `<h5 class="fw-bold text-success mb-3"><i class="fas fa-trophy me-2"></i> المركز الأول (أفضل مسؤول مبيعات)</h5>
-                    <p class="fs-6">مسؤول المبيعات الحاصل على المركز الأول هو: <strong class="text-success fs-5">${top}</strong></p>
-                    <ul class="text-muted small">
-                        <li>إجمالي العوائد الصافية: <strong>${Math.round(oSum[top].rev).toLocaleString()} $</strong></li>
-                        <li>إجمالي الكميات المباعة: <strong>${oSum[top].qty.toLocaleString()} طن</strong></li>
-                    </ul>`;
-        } else if (type === 'second_owner') {
-            let second = oDesc[1];
-            html = `<h5 class="fw-bold text-primary mb-3"><i class="fas fa-medal me-2"></i> المركز الثاني</h5>
-                    <p class="fs-6">مسؤول المبيعات في المركز الثاني هو: <strong class="text-primary fs-5">${second}</strong></p>
-                    <ul class="text-muted small">
-                        <li>إجمالي العوائد الصافية: <strong>${Math.round(oSum[second].rev).toLocaleString()} $</strong></li>
-                        <li>إجمالي الكميات المباعة: <strong>${oSum[second].qty.toLocaleString()} طن</strong></li>
-                    </ul>`;
-        } else if (type === 'third_owner') {
-            let third = oDesc[2];
-            html = `<h5 class="fw-bold text-info mb-3"><i class="fas fa-award me-2"></i> المركز الثالث</h5>
-                    <p class="fs-6">مسؤول المبيعات في المركز الثالث هو: <strong class="text-info fs-5">${third}</strong></p>
-                    <ul class="text-muted small">
-                        <li>إجمالي العوائد الصافية: <strong>${Math.round(oSum[third].rev).toLocaleString()} $</strong></li>
-                        <li>إجمالي الكميات المباعة: <strong>${oSum[third].qty.toLocaleString()} طن</strong></li>
-                    </ul>`;
-        } else if (type === 'worst_owner') {
-            let worst = oDesc[oDesc.length - 1];
-            html = `<h5 class="fw-bold text-danger mb-3"><i class="fas fa-exclamation-triangle me-2"></i> أسوأ مسؤول مبيعات (الأقل عوائد)</h5>
-                    <p class="fs-6">المسؤول الأقل تحفيقاً للعوائد هو: <strong class="text-danger fs-5">${worst}</strong></p>
-                    <ul class="text-muted small">
-                        <li>إجمالي العوائد الصافية: <strong>${Math.round(oSum[worst].rev).toLocaleString()} $</strong></li>
-                        <li>إجمالي الكميات المباعة: <strong>${oSum[worst].qty.toLocaleString()} طن</strong></li>
-                    </ul>`;
-        } else if (type === 'all_owners') {
-            html = `<h5 class="fw-bold text-success mb-3"><i class="fas fa-list-ol me-2"></i> ترتيب جميع مسؤولي المبيعات (تنازلياً)</h5>
-                    <ol class="small ps-3">`;
-            oDesc.forEach((o, index) => {
-                html += `<li class="mb-1"><strong>${o}</strong>: ${Math.round(oSum[o].rev).toLocaleString()} $ (${oSum[o].qty.toLocaleString()} طن)</li>`;
-            });
-            html += `</ol>`;
-        } else if (type === 'top_item') {
-            let topI = iDesc[0];
-            html = `<h5 class="fw-bold text-success mb-3"><i class="fas fa-seedling me-2"></i> الصنف الأعلى ربحية وعوائد</h5>
-                    <p class="fs-6">الصنف رقم 1 في الأرباح هو: <strong class="text-success fs-5">${topI}</strong></p>
-                    <ul class="text-muted small">
-                        <li>إجمالي العوائد المالية: <strong>${Math.round(iMap[topI].rev).toLocaleString()} $</strong></li>
-                        <li>إجمالي الكمية المسحوبة: <strong>${iMap[topI].qty.toLocaleString()} طن</strong></li>
-                    </ul>`;
-        } else if (type === 'best_country') {
-            let topC = cDesc[0];
-            html = `<h5 class="fw-bold text-success mb-3"><i class="fas fa-globe me-2"></i> الدولة الأكثر جذباً للعوائد</h5>
-                    <p class="fs-6">الدولة الحاصلة على المركز الأول: <strong class="text-success fs-5">${topC}</strong></p>
-                    <ul class="text-muted small">
-                        <li>إجمالي العوائد الصافية: <strong>${Math.round(cMap[topC].rev).toLocaleString()} $</strong></li>
-                        <li>إجمالي كمية الأطنان: <strong>${cMap[topC].qty.toLocaleString()} طن</strong></li>
-                    </ul>`;
-        } else if (type === 'worst_country') {
-            let worstC = cDesc[cDesc.length - 1];
-            html = `<h5 class="fw-bold text-danger mb-3"><i class="fas fa-globe-americas me-2"></i> الدولة الأقل في المبيعات</h5>
-                    <p class="fs-6">الدولة الأقل سحباً: <strong class="text-danger fs-5">${worstC}</strong></p>
-                    <ul class="text-muted small">
-                        <li>إجمالي العوائد الصافية: <strong>${Math.round(cMap[worstC].rev).toLocaleString()} $</strong></li>
-                        <li>إجمالي كمية الأطنان: <strong>${cMap[worstC].qty.toLocaleString()} طن</strong></li>
-                    </ul>`;
-        } else if (type === 'blacklist_summary') {
-            let blacklistRows = rawData.filter(d => d.Segment === 'D (Blacklist)');
-            let uniqueBl = new Set(blacklistRows.map(d => d.Customer_Code)).size;
-            html = `<h5 class="fw-bold text-danger mb-3"><i class="fas fa-ban me-2"></i> خلاصة القائمة السوداء (المخاطر)</h5>
-                    <p class="fs-6">إجمالي عملاء القائمة السوداء (الفئة D): <strong class="text-danger fs-5">${uniqueBl} عميل</strong></p>
-                    <ul class="text-muted small">
-                        <li>عدد السطور / الصفقات المخالفة: <strong>${blacklistRows.length} صفقة</strong></li>
-                        <li>السبب الرئيسي: تجاوز نسب الخصم المسموح بها أو تصنيف الدرجة D.</li>
-                    </ul>`;
+        switch(id) {
+            case 'best_owner_rev': { let o=[...owners].sort((a,b)=>b.rev-a.rev)[0]; H=ownerCard(o,'🏆 أفضل مسؤول — حسب العوائد المالية','success'); break; }
+            case 'best_owner_fob': { let o=[...owners].sort((a,b)=>b.avgFob-a.avgFob)[0];
+                H=ownerCard(o,'💎 أفضل مسؤول — حسب سعر الطن (جودة التسعير)','info','<li>ملاحظة: سعر مرتفع للطن يعني بيعاً بقيمة أعلى وخصومات أقل.</li>'); break; }
+            case 'best_owner_cust': { let o=[...owners].sort((a,b)=>b.custCount-a.custCount)[0]; H=ownerCard(o,'👥 أفضل مسؤول — حسب عدد العملاء','primary'); break; }
+            case 'owner_ranking': H = `<h6 class="fw-bold text-success">ترتيب المسؤولين حسب العوائد:</h6>` +
+                ol([...owners].sort((a,b)=>b.rev-a.rev), (o,i)=>`<li class="mb-1"><strong>${o.key}</strong>: ${fmt(o.rev)} $ (${fmt(o.qty)} طن — ${o.custCount} عميل)</li>`); break;
+            case 'owner_efficiency': H = `<h6 class="fw-bold text-success">كفاءة المسؤولين (عائد/طن ومتوسط الخصم):</h6>` +
+                ol([...owners].sort((a,b)=>b.avgFob-a.avgFob), (o,i)=>`<li class="mb-1"><strong>${o.key}</strong>: ${fmt(o.avgFob)} $/طن — متوسط خصم <span class="${o.avgDisc>0.05?'text-danger':'text-success'} fw-bold">${(o.avgDisc*100).toFixed(1)}%</span></li>`) +
+                `<p class="small text-muted mt-2 mb-0">🔎 ارتفاع السعر/طن مع انخفاض الخصم = بيع محترف. انخفاضه مع ارتفاع الخصم = ضغط على الأسعار.</p>`; break;
+            case 'worst_owner': { let o=[...owners].sort((a,b)=>a.rev-b.rev)[0]; H=ownerCard(o,'⚠️ أضعف مسؤول — حسب العوائد','danger','<li>يُنصح بمراجعة خطته البيعية أو منطقته الجغرافية.</li>'); break; }
+            case 'most_discount_owner': { let o=[...owners].sort((a,b)=>b.avgDisc-a.avgDisc)[0]; H=ownerCard(o,'💸 المسؤول الأكثر منحاً للخصومات','danger'); break; }
+            case 'best_country_rev': { let c=[...countries].sort((a,b)=>b.rev-a.rev)[0];
+                H=`<h5 class="fw-bold text-success">🌍 أفضل دولة — حسب العوائد</h5><p class="fs-5"><strong>${c.key}</strong></p>
+                <ul class="text-muted small"><li>العوائد: <strong>${fmt(c.rev)} $</strong></li><li>الكمية: <strong>${fmt(c.qty)} طن</strong></li><li>العملاء: <strong>${c.custCount}</strong></li></ul>`; break; }
+            case 'best_country_qty': { let c=[...countries].sort((a,b)=>b.qty-a.qty)[0];
+                H=`<h5 class="fw-bold text-success">⚖️ أفضل دولة — حسب الكميات</h5><p class="fs-5"><strong>${c.key}</strong></p>
+                <ul class="text-muted small"><li>الكمية: <strong>${fmt(c.qty)} طن</strong></li><li>العوائد: <strong>${fmt(c.rev)} $</strong></li><li>متوسط سعر الطن: <strong>${fmt(c.avgFob)} $</strong></li></ul>`; break; }
+            case 'top5_countries': H = `<h6 class="fw-bold text-success">أفضل 5 دول:</h6>` +
+                ol([...countries].sort((a,b)=>b.rev-a.rev).slice(0,5), (c,i)=>`<li class="mb-1"><strong>${c.key}</strong>: ${fmt(c.rev)} $ — ${fmt(c.qty)} طن — ${c.custCount} عميل</li>`); break;
+            case 'worst_country': { let c=[...countries].sort((a,b)=>a.rev-b.rev)[0];
+                H=`<h5 class="fw-bold text-danger">أضعف دولة حسب العوائد: <strong>${c.key}</strong></h5>
+                <ul class="text-muted small"><li>العوائد: ${fmt(c.rev)} $ — الكمية: ${fmt(c.qty)} طن</li><li>💡 فرصة: تطوير السوق أو إعادة توزيع المسؤول.</li></ul>`; break; }
+            case 'country_customers': { let c=[...countries].sort((a,b)=>b.custCount-a.custCount)[0];
+                H=`<h5 class="fw-bold text-success">👥 أكبر قاعدة عملاء: <strong>${c.key}</strong> — ${c.custCount} عميل</h5>
+                <p class="small text-muted">${fmt(c.rev)} $ عوائد — ${fmt(c.qty)} طن.</p>`; break; }
+            case 'high_price_country': { let c=[...countries].sort((a,b)=>b.avgFob-a.avgFob)[0];
+                H=`<h5 class="fw-bold text-success">💰 أعلى سعر FOB/طن: <strong>${c.key}</strong> — ${fmt(c.avgFob)} $</h5>
+                <p class="small text-muted">سوق ممتاز لتعظيم الهامش.</p>`; break; }
+            case 'top_item_rev': { let it=[...items].sort((a,b)=>b.rev-a.rev)[0];
+                H=`<h5 class="fw-bold text-success">🍊 الصنف الأعلى عوائد: <strong>${it.key}</strong></h5>
+                <ul class="text-muted small"><li>العوائد: <strong>${fmt(it.rev)} $</strong> (${totalRev>0?(it.rev/totalRev*100).toFixed(1):0}% من الإجمالي)</li><li>الكمية: <strong>${fmt(it.qty)} طن</strong></li></ul>`; break; }
+            case 'top_item_qty': { let it=[...items].sort((a,b)=>b.qty-a.qty)[0];
+                H=`<h5 class="fw-bold text-success">⚖️ الصنف الأكثر كميات: <strong>${it.key}</strong> — ${fmt(it.qty)} طن</h5>`; break; }
+            case 'item_ranking': H = `<h6 class="fw-bold text-success">ترتيب الأصناف بالعوائد:</h6>` +
+                ol([...items].sort((a,b)=>b.rev-a.rev), (it,i)=>`<li class="mb-1"><strong>${it.key}</strong>: ${fmt(it.rev)} $ — ${fmt(it.qty)} طن — متوسط ${fmt(it.avgFob)} $/طن</li>`); break;
+            case 'expensive_item': { let it=[...items].sort((a,b)=>b.avgFob-a.avgFob)[0];
+                H=`<h5 class="fw-bold text-success">💎 الأغلى سعراً للطن: <strong>${it.key}</strong> — ${fmt(it.avgFob)} $/طن</h5>`; break; }
+            case 'cheap_item': { let it=[...items].sort((a,b)=>a.avgFob-b.avgFob)[0];
+                H=`<h5 class="fw-bold text-danger">الأرخص سعراً للطن: <strong>${it.key}</strong> — ${fmt(it.avgFob)} $/طن</h5>`; break; }
+            case 'summery_share': { let it = items.find(x=>x.key==='صيفي');
+                let share = totalRev>0 && it ? (it.rev/totalRev*100).toFixed(1) : 0;
+                H=`<h5 class="fw-bold text-success">☀️ الصيفي يمثل <strong>${share}%</strong> من العوائد (${fmt(it?it.rev:0)} $)</h5>
+                <p class="small text-muted">⚠️ تركّز عالٍ على صنف واحد = مخاطرة موسمية/سعرية. يُنصح بتنويع الأصناف الثانوية (بسره، بلدي، ليمون).</p>`; break; }
+            case 'grade_ranking': { let g = groupSum(d,'Grade');
+                H=`<h6 class="fw-bold text-success">الدرجات حسب الكمية:</h6>` +
+                ol([...g].sort((a,b)=>b.qty-a.qty), (x,i)=>`<li class="mb-1"><strong>${x.key}</strong>: ${fmt(x.qty)} طن — ${fmt(x.rev)} $ — ${x.custCount} عميل — متوسط ${fmt(x.avgFob)} $/طن</li>`); break; }
+            case 'ind_analysis': { let ind = d.filter(x=>x.Grade==='IND');
+                let qty = ind.reduce((s,x)=>s+x.Quantity,0), rev = ind.reduce((s,x)=>s+x.Net_Revenue,0);
+                let avg = qty>0 ? rev/qty : 0;
+                H=`<h5 class="fw-bold text-success">📦 درجة IND</h5><ul class="text-muted small">
+                <li>عدد الصفقات: <strong>${ind.length}</strong></li><li>الكمية: <strong>${fmt(qty)} طن</strong></li>
+                <li>العوائد: <strong>${fmt(rev)} $</strong></li><li>متوسط السعر: <strong>${fmt(avg)} $/طن</strong> (أقل بكثير من درجات التصدير)</li>
+                <li>ملاحظة: غالباً صيفي بأسعار 200-350$ — تأكد أنها تصريف مخزون مقصود لا تسريب سعري.</li></ul>`; break; }
+            case 'top_customers': H=`<h6 class="fw-bold text-success">أفضل 10 عملاء بالعوائد:</h6>` +
+                ol([...custs].sort((a,b)=>b.rev-a.rev).slice(0,10), (c,i)=>`<li class="mb-1"><strong>عميل ${c.key}</strong>: ${fmt(c.rev)} $ — ${fmt(c.qty)} طن — ${c.deals} صفقة</li>`); break;
+            case 'biggest_customer_qty': { let c=[...custs].sort((a,b)=>b.qty-a.qty)[0];
+                H=`<h5 class="fw-bold text-success">⚖️ أكبر عميل كميات: <strong>${c.key}</strong> — ${fmt(c.qty)} طن</h5>
+                <p class="small text-muted">${fmt(c.rev)} $ عوائد عبر ${c.deals} صفقة.</p>`; break; }
+            case 'total_customers': { let total = new Set(d.map(x=>x.Customer_Code)).size;
+                H=`<h5 class="fw-bold text-success">إجمالي العملاء الفريدين: <strong>${total}</strong></h5><ul class="small text-muted">` +
+                [...owners].sort((a,b)=>b.custCount-a.custCount).map(o=>`<li><strong>${o.key}</strong>: ${o.custCount} عميل</li>`).join('') + '</ul>'; break; }
+            case 'avg_deal': H=`<h5 class="fw-bold text-success">متوسط حجم الصفقة: <strong>${d.length>0?fmt(totalRev/d.length):0} $</strong></h5>
+                <p class="small text-muted">متوسط كمية الصفقة: ${d.length>0?fmt(totalQty/d.length):0} طن.</p>`; break;
+            case 'top_discounts': H=`<h6 class="fw-bold text-danger">أعلى 10 صفقات خصماً:</h6>` +
+                ol([...d].sort((a,b)=>b.Discount_Rate-a.Discount_Rate).slice(0,10),
+                x=>`<li class="mb-1">عميل <strong>${x.Customer_Code}</strong> (${x.Country}) — ${x.Item} درجة ${x.Grade} — خصم <strong class="text-danger">${(x.Discount_Rate*100).toFixed(1)}%</strong> — مسؤول: ${x.Owner}</li>`); break;
+            case 'discount_over_50': { let r = d.filter(x=>x.Discount_Rate>=0.5);
+                H=`<h5 class="fw-bold text-danger">صفقات خصمها تجاوز 50%: <strong>${r.length} صفقة</strong></h5>` +
+                (r.length ? ol(r.sort((a,b)=>b.Discount_Rate-a.Discount_Rate), x=>`<li class="mb-1">عميل <strong>${x.Customer_Code}</strong> — خصم ${(x.Discount_Rate*100).toFixed(1)}% — ${x.Owner}</li>`) : '<p class="small text-muted">لا يوجد.</p>'); break; }
+            case 'discount_loss': { let loss = d.reduce((s,x)=> s + x.Quantity*x.FOB_After_Discount*(x.Discount_Rate/(1-x.Discount_Rate||1))*0, 0);
+                // خسارة الخصم = قيمة ما كان سيدفع قبل الخصم - بعده
+                loss = d.reduce((s,x)=>{ let gross = x.Net_Revenue/(1-x.Discount_Rate||1); return s + (gross - x.Net_Revenue); },0);
+                H=`<h5 class="fw-bold text-warning">💸 إجمالي الخسارة بسبب الخصومات: <strong>${fmt(loss)} $</strong></h5>
+                <p class="small text-muted">المبلغ الذي تنازلت عنه الشركة من القيمة الاسمية مقابل البيع الفعلي.</p>`; break; }
+            case 'no_discount_pct': { let nd = d.filter(x=>x.Discount_Rate===0).length;
+                H=`<h5 class="fw-bold text-success">الصفقات بدون خصم: <strong>${nd}</strong> من ${d.length} = <strong>${d.length?(nd/d.length*100).toFixed(1):0}%</strong></h5>`; break; }
+            case 'avg_discount': { let avg = d.length ? d.reduce((s,x)=>s+x.Discount_Rate,0)/d.length : 0;
+                H=`<h5 class="fw-bold text-success">متوسط نسبة الخصم العام: <strong>${(avg*100).toFixed(1)}%</strong></h5>`; break; }
+            case 'blacklist_summary': { let bl = d.filter(x=>x.Segment==='D (Blacklist)');
+                let codes = {}; bl.forEach(x=>codes[x.Customer_Code]=(codes[x.Customer_Code]||0)+1);
+                let top = Object.entries(codes).sort((a,b)=>b[1]-a[1]).slice(0,5);
+                H=`<h5 class="fw-bold text-danger">🛑 القائمة السوداء (خصم أكثر من 25%)</h5>
+                <ul class="text-muted small"><li>عدد العملاء: <strong>${Object.keys(codes).length}</strong></li>
+                <li>عدد الصفقات: <strong>${bl.length}</strong></li>
+                <li>قيمتها الصافية: <strong>${fmt(bl.reduce((s,x)=>s+x.Net_Revenue,0))} $</strong></li></ul>
+                <p class="small fw-bold mt-2 mb-1">الأكثر تكراراً:</p>` +
+                ol(top, t=>`<li>عميل <strong>${t[0]}</strong>: ${t[1]} صفقة</li>`); break; }
+            case 'blacklist_owners': { let bl = d.filter(x=>x.Segment==='D (Blacklist)');
+                let om = groupSum(bl,'Owner');
+                H=`<h6 class="fw-bold text-danger">المسؤولون حسب صفقات القائمة السوداء:</h6>` +
+                ol([...om].sort((a,b)=>b.deals-a.deals), o=>`<li class="mb-1"><strong>${o.key}</strong>: ${o.deals} صفقة (${o.custCount} عميل)</li>`); break; }
+            case 'key_accounts': { let sorted=[...custs].sort((a,b)=>b.rev-a.rev);
+                let top5 = sorted.slice(0,5); let top5rev = top5.reduce((s,c)=>s+c.rev,0);
+                H=`<h5 class="fw-bold text-success">🔑 أفضل 5 عملاء يمثلون <strong>${totalRev>0?(top5rev/totalRev*100).toFixed(1):0}%</strong> من العوائد</h5>` +
+                ol(top5, c=>`<li class="mb-1">عميل <strong>${c.key}</strong>: ${fmt(c.rev)} $ (${totalRev>0?(c.rev/totalRev*100).toFixed(1):0}%)</li>`) +
+                `<p class="small text-muted mt-2 mb-0">${top5rev/totalRev>0.4?'⚠️ تركّز مرتفع — خطر فقدان عميل واحد كبير.':'✅ التوزيع صحي نسبياً.'}</p>`; break; }
+            case 'owner_risk': H=`<h6 class="fw-bold text-success">المسؤولون حسب عدد العملاء (خطر الرحيل):</h6>` +
+                ol([...owners].sort((a,b)=>b.custCount-a.custCount), o=>`<li class="mb-1"><strong>${o.key}</strong>: ${o.custCount} عميل — ${fmt(o.rev)} $ تحت إدارته</li>`) +
+                `<p class="small text-muted mt-2 mb-0">💡 المسؤول صاحب أكبر قاعدة عملاء + أعلى عوائد هو الأخطر عند الرحيل — وثّق علاقاته.</p>`; break;
+            case 'exec_summary': {
+                let bo = [...owners].sort((a,b)=>b.rev-a.rev);
+                let bc = [...countries].sort((a,b)=>b.rev-a.rev);
+                let bi = [...items].sort((a,b)=>b.rev-a.rev);
+                H=`<h5 class="fw-bold text-success mb-2"><i class="fas fa-file-lines me-1"></i> الملخص التنفيذي</h5>
+                <ul class="small">
+                <li>📊 إجمالي الأعمال: <strong>${fmt(totalRev)} $</strong> — <strong>${fmt(totalQty)} طن</strong> — ${d.length} صفقة — ${new Set(d.map(x=>x.Customer_Code)).size} عميل</li>
+                <li>🏆 أفضل مسؤول (عوائد): <strong>${bo[0].key}</strong> (${fmt(bo[0].rev)} $) — الأعلى كفاءة تسعير: <strong>${[...owners].sort((a,b)=>b.avgFob-a.avgFob)[0].key}</strong></li>
+                <li>🌍 أفضل سوق: <strong>${bc[0].key}</strong> (${fmt(bc[0].rev)} $)</li>
+                <li>🍊 الصنف الأول: <strong>${bi[0].key}</strong> (${totalRev>0?(bi[0].rev/totalRev*100).toFixed(1):0}% من الإيرادات)</li>
+                <li>🛑 القائمة السوداء: ${new Set(d.filter(x=>x.Segment==='D (Blacklist)').map(x=>x.Customer_Code)).size} عميل</li>
+                <li>⚠️ صفقات خصم > 50%: ${d.filter(x=>x.Discount_Rate>=0.5).length} صفقة — تتطلب مراجعة إدارية</li>
+                </ul>`; break; }
+            default: H='<p class="text-muted small">اختر سؤالاً من القائمة.</p>';
         }
-
-        display.innerHTML = html;
+        display.innerHTML = H;
+        display.scrollTop = 0;
     }
 </script>
 </body>
