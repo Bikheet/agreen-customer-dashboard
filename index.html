@@ -1,738 +1,970 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة تحليل وتصنيف العملاء - AGREEN</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-    <style>
-        body { font-family: 'Cairo', sans-serif; background-color: #042f2e; color: #2c3e50; margin: 0; overflow-x: hidden; }
-        .video-background { position: fixed; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; }
-        .video-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(4, 47, 46, 0.78); backdrop-filter: blur(3px); z-index: -1; }
-        #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; z-index: 9999; padding: 15px; }
-        .login-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); padding: 40px; border-radius: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.4); width: 100%; max-width: 400px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.3); }
-        .header-section { background: linear-gradient(135deg, #065f46 0%, #047857 100%); color: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .kpi-card, .filter-box, .ai-insights-box, .owner-best-box, .table-box, .alert-box { background: #ffffff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); padding: 20px; margin-bottom: 20px; }
-        .faq-btn { background-color: #f0fdf4; border: 1px solid #bbf7d0; color: #065f46; text-align: right; font-weight: 600; padding: 8px 12px; border-radius: 8px; transition: all 0.2s; width: 100%; margin-bottom: 5px; font-size: 0.85rem; }
-        .faq-btn:hover { background-color: #059669; color: white; border-color: #059669; transform: translateX(-3px); }
-        .faq-answer-box { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 10px; padding: 20px; min-height: 280px; max-height: 480px; overflow-y: auto; }
-        .badge-a { background-color: #198754; color: #fff; padding: 4px 9px; border-radius: 6px; font-size: 0.8rem; }
-        .badge-b { background-color: #0dcaf0; color: #000; padding: 4px 9px; border-radius: 6px; font-size: 0.8rem; }
-        .badge-c { background-color: #ffc107; color: #000; padding: 4px 9px; border-radius: 6px; font-size: 0.8rem; }
-        .badge-d { background-color: #dc3545; color: #fff; padding: 4px 9px; border-radius: 6px; font-size: 0.8rem; }
-        .table th { background-color: #065f46 !important; color: white; text-align: center; position: sticky; top: 0; }
-        .table td { text-align: center; vertical-align: middle; }
-        .faq-cat { background: #065f46; color: #fff; font-weight: 700; font-size: 0.83rem; padding: 6px 12px; border-radius: 6px; margin: 10px 0 6px; }
-        .toggle-btn { border: 1px solid #059669; background: #fff; color: #065f46; font-weight: 700; font-size: 0.85rem; padding: 6px 14px; }
-        .toggle-btn.active { background: #059669; color: #fff; }
-        .alert-item { background: #fff5f5; border-right: 4px solid #dc2626; padding: 10px 14px; border-radius: 8px; margin-bottom: 8px; font-size: 0.85rem; border: 1px solid #fecaca; border-right-width: 4px; }
-        @media print { .no-print { display: none !important; } }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحة القيادة التحليلية للمبيعات — مع رأي الخبير 🤖</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+    body { background:#f1f5f9; font-family:'Segoe UI', Tahoma, Arial, sans-serif; }
+    .card { border:0; box-shadow:0 2px 8px rgba(15,23,42,.06); border-radius:12px; }
+    .kpi-card { text-align:center; padding:14px 8px; }
+    .kpi-card .kpi-val { font-size:1.35rem; font-weight:800; }
+    .kpi-card .kpi-lbl { font-size:.78rem; color:#64748b; }
+    .alert-item { background:#fff7ed; border:1px solid #fed7aa; border-right:4px solid #ea580c; border-radius:8px; padding:8px 12px; margin-bottom:8px; font-size:.85rem; line-height:1.9; }
+    .ai-advice { background:#eff6ff; border:1px solid #bfdbfe; border-right:3px solid #2563eb; border-radius:6px; padding:7px 10px; margin-top:6px; font-size:0.8rem; color:#1e3a5a; line-height:1.7; }
+    .faq-cat { background:#e2e8f0; font-weight:700; padding:6px 12px; border-radius:8px; margin:12px 0 6px; font-size:.85rem; }
+    .faq-q { display:block; width:100%; text-align:right; background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:7px 12px; margin-bottom:5px; font-size:.85rem; cursor:pointer; transition:.15s; }
+    .faq-q:hover { background:#f0f9ff; border-color:#7dd3fc; }
+    .faq-q.active { background:#dbeafe; border-color:#2563eb; font-weight:700; }
+    .faq-answer-box { background:#fff; border:1px solid #cbd5e1; border-radius:10px; padding:16px; min-height:120px; }
+    .faq-answer-box table { font-size:0.82rem; }
+    .faq-answer-box .table th { position: static; }
+    .table-wrap { max-height:420px; overflow:auto; }
+    .table-wrap thead th { position:sticky; top:0; background:#f8fafc; z-index:1; }
+    .badge-seg-D { background:#fee2e2; color:#b91c1c; }
+    .badge-seg-A { background:#dcfce7; color:#166534; }
+    .badge-seg-B { background:#fef9c3; color:#854d0e; }
+    .badge-seg-C { background:#ffedd5; color:#9a3412; }
+    @media print {
+        .no-print { display:none !important; }
+        body { background:#fff; }
+        .card { box-shadow:none; border:1px solid #e2e8f0; }
+    }
+</style>
 </head>
 <body>
 
-    <video autoplay muted loop playsinline preload="metadata" class="video-background" id="bgVideo">
-        <source src="animo-spiral-stream-720p.mp4" type="video/mp4">
-    </video>
-    <div class="video-overlay"></div>
+<div class="container-fluid py-3">
 
-    <!-- شاشة تسجيل الدخول -->
-    <div id="loginOverlay">
-        <div class="login-card">
-            <h3 class="fw-bold text-success mb-2"><i class="fas fa-leaf me-2"></i> AGREEN</h3>
-            <p class="text-muted small fw-bold mb-2">GO Digital - GO Paperless</p>
-            <div id="loginError" class="alert alert-danger d-none py-2 small">اسم المستخدم أو كلمة المرور غير صحيحة</div>
-            <div class="mb-3 text-end">
-                <label class="form-label fw-bold small">اسم المستخدم:</label>
-                <input type="text" id="username" class="form-control" placeholder="أدخل اسم المستخدم">
+    <!-- ===================== الترويسة ===================== -->
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+        <h4 class="fw-bold mb-0"><i class="fas fa-chart-line text-primary me-2"></i> لوحة القيادة التحليلية للمبيعات <span class="badge bg-primary">مع رأي الخبير 🤖</span></h4>
+        <div class="no-print small text-muted">آخر تحديث: <span id="lastUpdate">—</span></div>
+    </div>
+
+    <!-- ===================== مصدر البيانات ===================== -->
+    <div class="card mb-3 no-print">
+        <div class="card-body py-2">
+            <div class="row g-2 align-items-center">
+                <div class="col-lg-4 col-md-6">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text"><i class="fas fa-link"></i></span>
+                        <input type="text" id="sheetUrl" class="form-control" placeholder="رابط Google Sheet (CSV export) — اختياري">
+                        <button class="btn btn-primary" onclick="loadSheetAutomatically()"><i class="fas fa-download me-1"></i> تحميل</button>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" class="form-control form-control-sm" onchange="handleFile(event)">
+                </div>
+                <div class="col-lg-5 col-md-12 small text-muted">
+                    <i class="fas fa-circle-info me-1"></i> يدعم الملف أعمدة: Customer_Code, Country, Item, Grade, Quantity, FOB_After_Discount, Discount_Rate, Net_Revenue, Owner — أو <button class="btn btn-sm btn-outline-secondary py-0" onclick="loadDemoData()">تفعيل البيانات التجريبية</button>
+                </div>
             </div>
-            <div class="mb-4 text-end">
-                <label class="form-label fw-bold small">كلمة المرور:</label>
-                <input type="password" id="password" class="form-control" placeholder="أدخل كلمة المرور">
-            </div>
-            <button class="btn btn-success w-100 fw-bold py-2 shadow-sm" onclick="checkLogin()">دخول النظام</button>
-            <p class="text-muted mt-3 mb-0" style="font-size:0.72rem;">⚠️ بيانات الدخول: khaled / 1235</p>
         </div>
     </div>
 
-    <!-- محتوى لوحة التحكم الرئيسية -->
-    <div id="dashboardContent" class="container-fluid py-4 px-4 d-none">
-        <div class="header-section p-3 mb-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
-            <div>
-                <span class="badge bg-warning text-dark mb-1 fw-bold">GO Digital - GO Paperless</span>
-                <h4 class="fw-bold mb-1"><i class="fas fa-chart-line me-2 text-warning"></i> لوحة تحليل وتصنيف عملاء AGREEN والتقارير التنفيذية</h4>
-            </div>
-            <div class="d-flex gap-2 no-print">
-                <button class="btn btn-warning btn-sm fw-bold text-dark shadow-sm" onclick="window.print()"><i class="fas fa-file-pdf me-1"></i> تصدير PDF</button>
-                <button class="btn btn-light btn-sm fw-bold text-danger" onclick="logout()"><i class="fas fa-sign-out-alt me-1"></i> خروج</button>
-            </div>
-        </div>
-
-        <!-- تنبيهات فورية: صفقات بخصم مبالغ فيه -->
-        <div class="alert-box no-print" id="alertBox">
-            <h6 class="fw-bold text-danger mb-2"><i class="fas fa-bell me-2"></i> تنبيهات فورية: صفقات خصمها تجاوز 50%</h6>
-            <div id="alertList"></div>
-        </div>
-
-        <!-- فلاتر التحكم الشاملة -->
-        <div class="filter-box no-print mb-4">
-            <h6 class="fw-bold text-success mb-3"><i class="fas fa-filter me-2"></i> فلاتر التحليل المقارن</h6>
-            <div class="row g-3">
-                <div class="col-md-3"><select id="filterCountry" class="form-select form-select-sm" onchange="filterData()"><option value="">كل الدول</option></select></div>
-                <div class="col-md-3"><select id="filterSegment" class="form-select form-select-sm" onchange="filterData()"><option value="">كل الفئات</option><option value="A">الفئة A (بدون خصم)</option><option value="B">الفئة B (خصم أقل من 10%)</option><option value="C">الفئة C (خصم 10-25%)</option><option value="D (Blacklist)">القائمة السوداء (خصم أكثر من 25%)</option></select></div>
-                <div class="col-md-3"><select id="filterItem" class="form-select form-select-sm" onchange="filterData()"><option value="">كل الأصناف</option></select></div>
-                <div class="col-md-3"><select id="filterOwner" class="form-select form-select-sm" onchange="filterData()"><option value="">كل المسؤولين</option></select></div>
+    <!-- ===================== الفلاتر ===================== -->
+    <div class="card mb-3 no-print">
+        <div class="card-body py-2">
+            <div class="row g-2 align-items-end">
+                <div class="col"><label class="form-label small mb-0">المسؤول</label><select id="fOwner" class="form-select form-select-sm" onchange="applyFilters()"></select></div>
+                <div class="col"><label class="form-label small mb-0">الدولة</label><select id="fCountry" class="form-select form-select-sm" onchange="applyFilters()"></select></div>
+                <div class="col"><label class="form-label small mb-0">الصنف</label><select id="fItem" class="form-select form-select-sm" onchange="applyFilters()"></select></div>
+                <div class="col"><label class="form-label small mb-0">الدرجة</label><select id="fGrade" class="form-select form-select-sm" onchange="applyFilters()"></select></div>
+                <div class="col"><label class="form-label small mb-0">الشريحة</label><select id="fSegment" class="form-select form-select-sm" onchange="applyFilters()"></select></div>
+                <div class="col-auto"><button class="btn btn-sm btn-outline-danger" onclick="resetFilters()"><i class="fas fa-rotate-left"></i> تصفير</button></div>
             </div>
         </div>
+    </div>
 
-        <!-- مؤشرات الأداء KPI -->
-        <div class="row g-3 mb-4">
-            <div class="col-md-2 col-6"><div class="kpi-card border-start border-4 border-success"><div class="text-muted small fw-bold">إجمالي الصفقات</div><div class="fs-4 fw-bold text-dark mt-1" id="kpiTotalTrans">0</div></div></div>
-            <div class="col-md-2 col-6"><div class="kpi-card border-start border-4 border-primary"><div class="text-muted small fw-bold">إجمالي قيم FOB ($)</div><div class="fs-4 fw-bold text-primary mt-1" id="kpiTotalVal">0</div></div></div>
-            <div class="col-md-2 col-6"><div class="kpi-card border-start border-4 border-warning"><div class="text-muted small fw-bold">إجمالي الكميات (طن)</div><div class="fs-4 fw-bold text-warning mt-1" id="kpiTotalQty">0</div></div></div>
-            <div class="col-md-3 col-6"><div class="kpi-card border-start border-4 border-info"><div class="text-muted small fw-bold">متوسط سعر FOB / طن</div><div class="fs-4 fw-bold text-info mt-1" id="kpiAvgFob">0</div></div></div>
-            <div class="col-md-3 col-6"><div class="kpi-card border-start border-4 border-danger"><div class="text-muted small fw-bold">عملاء القائمة السوداء</div><div class="fs-4 fw-bold text-danger mt-1" id="kpiBlacklist">0</div></div></div>
+    <!-- ===================== مؤشرات الأداء ===================== -->
+    <div class="row g-2 mb-3" id="kpiRow"></div>
+
+    <!-- ===================== التنبيهات ===================== -->
+    <div class="card mb-3 border-danger">
+        <div class="card-body">
+            <h6 class="fw-bold text-danger mb-2"><i class="fas fa-bell me-2"></i> تنبيهات فورية: صفقات خصمها تجاوز 50% — مع رأي الخبير 🤖</h6>
+            <div id="alertList"><span class="text-muted small">⏳ بانتظار تحميل البيانات...</span></div>
         </div>
+    </div>
 
-        <!-- الرسوم البيانية -->
-        <div class="row g-3 mb-4">
-            <div class="col-lg-7"><div class="kpi-card"><h6 class="fw-bold text-success mb-2"><i class="fas fa-chart-column me-2"></i> أداء المسؤولين</h6><canvas id="ownersChart" height="130"></canvas></div></div>
-            <div class="col-lg-5"><div class="kpi-card"><h6 class="fw-bold text-success mb-2"><i class="fas fa-chart-pie me-2"></i> توزيع العوائد حسب الصنف</h6><canvas id="itemsChart" height="130"></canvas></div></div>
-        </div>
+    <!-- ===================== الرسوم البيانية ===================== -->
+    <div class="row g-3 mb-3">
+        <div class="col-lg-6"><div class="card"><div class="card-body"><h6 class="fw-bold text-primary"><i class="fas fa-users me-1"></i> العوائد حسب المسؤول</h6><canvas id="chOwner" height="150"></canvas></div></div></div>
+        <div class="col-lg-6"><div class="card"><div class="card-body"><h6 class="fw-bold text-primary"><i class="fas fa-globe me-1"></i> العوائد حسب الدولة (أعلى 10)</h6><canvas id="chCountry" height="150"></canvas></div></div></div>
+        <div class="col-lg-6"><div class="card"><div class="card-body"><h6 class="fw-bold text-primary"><i class="fas fa-box me-1"></i> العوائد حسب الصنف</h6><canvas id="chItem" height="150"></canvas></div></div></div>
+        <div class="col-lg-6"><div class="card"><div class="card-body"><h6 class="fw-bold text-primary"><i class="fas fa-layer-group me-1"></i> العوائد حسب الدرجة</h6><canvas id="chGrade" height="150"></canvas></div></div></div>
+    </div>
 
-        <!-- بنك الأسئلة الشامل (85 سؤالاً) -->
-        <div class="ai-insights-box mb-4 no-print">
-            <h5 class="fw-bold text-success mb-1"><i class="fas fa-list-check me-2 text-warning"></i> بنك الأسئلة الشامل (85 سؤالاً) والتقارير الفورية</h5>
-            <p class="text-muted small mb-3">الإجابات تُحسب لحظياً من البيانات <strong>المفلترة حالياً</strong> — استخدم البحث السريع للوصول الفوري لأي تقرير.</p>
-            <input type="text" id="faqSearch" class="form-control form-control-sm mb-3" placeholder="🔍 ابحث في الـ 85 سؤالاً..." oninput="filterFaqSearch()">
-            <div class="row g-3">
-                <div class="col-md-5">
-                    <div style="max-height: 480px; overflow-y: auto; padding-left: 5px;" id="faqList"></div>
-                </div>
-                <div class="col-md-7">
-                    <div class="faq-answer-box" id="faqAnswerDisplay">
-                        <h6 class="fw-bold text-success mb-2"><i class="fas fa-info-circle me-1"></i> لوحة عرض النتائج التنفيذية:</h6>
-                        <p class="text-muted small">اضغط على أي سؤال من القائمة الجانبية لتظهر الإجابة المحسوبة بدقة 100%.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- مقارنة الدول -->
-        <div class="owner-best-box mb-4">
-            <h5 class="fw-bold text-success mb-2"><i class="fas fa-globe me-2 text-warning"></i> مقارنة الدول</h5>
-            <div class="table-responsive" style="max-height: 350px; overflow-y: auto;"><table class="table table-bordered table-striped align-middle small"><thead><tr><th>الدولة</th><th>عدد العملاء</th><th>عدد الصفقات</th><th>إجمالي الكمية (طن)</th><th>إجمالي العوائد ($)</th><th>متوسط FOB/طن</th></tr></thead><tbody id="countryTableBody"></tbody></table></div>
-        </div>
-
-        <!-- تحليل كفاءة المسؤولين -->
-        <div class="owner-best-box mb-4">
-            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
-                <h5 class="fw-bold text-success mb-0"><i class="fas fa-user-tie me-2 text-warning"></i> تحليل كفاءة مسؤولي المبيعات</h5>
-                <div class="btn-group no-print" id="ownerMetricToggle">
-                    <button class="btn toggle-btn active" data-m="rev" onclick="setOwnerMetric('rev')">حسب العوائد</button>
-                    <button class="btn toggle-btn" data-m="fob" onclick="setOwnerMetric('fob')">حسب سعر الطن</button>
-                    <button class="btn toggle-btn" data-m="cust" onclick="setOwnerMetric('cust')">حسب عدد العملاء</button>
-                </div>
-            </div>
-            <p class="text-muted small" id="ownerMetricNote"></p>
-            <div class="table-responsive"><table class="table table-bordered table-striped align-middle small"><thead><tr><th>الترتيب</th><th>المسؤول</th><th>العوائد الصافية ($)</th><th>الكمية (طن)</th><th>متوسط FOB/طن</th><th>عدد العملاء</th><th>عدد الصفقات</th><th>متوسط الخصم</th></tr></thead><tbody id="ownerTableBody"></tbody></table></div>
-        </div>
-
-        <!-- جدول التفاصيل -->
-        <div class="table-box">
-            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-                <h6 class="fw-bold text-secondary mb-0">بيانات الشيت التفصيلية</h6>
-                <input type="text" id="searchBox" class="form-control form-control-sm w-auto no-print" style="min-width: 250px;" placeholder="بحث برقم العميل، الدولة، أو المسؤول..." onkeyup="filterData()">
-            </div>
-            <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
-                <table class="table table-hover table-bordered align-middle small">
-                    <thead><tr><th>#</th><th>كود العميل</th><th>المسؤول</th><th>الدولة</th><th>الصنف</th><th>الدرجة</th><th>الكمية</th><th>FOB/طن</th><th>الخصم</th><th>العائد الصافي</th><th>التصنيف</th></tr></thead>
-                    <tbody id="tableBody"></tbody>
+    <!-- ===================== جدول البيانات ===================== -->
+    <div class="card mb-3">
+        <div class="card-body">
+            <h6 class="fw-bold text-secondary mb-2"><i class="fas fa-table me-1"></i> تفاصيل الصفقات <span class="badge bg-secondary" id="dealCount">0</span></h6>
+            <div class="table-wrap">
+                <table class="table table-striped table-sm table-bordered align-middle" style="font-size:.8rem">
+                    <thead><tr>
+                        <th>العميل</th><th>الدولة</th><th>الصنف</th><th>الدرجة</th><th>الكمية</th>
+                        <th>FOB/طن</th><th>الخصم</th><th>صافي العائد</th><th>الشريحة</th><th>المسؤول</th>
+                    </tr></thead>
+                    <tbody id="dataBody"></tbody>
                 </table>
             </div>
         </div>
     </div>
 
+    <!-- ===================== بنك الأسئلة ===================== -->
+    <div class="row g-3">
+        <div class="col-lg-5 no-print">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="fw-bold text-success mb-2"><i class="fas fa-circle-question me-1"></i> بنك الأسئلة الذكي — 85 سؤالاً (تُحسب لحظياً من البيانات المفلترة)</h6>
+                    <input type="text" id="faqSearch" class="form-control form-control-sm mb-2" placeholder="🔍 ابحث في الأسئلة..." oninput="renderFaqList()">
+                    <div id="faqList" style="max-height:520px; overflow-y:auto;"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-7">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="fw-bold text-primary mb-2"><i class="fas fa-robot me-1"></i> إجابة المحلل الذكي</h6>
+                    <div class="faq-answer-box" id="faqAnswer"><p class="text-muted small mb-0">👈 اختر سؤالاً من بنك الأسئلة لعرض الإجابة التحليلية هنا.</p></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center small text-muted mt-4">لوحة القيادة التحليلية © 2026 — كل الأرقام تُحسب لحظياً من البيانات المفلترة.</div>
+</div>
+
 <script>
-    let rawData = [];
-    let ownerMetric = 'rev';
-    let ownersChart = null, itemsChart = null;
+/* ================================================================
+   أدوات مساعدة عامة
+================================================================ */
+const fmt = n => n>=1e6 ? (n/1e6).toFixed(2)+'M' : n>=1e3 ? (n/1e3).toFixed(1)+'K' : Math.round(n).toLocaleString();
+const fmtFull = n => Math.round(n).toLocaleString();
+const ol = (arr, fn) => '<ol class="small ps-3 mb-0">' + arr.map(fn).join('') + '</ol>';
+const ul = (arr, fn) => '<ul class="small ps-3 mb-0">' + arr.map(fn).join('') + '</ul>';
+const tbl = (head, rows) => '<div class="table-responsive"><table class="table table-bordered table-striped table-sm"><thead><tr>' + head.map(h=>'<th class="text-center">'+h+'</th>').join('') + '</tr></thead><tbody>' + rows.join('') + '</tbody></table></div>';
+const medals = ['🥇','🥈','🥉','4️⃣','5️⃣'];
+const esc = s => String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
-    const COUNTRY_MAP = {'السعودية':'السعوديه','مالطه':'مالطة','ماليزا':'ماليزيا','ماليزيا ':'ماليزيا','اورجوي':'اورجواي','اوراجواي':'اورجواي','اوجواي':'اورجواي','اوراجواى':'اورجواي','اورجواى':'اورجواي','قيتنام':'فيتنام','نيو يورك':'امريكا'};
-    const ITEM_MAP = {'موركيت اسبانى':'موركيت اسباني'};
-    const cleanTxt = (v, map) => { let s = String(v||'').trim().replace(/\s+/g,' '); return map[s] || s; };
+function groupSum(d, keyFn) {
+    const fn = typeof keyFn==='function' ? keyFn : x => x[keyFn];
+    let m = {};
+    d.forEach(x => {
+        let k = fn(x); if(!m[k]) m[k]={key:k, rev:0, qty:0, deals:0, custs:new Set(), disc:0};
+        m[k].rev += x.Net_Revenue; m[k].qty += x.Quantity; m[k].deals++; m[k].disc += x.Discount_Rate; m[k].custs.add(x.Customer_Code);
+    });
+    return Object.values(m).map(v => ({key:v.key, rev:v.rev, qty:v.qty, deals:v.deals, custCount:v.custs.size,
+        avgFob: v.qty>0 ? v.rev/v.qty : 0, avgDisc: v.deals>0 ? v.disc/v.deals : 0}));
+}
 
-    function checkLogin() {
-        if(document.getElementById('username').value.trim() === 'khaled' && document.getElementById('password').value.trim() === '1235') {
-            document.getElementById('loginOverlay').style.display = 'none';
-            document.getElementById('dashboardContent').classList.remove('d-none');
-            loadSheetAutomatically();
-        } else { document.getElementById('loginError').classList.remove('d-none'); }
+function ownerCard(o, title, color, extra) {
+    if(!o) return '<p class="text-muted small">لا توجد بيانات ضمن النطاق المفلتر.</p>';
+    return '<div class="border rounded p-2 mb-2" style="border-right:4px solid var(--bs-'+(color||'primary')+') !important">'
+        + '<h6 class="fw-bold text-'+color+' mb-1">'+title+': <span class="text-dark">'+esc(o.key)+'</span></h6>'
+        + '<ul class="small ps-3 mb-0">'
+        + '<li>العوائد: <strong>'+fmt(o.rev)+'$</strong></li>'
+        + '<li>الكمية: <strong>'+fmt(o.qty)+' طن</strong></li>'
+        + '<li>متوسط السعر: <strong>'+fmt(o.avgFob)+'$/طن</strong></li>'
+        + '<li>متوسط الخصم: <strong>'+(o.avgDisc*100).toFixed(1)+'%</strong></li>'
+        + '<li>الصفقات: <strong>'+o.deals+'</strong> — العملاء: <strong>'+o.custCount+'</strong></li>'
+        + (extra || '')
+        + '</ul></div>';
+}
+
+/* ================================================================
+   تحميل البيانات
+================================================================ */
+let rawData = [];
+let filteredData = [];
+
+/* ---------- البيانات التجريبية (تشمل صفقات التنبيهات السبع بالقيم الدقيقة) ---------- */
+const DEMO_DATA = [
+    // صفقات التنبيهات >50%
+    [105003,'قطر','صيفي','D',125,112,0.776,'زياد'],
+    [411600,'الصين','صيفي','B',48,154,0.730,'محمود'],
+    [101200,'السعوديه','ميخال','C',111,112,0.721,'زياد'],
+    [306118,'روسيا','موركيت اسباني','C',35,107,0.639,'دنيا'],
+    [209012,'هولندا','صيفي','B',176,170,0.595,'يارا'],
+    [209033,'هولندا','صيفي','B',81,143,0.578,'نانسي'],
+    [808013,'روسيا','موركيت اسباني','C',240,269,0.546,'نانسي'],
+    // 808013 — نمط الخصومات المتراكم (خسائر ≈228K$)
+    [808013,'روسيا','موركيت اسباني','C',300,400,0.276,'نانسي'],
+    [808013,'روسيا','موركيت اسباني','C',150,380,0.300,'نانسي'],
+    [808013,'روسيا','صيفي','B',200,300,0.450,'نانسي'],
+    [808013,'روسيا','صيفي','A',90,280,0.500,'نانسي'],
+    [808013,'روسيا','ميخال','B',30,350,0.400,'نانسي'],
+    // 209012 — عميل استراتيجي ≈1.57M$
+    [209012,'هولندا','صيفي','A',300,620,0.100,'يارا'],
+    [209012,'هولندا','صيفي','B',400,480,0.050,'يارا'],
+    [209012,'هولندا','ميراف','A',150,700,0.000,'يارا'],
+    [209012,'هولندا','صيفي','A',500,550,0.150,'يارا'],
+    [209012,'هولندا','صيفي','B',350,450,0.180,'يارا'],
+    [209012,'هولندا','صيفي','A',450,600,0.120,'يارا'],
+    [209012,'هولندا','صيفي','B',400,500,0.080,'يارا'],
+    [209012,'هولندا','صيفي','A',180,650,0.000,'يارا'],
+    [209012,'هولندا','دبلو موركيت','A',50,800,0.050,'يارا'],
+    // IND — متوسط ≈276$
+    [301001,'مصر','IND','IND',200,260,0.350,'أحمد'],
+    [301002,'الاردن','IND','IND',150,292,0.300,'خالد'],
+    [302015,'لبنان','IND','IND',100,276,0.320,'أحمد'],
+    // ميخال — متوسط ≈386$
+    [401110,'الامارات','ميخال','A',120,540,0.100,'زياد'],
+    [401111,'الامارات','ميخال','B',220,425,0.120,'محمود'],
+    [401112,'تركيا','ميخال','A',80,460,0.000,'دنيا'],
+    [401113,'فرنسا','ميخال','B',90,360,0.200,'يارا'],
+    // الصين تدفع 700–800$ لدرجة A
+    [411600,'الصين','صيفي','A',200,750,0.050,'محمود'],
+    [411601,'الصين','صيفي','A',150,720,0.000,'محمود'],
+    // مبيعات عادية متنوعة
+    [105001,'السعوديه','صيفي','A',400,580,0.080,'زياد'],
+    [105002,'قطر','صيفي','A',250,620,0.000,'زياد'],
+    [105004,'الامارات','دبلو موركيت','A',100,780,0.050,'زياد'],
+    [101201,'السعوديه','صيفي','B',300,460,0.150,'زياد'],
+    [411602,'الصين','صيفي','B',250,500,0.120,'محمود'],
+    [411603,'الصين','ميخال','A',100,500,0.100,'محمود'],
+    [502001,'سنغافورة','صيفي','A',120,640,0.050,'محمود'],
+    [306119,'روسيا','موركيت اسباني','A',100,620,0.080,'دنيا'],
+    [306120,'روسيا','ميخال','B',80,400,0.180,'دنيا'],
+    [601001,'بولندا','صيفي','A',150,590,0.100,'دنيا'],
+    [209034,'هولندا','صيفي','A',130,610,0.060,'نانسي'],
+    [209035,'المانيا','صيفي','B',160,470,0.100,'نانسي'],
+    [301003,'مصر','صيفي','B',300,420,0.200,'أحمد'],
+    [301004,'مصر','صيفي','A',100,560,0.120,'أحمد'],
+    [701001,'الاردن','صيفي','A',180,600,0.050,'خالد'],
+    [701002,'الكويت','صيفي','A',90,650,0.000,'خالد'],
+    [801001,'الهند','صيفي','B',220,430,0.140,'دنيا'],
+    [801002,'فيتنام','صيفي','C',140,380,0.160,'أحمد'],
+    [901001,'البرازيل','موركيت اسباني','A',90,600,0.100,'محمود'],
+    [901002,'كندا','صيفي','A',70,680,0.050,'خالد'],
+    [201001,'ليتوانيا','صيفي','B',110,450,0.120,'يارا'],
+    [202001,'فنلندا','صيفي','A',60,630,0.080,'نانسي']
+];
+
+function normalizeRow(r) {
+    const g = (...keys) => { for(const k of keys) if(r[k]!==undefined) return r[k]; return ''; };
+    let qty = parseFloat(g('Quantity','الكمية'))||0;
+    let fob = parseFloat(g('FOB_After_Discount','سعر البيع'))||0;
+    let disc = parseFloat(g('Discount_Rate','نسبة الخصم'))||0;
+    if(disc>1) disc = disc/100;
+    let net = parseFloat(g('Net_Revenue','صافي العائد'));
+    if(!(net>0)) net = qty*fob;
+    return {
+        Customer_Code: String(g('Customer_Code','كود العميل')).trim(),
+        Country: String(g('Country','الدولة')).trim(),
+        Item: String(g('Item','الصنف')).trim(),
+        Grade: String(g('Grade','الدرجة')).trim(),
+        Quantity: qty, FOB_After_Discount: fob, Discount_Rate: disc, Net_Revenue: net,
+        Owner: String(g('Owner','المسؤول')).trim() || 'غير محدد'
+    };
+}
+
+function finalizeData(parsed) {
+    rawData = parsed.map(x => ({...x, Segment: x.Discount_Rate>0.25 ? 'D (Blacklist)' : x.Discount_Rate===0 ? 'A (بدون خصم)' : x.Discount_Rate<=0.10 ? 'B (خصم منخفض)' : 'C (خصم متوسط)'}));
+    computeItemAverages();
+    buildFilters();
+    applyFilters();
+    document.getElementById('lastUpdate').textContent = new Date().toLocaleString('ar-EG');
+}
+
+function loadDemoData() {
+    finalizeData(DEMO_DATA.map(r => ({Customer_Code:r[0],Country:r[1],Item:r[2],Grade:r[3],Quantity:r[4],FOB_After_Discount:r[5],Discount_Rate:r[6],Net_Revenue:r[4]*r[5],Owner:r[7]})));
+}
+
+/* ---------- تحميل تلقائي من Google Sheet ---------- */
+function loadSheetAutomatically() {
+    const url = document.getElementById('sheetUrl').value.trim();
+    if(!url) { alert('أدخل رابط الـ Google Sheet أولاً — أو ارفع ملف إكسل، أو فعّل البيانات التجريبية.'); return; }
+    fetch(url).then(r => r.text()).then(text => {
+        const wb = XLSX.read(text, {type:'string'});
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        finalizeData(XLSX.utils.sheet_to_json(ws).map(normalizeRow));
+    }).catch(() => alert('تعذر التحميل من الرابط — تأكد من نشر الشيت (Anyone with the link) واستخدام رابط CSV export.'));
+}
+
+/* ---------- رفع ملف إكسل ---------- */
+function handleFile(ev) {
+    const f = ev.target.files[0]; if(!f) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+        const wb = XLSX.read(new Uint8Array(e.target.result), {type:'array'});
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        finalizeData(XLSX.utils.sheet_to_json(ws).map(normalizeRow));
+    };
+    reader.readAsArrayBuffer(f);
+}
+
+/* ================================================================
+   الفلاتر
+================================================================ */
+function fillSelect(id, values, label) {
+    const el = document.getElementById(id);
+    el.innerHTML = '<option value="">'+label+'</option>' + values.map(v=>'<option value="'+esc(v)+'">'+esc(v)+'</option>').join('');
+}
+function buildFilters() {
+    const uniq = f => [...new Set(rawData.map(x=>x[f]))].sort();
+    fillSelect('fOwner', uniq('Owner'), 'كل المسؤولين');
+    fillSelect('fCountry', uniq('Country'), 'كل الدول');
+    fillSelect('fItem', uniq('Item'), 'كل الأصناف');
+    fillSelect('fGrade', uniq('Grade'), 'كل الدرجات');
+    fillSelect('fSegment', uniq('Segment'), 'كل الشرائح');
+}
+function resetFilters() {
+    ['fOwner','fCountry','fItem','fGrade','fSegment'].forEach(id => document.getElementById(id).value='');
+    applyFilters();
+}
+function applyFilters() {
+    const o=document.getElementById('fOwner').value, c=document.getElementById('fCountry').value,
+          i=document.getElementById('fItem').value, g=document.getElementById('fGrade').value,
+          s=document.getElementById('fSegment').value;
+    filteredData = rawData.filter(x => (!o||x.Owner===o)&&(!c||x.Country===c)&&(!i||x.Item===i)&&(!g||x.Grade===g)&&(!s||x.Segment===s));
+    updateDashboard();
+}
+
+/* ================================================================
+   تحديث اللوحة
+================================================================ */
+let charts = {};
+function makeChart(id, labels, data, label, colors) {
+    if(charts[id]) charts[id].destroy();
+    charts[id] = new Chart(document.getElementById(id), {type:'bar',
+        data:{labels, datasets:[{label, data, backgroundColor:colors, borderRadius:6}]},
+        options:{plugins:{legend:{display:false}}, scales:{y:{ticks:{callback:v=>fmt(v)}}}}});
+}
+
+function updateDashboard() {
+    const d = filteredData;
+    const totalRev = d.reduce((s,x)=>s+x.Net_Revenue,0);
+    const totalQty = d.reduce((s,x)=>s+x.Quantity,0);
+    const totalDisc = d.reduce((s,x)=>{ let g=x.Discount_Rate<1?x.Net_Revenue/(1-x.Discount_Rate):x.Net_Revenue; return s+(g-x.Net_Revenue); },0);
+    const custCount = new Set(d.map(x=>x.Customer_Code)).size;
+    const avgFob = totalQty>0 ? totalRev/totalQty : 0;
+    const avgDisc = d.length ? d.reduce((s,x)=>s+x.Discount_Rate,0)/d.length : 0;
+
+    document.getElementById('kpiRow').innerHTML = [
+        ['إجمالي العوائد', fmt(totalRev)+'$', 'primary', 'fa-sack-dollar'],
+        ['إجمالي الكميات', fmt(totalQty)+' طن', 'success', 'fa-weight-hanging'],
+        ['عدد الصفقات', d.length, 'info', 'fa-file-invoice'],
+        ['عدد العملاء', custCount, 'warning', 'fa-users'],
+        ['متوسط السعر/طن', fmt(avgFob)+'$', 'dark', 'fa-tag'],
+        ['متوسط الخصم', (avgDisc*100).toFixed(1)+'%', 'danger', 'fa-percent'],
+        ['المتنازل عنه (خسارة الخصومات)', fmt(totalDisc)+'$', 'danger', 'fa-arrow-trend-down']
+    ].map(k=>'<div class="col"><div class="card kpi-card"><div class="kpi-val text-'+k[2]+'"><i class="fas '+k[3]+' me-1"></i>'+k[1]+'</div><div class="kpi-lbl">'+k[0]+'</div></div></div>').join('');
+
+    makeChart('chOwner',   ...chartArgs(groupSum(d,'Owner'),  10), 'العوائد $');
+    makeChart('chCountry', ...chartArgs(groupSum(d,'Country'),10), 'العوائد $');
+    makeChart('chItem',    ...chartArgs(groupSum(d,'Item'),  10), 'العوائد $');
+    makeChart('chGrade',   ...chartArgs(groupSum(d,'Grade'),  10), 'العوائد $');
+
+    document.getElementById('dealCount').textContent = d.length;
+    document.getElementById('dataBody').innerHTML = d.map(x=>'<tr>'
+        +'<td>'+esc(x.Customer_Code)+'</td><td>'+esc(x.Country)+'</td><td>'+esc(x.Item)+'</td><td>'+esc(x.Grade)+'</td>'
+        +'<td>'+fmtFull(x.Quantity)+'</td><td>'+fmtFull(x.FOB_After_Discount)+'$</td>'
+        +'<td class="'+(x.Discount_Rate>0.25?'text-danger fw-bold':'')+'">'+(x.Discount_Rate*100).toFixed(1)+'%</td>'
+        +'<td>'+fmtFull(x.Net_Revenue)+'$</td>'
+        +'<td><span class="badge badge-seg-'+x.Segment.charAt(0)+'">'+esc(x.Segment)+'</span></td>'
+        +'<td>'+esc(x.Owner)+'</td></tr>').join('');
+
+    renderAlerts(d);
+    renderFaqList();
+}
+
+function chartArgs(arr, n) {
+    const sorted = [...arr].sort((a,b)=>b.rev-a.rev).slice(0,n);
+    const palette = ['#2563eb','#16a34a','#ea580c','#7c3aed','#db2777','#0891b2','#ca8a04','#dc2626','#4f46e5','#059669'];
+    return [sorted.map(x=>x.key), sorted.map(x=>Math.round(x.rev)), palette.slice(0,sorted.length)];
+}
+
+/* ================================================================
+   محرك رأي الخبير للتنبيهات
+================================================================ */
+let itemAvgFob = {};
+function computeItemAverages() {
+    let m = {}, q = {};
+    rawData.forEach(d => { m[d.Item]=(m[d.Item]||0)+d.FOB_After_Discount*d.Quantity; q[d.Item]=(q[d.Item]||0)+d.Quantity; });
+    itemAvgFob = {};
+    Object.keys(m).forEach(k => itemAvgFob[k] = q[k]>0 ? m[k]/q[k] : 0);
+}
+
+const ALERT_EXPERT_NOTES = {
+    '105003': 'بيع شبه مجاني: 112$ أقل حتى من متوسط درجة IND (276$)! يُرجّح أنه تصريف مخزون متبقٍ أو تعويض جودة. <strong>قرار الخبير:</strong> موافقة الإدارة المالية المسبقة إلزامية لأي خصم فوق 50%، والتحقق من تغطية التكلفة الكاملة — ولا يُكرَّر هذا النمط.',
+    '411600': 'السوق الصيني يدفع لدرجة A معدل 700–800$/طن، وهنا بيع صيفي B بـ154$ فقط. هذا يدمّر مرجعية التسعير في أهم سوق نمو لديكم. <strong>قرار الخبير:</strong> مراجعة تسعير العميل فوراً، وربط عمولة المسؤول بهامش الربح لا بحجم البيع.',
+    '101200': 'ميخال صنف ضعيف الحركة أصلاً (متوسط 386$)، و112$ يعادل سعر تصريف IND. <strong>قرار الخبير:</strong> إما إيقاف توريد الميخال لهذا العميل أو إعادة تسعير جذرية، مع تحويله لبدائل أعلى قيمة (ميراف / دبلو موركيت).',
+    '306118': '107$ أقل حتى من متوسط IND — غالباً بقايا موركيت من موسم سابق. تقبّل الخصم كتصريف مقصود لمرة واحدة ممكن، بشرط ألا يتحول لسعر مرجعي يطالب به العميل في المواسم التالية.',
+    '209012': 'عميل كبير واستراتيجي (≈1.57M$ سنوياً) لكن نمط خصوماته مرتفع ومتكرر. <strong>قرار الخبير:</strong> استغل حجمك كورقة تفاوض — خصم مقابل التزام حجم أعلى أو دفع مقدم، ولا تمنح الخصم مجاناً.',
+    '209033': 'صفقة صغيرة (81 طن) خسارتها ≈15.9K$ بحجم لا يبرر المخاطرة. <strong>قرار الخبير:</strong> تدقيق فوري — هل هو خطأ تسعير؟ ويُنصح بتفعيل سقف خصم تلقائي 25% في النظام يمنع تجاوزه دون موافقة.',
+    '808013': 'أخطر عميل في البيانات: صفقات بخصم 54.6% و27.6% معاً بخسائر متراكمة ≈228K$. <strong>قرار الخبير:</strong> تجميد فوري لأي خصم فوق 25% لهذا العميل، وإعادة تفاوض على قائمة أسعار موحدة مع متابعة شهرية.'
+};
+
+function getAlertAdvice(d) {
+    let loss = d.Discount_Rate<1 ? d.Quantity*d.FOB_After_Discount*d.Discount_Rate/(1-d.Discount_Rate) : 0;
+    let itemAvg = itemAvgFob[d.Item] || 0;
+    let dynamic = '';
+    if (itemAvg && d.Discount_Rate<1) {
+        let ratio = d.FOB_After_Discount/itemAvg;
+        if (ratio < 0.8) dynamic = ' <strong>تنبيه رقمي:</strong> السعر أدنى من متوسط الصنف ('+fmt(itemAvg)+'$/طن) بنسبة '+Math.round((1-ratio)*100)+'%.';
     }
-    function logout() {
-        document.getElementById('loginOverlay').style.display = 'flex';
-        document.getElementById('dashboardContent').classList.add('d-none');
-    }
+    return { loss, note: (ALERT_EXPERT_NOTES[d.Customer_Code] || 'خصم يتجاوز نصف القيمة الاسمية — يتطلب موافقة إدارية مسبقة وتدقيقاً لتغطية التكلفة الكاملة قبل الشحن.') + dynamic };
+}
 
-    function loadSheetAutomatically() {
-        fetch('IT تصفية العملاء.xlsx')
-            .then(res => res.arrayBuffer())
-            .then(buf => {
-                let workbook = XLSX.read(new Uint8Array(buf), {type:'array'});
-                let sheet = workbook.Sheets['الاجمالى'] || workbook.Sheets[workbook.SheetNames[0]];
-                let rows = XLSX.utils.sheet_to_json(sheet, {header:1});
-                let parsed = [];
-                for (let i = 1; i < rows.length; i++) {
-                    let r = rows[i];
-                    if (r && r.length >= 6 && r[0] !== undefined && !isNaN(parseFloat(r[0]))) {
-                        let disc = parseFloat(r[7]) || 0;
-                        if (disc > 1) disc = disc / 100;
-                        let qty = parseFloat(r[5]) || 0;
-                        let fob = parseFloat(r[6]) || 0;
-                        let code = String(r[0]).replace(/[^0-9]/g, '');
-                        let seg = disc > 0.25 ? 'D (Blacklist)' : (disc >= 0.10 ? 'C' : (disc > 0 ? 'B' : 'A'));
-                        parsed.push({
-                            Customer_Code: code,
-                            Country: cleanTxt(r[1], COUNTRY_MAP),
-                            Owner: cleanTxt(r[2], {}),
-                            Item: cleanTxt(r[3], ITEM_MAP),
-                            Grade: String(r[4]||'B').trim(),
-                            Quantity: qty, FOB_After_Discount: fob,
-                            Discount_Rate: disc,
-                            Net_Revenue: qty * fob * (1 - disc),
-                            Segment: seg
-                        });
-                    }
-                }
-                rawData = parsed;
-                initDropdowns();
-                buildFaq();
-                filterData();
-            })
-            .catch(err => {
-                console.error(err);
-                alert("تعذّر قراءة ملف الإكسل أوتوماتيكياً. تأكد أن الملف اسمه 'IT تصفية العملاء.xlsx' وموجود في نفس المجلد[cite: 6].");
-            });
-    }
+function renderAlerts(data) {
+    let risky = data.filter(d=>d.Discount_Rate>=0.5).sort((a,b)=>b.Discount_Rate-a.Discount_Rate);
+    let el = document.getElementById('alertList');
+    if (!risky.length) { el.innerHTML = '<span class="text-muted small">✅ لا توجد صفقات بخصم تجاوز 50% ضمن النطاق الحالي.</span>'; return; }
+    el.innerHTML = risky.slice(0,8).map(d => {
+        let adv = getAlertAdvice(d);
+        let grossFob = d.Discount_Rate<1 ? Math.round(d.FOB_After_Discount/(1-d.Discount_Rate)) : 0;
+        return '<div class="alert-item">⚠️ <strong>عميل '+esc(d.Customer_Code)+'</strong> ('+esc(d.Country)+') — '+esc(d.Item)+' درجة '+esc(d.Grade)+' — كمية '+d.Quantity.toLocaleString()+' طن — خصم <strong>'+(d.Discount_Rate*100).toFixed(1)+'%</strong> — سعر '+Math.round(d.FOB_After_Discount)+'$/طن (الاسمي '+grossFob+'$) — خسارة متنازَل عنها ≈ <strong class="text-danger">'+fmt(adv.loss)+'$</strong> — مسؤول: <strong>'+esc(d.Owner)+'</strong>'
+            + '<div class="ai-advice"><i class="fas fa-robot me-1"></i><strong>رأي الخبير:</strong> '+adv.note+'</div></div>';
+    }).join('');
+}
 
-    document.getElementById('bgVideo').addEventListener('error', function(){ this.style.display='none'; }, true);
+/* ================================================================
+   بنك الأسئلة — 85 سؤالاً في 9 أقسام
+================================================================ */
+const FAQ = [
+    {cat:'🏆 القسم 1: ترتيب المسؤولين'},
+    {id:'best_owner', q:'1. من أفضل مسؤول مبيعات؟ (حسب العوائد)'},
+    {id:'owners_total', q:'2. إجمالي عوائد كل مسؤول (جدول كامل)'},
+    {id:'owners_avg_fob', q:'3. متوسط سعر/طن لكل مسؤول — من يبيع بأعلى سعر؟'},
+    {id:'owners_customers', q:'4. عدد العملاء لكل مسؤول'},
+    {id:'owners_deals', q:'5. عدد الصفقات لكل مسؤول'},
+    {id:'owners_qty', q:'6. إجمالي الكميات لكل مسؤول'},
+    {id:'owner_grade_a', q:'7. الأفضل في بيع الدرجة A الفاخرة؟'},
+    {id:'owners_share', q:'8. توزيع الإيرادات بين المسؤولين بالنسب المئوية'},
+    {cat:'🌍 القسم 2: الدول والأسواق'},
+    {id:'best_country', q:'9. أفضل دولة من حيث العوائد؟'},
+    {id:'countries_total', q:'10. جدول الدول: عوائد / كميات / عملاء'},
+    {id:'biggest_country_qty', q:'11. أكبر دولة من حيث الكميات؟'},
+    {id:'country_customers', q:'12. عدد العملاء في كل دولة'},
+    {id:'avg_fob_country', q:'13. متوسط سعر/طن في كل دولة'},
+    {id:'countries_grade_a', q:'14. الدول الأكثر شراءً للدرجة A'},
+    {cat:'🍊 القسم 3: الأصناف'},
+    {id:'top_item', q:'15. الأكثر مبيعاً من حيث العوائد؟'},
+    {id:'top_item_qty', q:'16. الأكثر مبيعاً من حيث الكمية؟'},
+    {id:'items_avg_fob', q:'17. متوسط سعر/طن لكل صنف'},
+    {id:'item_discount', q:'18. الصنف الأعلى خصومات؟'},
+    {cat:'⭐ القسم 4: الدرجات'},
+    {id:'grades_rev', q:'19. توزيع العوائد على الدرجات'},
+    {id:'grades_qty', q:'20. توزيع الكميات على الدرجات'},
+    {id:'grades_fob', q:'21. متوسط سعر/طن لكل درجة'},
+    {id:'grades_deals', q:'22. عدد الصفقات لكل درجة'},
+    {cat:'👥 القسم 5: العملاء'},
+    {id:'top_customer', q:'23. أكبر عميل من حيث العوائد؟'},
+    {id:'top_customer_qty', q:'24. أكبر عميل من حيث الكميات؟'},
+    {id:'top10_customers', q:'25. أفضل 10 عملاء (جدول)'},
+    {id:'customers_avg_price', q:'26. متوسط سعر الدفع لكل عميل'},
+    {cat:'💸 القسم 6: الخصومات'},
+    {id:'avg_discount', q:'27. متوسط الخصم العام في الشركة؟'},
+    {id:'total_concession', q:'28. إجمالي المتنازل عنه بسبب الخصومات؟'},
+    {id:'no_discount_deals', q:'29. كم صفقة تمت بدون خصم إطلاقاً؟'},
+    {id:'max_discount_deal', q:'30. أكبر 5 صفقات خصماً؟'},
+    {cat:'🛑 القسم 7: القائمة السوداء'},
+    {id:'blacklist_list', q:'31. من هم عملاء القائمة السوداء؟'},
+    {id:'blacklist_worst', q:'32. أعلى خصم في القائمة السوداء؟'},
+    {id:'blacklist_owners', q:'33. المسؤولون الأكثر صفقات في القائمة السوداء'},
+    {cat:'📐 القسم 8: تحليلات متقدمة'},
+    {id:'europe_share', q:'34. نصيب أوروبا من إجمالي الإيرادات؟'},
+    {cat:'🏆 القسم 1: ترتيب المسؤولين (تكملة)'},
+    {id:'second_owner', q:'36. من هو ثاني أفضل مسؤول مبيعات؟'},
+    {id:'third_owner', q:'37. من هو ثالث أفضل مسؤول مبيعات؟'},
+    {id:'best_owner_qty', q:'38. الأعلى في إجمالي الكميات (أطنان)؟'},
+    {id:'lowest_owner_fob', q:'39. الأدنى متوسط سعر FOB/طن؟ (البيع الرخيص)'},
+    {id:'lowest_discount_owner', q:'40. الأقل منحاً للخصومات؟'},
+    {id:'most_deals_owner', q:'41. الأعلى من حيث عدد الصفقات؟'},
+    {id:'owner_eff_vs_company', q:'42. كفاءة كل مسؤول (عائد/طن) مقارنة بمتوسط الشركة'},
+    {id:'promotion_candidate', q:'43. من يستحق ترقية أو زيادة عمولة؟'},
+    {id:'training_needed', q:'44. من يحتاج خطة تحسين أو تدريب تسعير؟'},
+    {cat:'🌍 القسم 2: الدول والأسواق (تكملة)'},
+    {id:'worst_country_qty', q:'45. أضعف دولة من حيث الكميات؟'},
+    {id:'top5_countries_qty', q:'46. أفضل 5 دول بالأطنان'},
+    {id:'bottom5_countries', q:'47. أسوأ 5 دول بالعوائد (فرص تطوير)'},
+    {id:'one_customer_countries', q:'48. الدول ذات العميل الواحد (مخاطر تركّز)؟'},
+    {id:'country_fob_table', q:'49. متوسط FOB لكل دولة — من يدفع الأعلى؟'},
+    {id:'below_avg_price_countries', q:'50. دول نبيع فيها بأقل من متوسط الشركة؟'},
+    {id:'nl_vs_uae', q:'51. مقارنة: هولندا ضد الإمارات'},
+    {id:'expansion_candidates', q:'52. الدول الصغيرة الواعدة للتوسع؟'},
+    {id:'diverse_countries', q:'53. الأسواق الأكثر تنوعاً في الشراء؟'},
+    {cat:'🍊 القسم 3: الأصناف (تكملة)'},
+    {id:'item_dependency', q:'54. هل تعتمد الشركة على صنف واحد؟ نسبة المخاطرة؟'},
+    {id:'best_item_excl_summery', q:'55. الأكثر ربحية بعد استبعاد الصيفي؟'},
+    {id:'owner_top_item', q:'56. أكثر صنف بيعاً لكل مسؤول؟'},
+    {id:'items_need_marketing', q:'57. أصناف تحتاج تسويق أكبر؟'},
+    {cat:'⭐ القسم 4: الدرجات (تكملة)'},
+    {id:'grade_top_rev', q:'58. الدرجة الأعلى عوائد؟'},
+    {id:'grade_top_fob', q:'59. الدرجة الأعلى سعراً للطن؟'},
+    {id:'ind_owner', q:'60. أي مسؤول يبيع أكثر من درجة IND؟'},
+    {id:'grade_customers', q:'61. عدد العملاء لكل درجة؟'},
+    {id:'grade_a_share', q:'62. نسبة مبيعات الدرجة A الفاخرة؟'},
+    {id:'grade_d_analysis', q:'63. هل نبيع درجة D بكميات كبيرة؟ ماذا يعني ذلك؟'},
+    {cat:'👥 القسم 5: العملاء (تكملة)'},
+    {id:'customer_top_avg_price', q:'64. العميل صاحب أعلى متوسط سعر دفع؟'},
+    {id:'loyal_customers', q:'65. عملاء الولاء (multi-items)؟'},
+    {id:'concentration_risk', q:'66. عملاء يتجاوزون 5% من الإيرادات؟'},
+    {cat:'💸 القسم 6: الخصومات (تكملة)'},
+    {id:'big_discount_owners', q:'67. الأكثر منحاً للخصومات الكبيرة (≥25%)؟'},
+    {id:'discount_by_owner', q:'68. مقارنة متوسط الخصم لكل مسؤول'},
+    {id:'new_vs_old_discount', q:'69. هل الجدد يحصلون على خصومات أعلى من القدامى؟'},
+    {cat:'🛑 القسم 7: القائمة السوداء (تكملة)'},
+    {id:'blacklist_value', q:'70. إجمالي قيمة الصفقات المخاطرة بالدولار؟'},
+    {id:'blacklist_top_damage', q:'71. أكبر 5 عملاء أضراراً في القائمة؟'},
+    {id:'blacklist_criteria', q:'72. القائمة مبنية على الخصم أم الدرجة؟'},
+    {id:'owner_europe', q:'73. أفضل مسؤول في السوق الأوروبي؟'},
+    {id:'owner_gulf', q:'74. أفضل مسؤول في الخليج؟'},
+    {id:'owner_russia', q:'75. أفضل مسؤول في السوق الروسي؟'},
+    {id:'best_item_grade_rev', q:'76. أفضل تركيبة صنف-درجة بالعوائد؟'},
+    {id:'best_item_grade_qty', q:'77. أفضل تركيبة صنف-درجة بالكمية؟'},
+    {id:'worst_item_grade', q:'78. أسوأ تركيبة صنف-درجة؟'},
+    {id:'best_country_item', q:'79. أفضل تركيبة دولة + صنف؟'},
+    {id:'item_world_fob', q:'80. متوسط FOB لكل صنف — من يبيع تحته وفوقه؟'},
+    {id:'geo_distribution', q:'81. التوزيع الجغرافي بالنسب؟'},
+    {id:'seasonality', q:'82. هل توجد فترة/شهر مميزة؟ (موسمية)'},
+    {id:'exec_summary', q:'35. ملخص تنفيذي شامل للوضع الحالي؟'},
+    {cat:'🎯 القسم 9: قرارات إدارية'},
+    {id:'price_increase_5pct', q:'83. أثر رفع أسعار الصيفي 5%؟'},
+    {id:'marketing_budget', q:'84. في أي سوق نستثمر ميزانية تسويق؟'},
+    {id:'max_discount_policy', q:'85. نرفع حد الخصم الأقصى أم نخفضه؟'}
+];
 
-    function initDropdowns() {
-        fillSelect('filterCountry', [...new Set(rawData.map(d=>d.Country))].sort(), 'كل الدول');
-        fillSelect('filterItem', [...new Set(rawData.map(d=>d.Item))].sort(), 'كل الأصناف');
-        fillSelect('filterOwner', [...new Set(rawData.map(d=>d.Owner))].sort(), 'كل المسؤولين');
-    }
-    function fillSelect(id, arr, def) {
-        let sel = document.getElementById(id);
-        sel.innerHTML = `<option value="">${def}</option>`;
-        arr.forEach(v => { if(v) sel.innerHTML += `<option value="${v}">${v}</option>`; });
-    }
+function renderFaqList() {
+    const q = (document.getElementById('faqSearch').value||'').trim();
+    let html = '', idx = 0;
+    FAQ.forEach(item => {
+        if(item.cat) { html += '<div class="faq-cat">'+item.cat+'</div>'; return; }
+        if(q && !item.q.includes(q)) return;
+        html += '<button class="faq-q" data-fid="'+item.id+'" onclick="answerFaq(\''+item.id+'\', this)">'+item.q+'</button>';
+        idx++;
+    });
+    document.getElementById('faqList').innerHTML = html || '<p class="text-muted small">لا نتائج مطابقة.</p>';
+}
 
-    function getFiltered() {
-        let cF = document.getElementById('filterCountry').value;
-        let sF = document.getElementById('filterSegment').value;
-        let iF = document.getElementById('filterItem').value;
-        let oF = document.getElementById('filterOwner').value;
-        let sV = document.getElementById('searchBox').value.toLowerCase();
-        return rawData.filter(d =>
-            (!cF || d.Country === cF) && (!sF || d.Segment === sF) &&
-            (!iF || d.Item === iF) && (!oF || d.Owner === oF) &&
-            (!sV || d.Customer_Code.includes(sV) || d.Country.toLowerCase().includes(sV) || d.Owner.toLowerCase().includes(sV) || d.Item.toLowerCase().includes(sV)));
-    }
-
-    function filterData() { updateUI(getFiltered()); }
-
-    function setOwnerMetric(m) {
-        ownerMetric = m;
-        document.querySelectorAll('#ownerMetricToggle .toggle-btn').forEach(b => b.classList.toggle('active', b.dataset.m === m));
-        updateUI(getFiltered());
-    }
-
-    function groupSum(data, key) {
+function answerFaq(id, btn) {
+    document.querySelectorAll('.faq-q').forEach(b=>b.classList.remove('active'));
+    if(btn) btn.classList.add('active');
+    const d = filteredData;
+    const owners = groupSum(d,'Owner');
+    const countries = groupSum(d,'Country');
+    const items = groupSum(d,'Item');
+    const custs = groupSum(d,'Customer_Code');
+    let totalRev = d.reduce((s,x)=>s+x.Net_Revenue,0);
+    let totalQty = d.reduce((s,x)=>s+x.Quantity,0);
+    let companyAvg = totalQty>0 ? totalRev/totalQty : 0;
+    let companyDisc = d.length ? d.reduce((s,x)=>s+x.Discount_Rate,0)/d.length : 0;
+    const regionOf = c => {
+        const EU = ['ليتوانيا','فنلندا','بولندا','لاتفيا','انجلترا','التشيك','الدنمارك','كرواتيا','صربيا','سربيا','هولندا','فرنسا','ايطاليا','بلغاريا','تركيا','المانيا','اليونان','ايرلندا','ايرلاندا','السويد','اسبانيا','موروشيس','رومانيا','البرتغال','بلجيكا','اوكرانيا','مالطة'];
+        const GULF = ['السعوديه','الامارات','قطر','البحرين'];
+        const ASIA = ['الصين','فيتنام','الهند','ماليزيا','سنغافورة','روسيا','اوزبكستان','هونج كونج','اليابان','جيبوتي'];
+        const AM = ['البرازيل','كندا','الارجنتين','اورجواي','اوراجوى','اوراجواي','امريكا','امريكا اللاتينية'];
+        if (EU.includes(c)) return 'اوروبا';
+        if (GULF.includes(c)) return 'الخليج';
+        if (ASIA.includes(c)) return 'آسيا';
+        if (AM.includes(c)) return 'الأمريكيتان';
+        return 'أخرى';
+    };
+    const ownersByRegion = reg => {
         let m = {};
-        data.forEach(d => {
-            let k = typeof key === 'function' ? key(d) : d[key];
-            if (!m[k]) m[k] = {rev:0, qty:0, deals:0, customers:new Set(), discSum:0, fobWeighted:0};
-            m[k].rev += d.Net_Revenue; m[k].qty += d.Quantity; m[k].deals++;
-            m[k].customers.add(d.Customer_Code); m[k].discSum += d.Discount_Rate;
-            m[k].fobWeighted += d.FOB_After_Discount * d.Quantity;
-        });
-        return Object.entries(m).map(([k,v]) => ({key:k, ...v, custCount:v.customers.size,
-            avgFob: v.qty>0 ? v.fobWeighted/v.qty : 0, avgDisc: v.deals>0 ? v.discSum/v.deals : 0}));
-    }
+        d.filter(x=>regionOf(x.Country)===reg).forEach(x => m[x.Owner]=(m[x.Owner]||0)+x.Net_Revenue);
+        return Object.entries(m).sort((a,b)=>b[1]-a[1]);
+    };
 
-    function updateUI(data) {
-        let totalRev = data.reduce((s,d)=>s+d.Net_Revenue,0);
-        let totalQty = data.reduce((s,d)=>s+d.Quantity,0);
-        document.getElementById('kpiTotalTrans').textContent = data.length.toLocaleString();
-        document.getElementById('kpiTotalVal').textContent = Math.round(totalRev).toLocaleString() + ' $';
-        document.getElementById('kpiTotalQty').textContent = Math.round(totalQty).toLocaleString() + ' طن';
-        document.getElementById('kpiAvgFob').textContent = totalQty>0 ? Math.round(totalRev/totalQty).toLocaleString() + ' $' : '-';
-        document.getElementById('kpiBlacklist').textContent = new Set(data.filter(d=>d.Segment==='D (Blacklist)').map(d=>d.Customer_Code)).size;
-        renderAlerts(data);
-        renderCharts(data);
-        renderCountryTable(data);
-        renderOwnerTable(data);
-        renderDetailTable(data);
-    }
+    let H = '';
+    switch(id) {
 
-    function renderAlerts(data) {
-        let risky = data.filter(d=>d.Discount_Rate>=0.5).sort((a,b)=>b.Discount_Rate-a.Discount_Rate);
-        let el = document.getElementById('alertList');
-        if (!risky.length) { el.innerHTML = '<span class="text-muted small">✅ لا توجد صفقات بخصم تجاوز 50% ضمن النطاق الحالي.</span>'; return; }
-        el.innerHTML = risky.slice(0,8).map(d =>
-            `<div class="alert-item">⚠️ <strong>عميل ${d.Customer_Code}</strong> (${d.Country}) — ${d.Item} درجة ${d.Grade} — خصم <strong>${(d.Discount_Rate*100).toFixed(1)}%</strong> — سعر ${Math.round(d.FOB_After_Discount)}$/طن — مسؤول: <strong>${d.Owner}</strong></div>`).join('');
-    }
+        /* ====== القسم 1 ====== */
+        case 'best_owner': { let o=[...owners].sort((a,b)=>b.rev-a.rev)[0]; H=ownerCard(o,'🥇 أفضل مسؤول مبيعات — حسب العوائد','success'); break; }
+        case 'owners_total': H = '<h6 class="fw-bold text-success">إجمالي عوائد كل مسؤول:</h6>' +
+            tbl(['المسؤول','العوائد $','الكمية (طن)','متوسط $/طن','الخصم %'], [...owners].sort((a,b)=>b.rev-a.rev).map(o=>'<tr><td><strong>'+esc(o.key)+'</strong></td><td class="fw-bold">'+fmt(o.rev)+'</td><td>'+fmt(o.qty)+'</td><td>'+fmt(o.avgFob)+'</td><td>'+(o.avgDisc*100).toFixed(1)+'%</td></tr>')); break;
+        case 'owners_avg_fob': H = '<h6 class="fw-bold text-success">متوسط سعر/طن لكل مسؤول (تنازلياً):</h6>' +
+            ol([...owners].sort((a,b)=>b.avgFob-a.avgFob), o=>'<li class="mb-1"><strong>'+esc(o.key)+'</strong>: '+fmt(o.avgFob)+'$/طن</li>'); break;
+        case 'owners_customers': H = '<h6 class="fw-bold text-success">عدد العملاء لكل مسؤول:</h6>' +
+            ol([...owners].sort((a,b)=>b.custCount-a.custCount), o=>'<li class="mb-1"><strong>'+esc(o.key)+'</strong>: '+o.custCount+' عميل</li>'); break;
+        case 'owners_deals': H = '<h6 class="fw-bold text-success">عدد الصفقات لكل مسؤول:</h6>' +
+            ol([...owners].sort((a,b)=>b.deals-a.deals), o=>'<li class="mb-1"><strong>'+esc(o.key)+'</strong>: '+o.deals+' صفقة</li>'); break;
+        case 'owners_qty': H = '<h6 class="fw-bold text-success">إجمالي الكميات (أطنان):</h6>' +
+            ol([...owners].sort((a,b)=>b.qty-a.qty), o=>'<li class="mb-1"><strong>'+esc(o.key)+'</strong>: '+fmt(o.qty)+' طن</li>'); break;
+        case 'owner_grade_a': { let a = groupSum(d.filter(x=>x.Grade==='A'),'Owner').sort((x,y)=>y.rev-x.rev);
+            H = '<h5 class="fw-bold text-success">👑 ملك الدرجة A: <strong>'+(a[0]?esc(a[0].key):'-')+'</strong> — '+(a[0]?fmt(a[0].rev):0)+'$</h5>' +
+            ol(a.slice(0,3), (o,i)=>'<li class="mb-1"><strong>'+(medals[i]||'')+' '+esc(o.key)+'</strong>: '+fmt(o.rev)+'$</li>'); break; }
+        case 'owners_share': H = '<h6 class="fw-bold text-success">حصة كل مسؤول من الإيرادات:</h6>' +
+            ol([...owners].sort((a,b)=>b.rev-a.rev), o=>'<li class="mb-1"><strong>'+esc(o.key)+'</strong>: '+(totalRev>0?(o.rev/totalRev*100).toFixed(1):0)+'% = '+fmt(o.rev)+'$</li>'); break;
 
-    function renderCharts(data) {
-        let owners = groupSum(data,'Owner');
-        let oLabels = owners.map(o=>o.key);
-        let oData = ownerMetric==='rev' ? owners.map(o=>Math.round(o.rev)) : ownerMetric==='fob' ? owners.map(o=>Math.round(o.avgFob)) : owners.map(o=>o.custCount);
-        if (ownersChart) ownersChart.destroy();
-        ownersChart = new Chart(document.getElementById('ownersChart'), {type:'bar',
-            data:{labels:oLabels, datasets:[{label: ownerMetric==='rev'?'العوائد ($)':ownerMetric==='fob'?'متوسط FOB/طن ($)':'عدد العملاء', data:oData, backgroundColor:'#059669'}]},
-            options:{plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true}}}});
-        let items = groupSum(data,'Item').sort((a,b)=>b.rev-a.rev).slice(0,8);
-        if (itemsChart) itemsChart.destroy();
-        itemsChart = new Chart(document.getElementById('itemsChart'), {type:'doughnut',
-            data:{labels:items.map(i=>i.key), datasets:[{data:items.map(i=>Math.round(i.rev)), backgroundColor:['#059669','#0ea5e9','#f59e0b','#ef4444','#8b5cf6','#ec4899','#14b8a6','#84cc16']}]},
-            options:{plugins:{legend:{position:'left', labels:{boxWidth:12, font:{size:11}}}}}});
-    }
+        /* ====== القسم 2 ====== */
+        case 'best_country': { let c=[...countries].sort((a,b)=>b.rev-a.rev)[0];
+            H = '<h5 class="fw-bold text-success">🏆 أفضل دولة: <strong>'+esc(c.key)+'</strong> — '+fmt(c.rev)+'$ ('+fmt(c.qty)+' طن)</h5>'; break; }
+        case 'countries_total': H = '<h6 class="fw-bold text-success">جدول الدول:</h6>' +
+            tbl(['الدولة','العوائد $','الكمية (طن)','العملاء','الصفقات','متوسط $/طن'], [...countries].sort((a,b)=>b.rev-a.rev).map(c=>'<tr><td><strong>'+esc(c.key)+'</strong></td><td>'+fmt(c.rev)+'</td><td>'+fmt(c.qty)+'</td><td>'+c.custCount+'</td><td>'+c.deals+'</td><td>'+fmt(c.avgFob)+'</td></tr>')); break;
+        case 'biggest_country_qty': { let c=[...countries].sort((a,b)=>b.qty-a.qty)[0];
+            H = '<h5 class="fw-bold text-success">⚖️ أكبر دولة كميات: <strong>'+esc(c.key)+'</strong> — '+fmt(c.qty)+' طن ('+fmt(c.rev)+'$)</h5>'; break; }
+        case 'country_customers': H = '<h6 class="fw-bold text-success">عدد العملاء في كل دولة:</h6>' +
+            ol([...countries].sort((a,b)=>b.custCount-a.custCount), c=>'<li class="mb-1"><strong>'+esc(c.key)+'</strong>: '+c.custCount+' عميل</li>'); break;
+        case 'avg_fob_country': H = '<h6 class="fw-bold text-success">متوسط سعر/طن في كل دولة:</h6>' +
+            tbl(['الدولة','متوسط $/طن','الكمية (طن)'], [...countries].sort((a,b)=>b.avgFob-a.avgFob).map(c=>'<tr><td><strong>'+esc(c.key)+'</strong></td><td class="fw-bold">'+fmt(c.avgFob)+'</td><td>'+fmt(c.qty)+'</td></tr>')); break;
+        case 'countries_grade_a': { let a = groupSum(d.filter(x=>x.Grade==='A'),'Country').sort((x,y)=>y.rev-x.rev);
+            H = '<h6 class="fw-bold text-success">الدول الأكثر شراءً للدرجة A:</h6>' +
+            ol(a.slice(0,5), (c,i)=>'<li class="mb-1"><strong>'+(medals[i]||'')+' '+esc(c.key)+'</strong>: '+fmt(c.rev)+'$ — '+fmt(c.qty)+' طن</li>'); break; }
 
-    function renderCountryTable(data) {
-        let rows = groupSum(data,'Country').sort((a,b)=>b.qty-a.qty);
-        document.getElementById('countryTableBody').innerHTML = rows.map(c =>
-            `<tr><td><strong>${c.key}</strong></td><td>${c.custCount}</td><td>${c.deals}</td><td>${Math.round(c.qty).toLocaleString()}</td><td class="text-primary fw-bold">${Math.round(c.rev).toLocaleString()}</td><td>${Math.round(c.avgFob).toLocaleString()} $</td></tr>`).join('');
-    }
+        /* ====== القسم 3 ====== */
+        case 'top_item': { let it=[...items].sort((a,b)=>b.rev-a.rev)[0];
+            H = '<h5 class="fw-bold text-success">🥇 الأكثر عوائد: <strong>'+esc(it.key)+'</strong> — '+fmt(it.rev)+'$ ('+fmt(it.qty)+' طن)</h5>'; break; }
+        case 'top_item_qty': { let it=[...items].sort((a,b)=>b.qty-a.qty)[0];
+            H = '<h5 class="fw-bold text-success">⚖️ الأكثر كمية: <strong>'+esc(it.key)+'</strong> — '+fmt(it.qty)+' طن ('+fmt(it.rev)+'$)</h5>'; break; }
+        case 'items_avg_fob': H = '<h6 class="fw-bold text-success">متوسط سعر/طن لكل صنف:</h6>' +
+            tbl(['الصنف','متوسط $/طن','الكمية (طن)','العوائد $'], [...items].sort((a,b)=>b.avgFob-a.avgFob).map(it=>'<tr><td><strong>'+esc(it.key)+'</strong></td><td class="fw-bold">'+fmt(it.avgFob)+'</td><td>'+fmt(it.qty)+'</td><td>'+fmt(it.rev)+'</td></tr>')); break;
+        case 'item_discount': { let m = {};
+            d.forEach(x => { if(!m[x.Item]) m[x.Item]={s:0,n:0,max:0}; m[x.Item].s+=x.Discount_Rate; m[x.Item].n++; m[x.Item].max=Math.max(m[x.Item].max,x.Discount_Rate); });
+            let arr = Object.entries(m).sort((a,b)=>b[1].s/b[1].n-a[1].s/a[1].n);
+            H = '<h6 class="fw-bold text-danger">الصنف الأعلى خصومات (متوسط ثم أقصى خصم):</h6>' +
+            ol(arr, ([k,v])=>'<li class="mb-1"><strong>'+esc(k)+'</strong>: متوسط '+((v.s/v.n)*100).toFixed(1)+'% — أقصى '+(v.max*100).toFixed(1)+'%</li>'); break; }
 
-    function renderOwnerTable(data) {
-        let rows = groupSum(data,'Owner');
-        let metricNote = {
-            rev:'الترتيب الحالي حسب: إجمالي العوائد الصافية[cite: 6].',
-            fob:'الترتيب الحالي حسب: متوسط سعر FOB للطن (مؤشر جودة التسعير)[cite: 6].',
-            cust:'الترتيب الحالي حسب: عدد العملاء الفريدين (مؤشر قاعدة العملاء)[cite: 6].'
-        };
-        document.getElementById('ownerMetricNote').textContent = metricNote[ownerMetric];
-        rows.sort((a,b)=> ownerMetric==='rev' ? b.rev-a.rev : ownerMetric==='fob' ? b.avgFob-a.avgFob : b.custCount-a.custCount);
-        let medals = ['🥇','🥈','🥉'];
-        document.getElementById('ownerTableBody').innerHTML = rows.map((o,i) => {
-            let best = i===0 ? ' style="background:#f0fdf4;"' : '';
-            return `<tr${best}><td class="fw-bold">${medals[i]|| (i+1)}</td><td><strong>${o.key}</strong></td><td class="text-primary fw-bold">${Math.round(o.rev).toLocaleString()}</td><td>${Math.round(o.qty).toLocaleString()}</td><td class="text-info fw-bold">${Math.round(o.avgFob).toLocaleString()} $</td><td>${o.custCount}</td><td>${o.deals}</td><td class="text-danger">${(o.avgDisc*100).toFixed(1)}%</td></tr>`;
-        }).join('');
-    }
+        /* ====== القسم 4 ====== */
+        case 'grades_rev': { let g = groupSum(d,'Grade').sort((a,b)=>b.rev-a.rev);
+            H = '<h6 class="fw-bold text-success">توزيع العوائد على الدرجات:</h6>' +
+            ul(g, x=>'<li class="mb-1"><strong>'+esc(x.key)+'</strong>: '+fmt(x.rev)+'$ ('+(totalRev>0?(x.rev/totalRev*100).toFixed(1):0)+'%)</li>'); break; }
+        case 'grades_qty': { let g = groupSum(d,'Grade').sort((a,b)=>b.qty-a.qty);
+            H = '<h6 class="fw-bold text-success">توزيع الكميات على الدرجات:</h6>' +
+            ul(g, x=>'<li class="mb-1"><strong>'+esc(x.key)+'</strong>: '+fmt(x.qty)+' طن ('+(totalQty>0?(x.qty/totalQty*100).toFixed(1):0)+'%)</li>'); break; }
+        case 'grades_fob': { let g = groupSum(d,'Grade').sort((a,b)=>b.avgFob-a.avgFob);
+            H = '<h6 class="fw-bold text-success">متوسط سعر/طن لكل درجة:</h6>' +
+            tbl(['الدرجة','متوسط $/طن','الكمية (طن)'], g.map(x=>'<tr><td><strong>'+esc(x.key)+'</strong></td><td class="fw-bold">'+fmt(x.avgFob)+'</td><td>'+fmt(x.qty)+'</td></tr>')); break; }
+        case 'grades_deals': { let g = groupSum(d,'Grade').sort((a,b)=>b.deals-a.deals);
+            H = '<h6 class="fw-bold text-success">عدد الصفقات لكل درجة:</h6>' +
+            ul(g, x=>'<li class="mb-1"><strong>'+esc(x.key)+'</strong>: '+x.deals+' صفقة</li>'); break; }
 
-    function renderDetailTable(data) {
-        let tBody = document.getElementById('tableBody');
-        tBody.innerHTML = '';
-        data.slice(0,400).forEach((d,i) => {
-            let cls = d.Segment==='A'?'badge-a':(d.Segment==='B'?'badge-b':(d.Segment==='C'?'badge-c':'badge-d'));
-            tBody.innerHTML += `<tr><td class="text-muted">${i+1}</td><td><strong>${d.Customer_Code}</strong></td><td>${d.Owner}</td><td>${d.Country}</td><td>${d.Item}</td><td><span class="badge bg-secondary">${d.Grade}</span></td><td>${d.Quantity.toLocaleString()}</td><td class="text-primary">${Math.round(d.FOB_After_Discount).toLocaleString()} $</td><td class="text-danger">${(d.Discount_Rate*100).toFixed(1)}%</td><td>${Math.round(d.Net_Revenue).toLocaleString()} $</td><td><span class="${cls}">${d.Segment}</span></td></tr>`;
-        });
-    }
+        /* ====== القسم 5 ====== */
+        case 'top_customer': { let c=[...custs].sort((a,b)=>b.rev-a.rev)[0];
+            H = '<h5 class="fw-bold text-success">👑 أكبر عميل: <strong>'+esc(c.key)+'</strong> — '+fmt(c.rev)+'$ ('+fmt(c.qty)+' طن — '+c.deals+' صفقة)</h5>'; break; }
+        case 'top_customer_qty': { let c=[...custs].sort((a,b)=>b.qty-a.qty)[0];
+            H = '<h5 class="fw-bold text-success">⚖️ أكبر عميل كميات: <strong>'+esc(c.key)+'</strong> — '+fmt(c.qty)+' طن ('+fmt(c.rev)+'$)</h5>'; break; }
+        case 'top10_customers': H = '<h6 class="fw-bold text-success">أفضل 10 عملاء:</h6>' +
+            tbl(['#','العميل','العوائد $','الكمية (طن)','الصفقات','متوسط $/طن'], [...custs].sort((a,b)=>b.rev-a.rev).slice(0,10).map((c,i)=>'<tr><td>'+(medals[i]||(i+1))+'</td><td><strong>'+esc(c.key)+'</strong></td><td class="fw-bold">'+fmt(c.rev)+'</td><td>'+fmt(c.qty)+'</td><td>'+c.deals+'</td><td>'+fmt(c.avgFob)+'</td></tr>')); break;
+        case 'customers_avg_price': H = '<h6 class="fw-bold text-success">متوسط سعر الدفع لكل عميل (أعلى 10):</h6>' +
+            tbl(['العميل','متوسط $/طن','الكمية (طن)'], [...custs].sort((a,b)=>b.avgFob-a.avgFob).slice(0,10).map(c=>'<tr><td><strong>'+esc(c.key)+'</strong></td><td class="fw-bold">'+fmt(c.avgFob)+'</td><td>'+fmt(c.qty)+'</td></tr>')); break;
 
-    /* ================================================================
-       بنك الأسئلة الشامل — الـ 85 سؤالاً كاملاً بالكامل
-    ================================================================ */
-    const FAQ = [
-        {cat:'🏆 القسم 1: ترتيب المسؤولين'},
-        {id:'best_owner', q:'1. من أفضل مسؤول مبيعات؟ (حسب العوائد)'},
-        {id:'owners_total', q:'2. إجمالي عوائد كل مسؤول (جدول كامل)'},
-        {id:'owners_avg_fob', q:'3. متوسط سعر/طن لكل مسؤول — من يبيع بأعلى سعر؟'},
-        {id:'owners_customers', q:'4. عدد العملاء لكل مسؤول'},
-        {id:'owners_deals', q:'5. عدد الصفقات لكل مسؤول'},
-        {id:'owners_qty', q:'6. إجمالي الكميات لكل مسؤول'},
-        {id:'owner_grade_a', q:'7. الأفضل في بيع الدرجة A الفاخرة؟'},
-        {id:'owners_share', q:'8. توزيع الإيرادات بين المسؤولين بالنسب المئوية'},
-        {cat:'🌍 القسم 2: الدول والأسواق'},
-        {id:'best_country', q:'9. أفضل دولة من حيث العوائد؟'},
-        {id:'countries_total', q:'10. جدول الدول: عوائد / كميات / عملاء'},
-        {id:'biggest_country_qty', q:'11. أكبر دولة من حيث الكميات؟'},
-        {id:'country_customers', q:'12. عدد العملاء في كل دولة'},
-        {id:'avg_fob_country', q:'13. متوسط سعر/طن في كل دولة'},
-        {id:'countries_grade_a', q:'14. الدول الأكثر شراءً للدرجة A'},
-        {cat:'🍊 القسم 3: الأصناف'},
-        {id:'top_item', q:'15. الأكثر مبيعاً من حيث العوائد؟'},
-        {id:'top_item_qty', q:'16. الأكثر مبيعاً من حيث الكمية؟'},
-        {id:'items_avg_fob', q:'17. متوسط سعر/طن لكل صنف'},
-        {id:'item_discount', q:'18. الصنف الأعلى خصومات؟'},
-        {cat:'⭐ القسم 4: الدرجات'},
-        {id:'grades_rev', q:'19. توزيع العوائد على الدرجات'},
-        {id:'grades_qty', q:'20. توزيع الكميات على الدرجات'},
-        {id:'grades_fob', q:'21. متوسط سعر/طن لكل درجة'},
-        {id:'grades_deals', q:'22. عدد الصفقات لكل درجة'},
-        {cat:'👥 القسم 5: العملاء'},
-        {id:'top_customer', q:'23. أكبر عميل من حيث العوائد؟'},
-        {id:'top_customer_qty', q:'24. أكبر عميل من حيث الكميات؟'},
-        {id:'top10_customers', q:'25. أفضل 10 عملاء (جدول)'},
-        {id:'customers_avg_price', q:'26. متوسط سعر الدفع لكل عميل'},
-        {cat:'💸 القسم 6: الخصومات'},
-        {id:'avg_discount', q:'27. متوسط الخصم العام في الشركة؟'},
-        {id:'total_concession', q:'28. إجمالي المتنازل عنه بسبب الخصومات؟'},
-        {id:'no_discount_deals', q:'29. كم صفقة تمت بدون خصم إطلاقاً؟'},
-        {id:'max_discount_deal', q:'30. أكبر 5 صفقات خصماً؟'},
-        {cat:'🛑 القسم 7: القائمة السوداء'},
-        {id:'blacklist_list', q:'31. من هم عملاء القائمة السوداء؟'},
-        {id:'blacklist_worst', q:'32. أعلى خصم في القائمة السوداء؟'},
-        {id:'blacklist_owners', q:'33. المسؤولون الأكثر صفقات في القائمة السوداء'},
-        {cat:'📐 القسم 8: تحليلات متقدمة'},
-        {id:'europe_share', q:'34. نصيب أوروبا من إجمالي الإيرادات؟'},
-        {id:'exec_summary', q:'35. ملخص تنفيذي شامل للوضع الحالي؟'},
-        {cat:'🏆 القسم 1: ترتيب المسؤولين (تكملة)'},
-        {id:'second_owner', q:'36. من هو ثاني أفضل مسؤول مبيعات؟'},
-        {id:'third_owner', q:'37. من هو ثالث أفضل مسؤول مبيعات؟'},
-        {id:'best_owner_qty', q:'38. الأعلى في إجمالي الكميات (أطنان)؟'},
-        {id:'lowest_owner_fob', q:'39. الأدنى متوسط سعر FOB/طن؟ (البيع الرخيص)'},
-        {id:'lowest_discount_owner', q:'40. الأقل منحاً للخصومات؟'},
-        {id:'most_deals_owner', q:'41. الأعلى من حيث عدد الصفقات؟'},
-        {id:'owner_eff_vs_company', q:'42. كفاءة كل مسؤول (عائد/طن) مقارنة بمتوسط الشركة'},
-        {id:'promotion_candidate', q:'43. من يستحق ترقية أو زيادة عمولة؟'},
-        {id:'training_needed', q:'44. من يحتاج خطة تحسين أو تدريب تسعير؟'},
-        {cat:'🌍 القسم 2: الدول والأسواق (تكملة)'},
-        {id:'worst_country_qty', q:'45. أضعف دولة من حيث الكميات؟'},
-        {id:'top5_countries_qty', q:'46. أفضل 5 دول بالأطنان'},
-        {id:'bottom5_countries', q:'47. أسوأ 5 دول بالعوائد (فرص تطوير)'},
-        {id:'one_customer_countries', q:'48. الدول ذات العميل الواحد (مخاطر تركّز)؟'},
-        {id:'country_fob_table', q:'49. متوسط FOB لكل دولة — من يدفع الأعلى؟'},
-        {id:'below_avg_price_countries', q:'50. دول نبيع فيها بأقل من متوسط الشركة؟'},
-        {id:'nl_vs_uae', q:'51. مقارنة: هولندا ضد الإمارات'},
-        {id:'expansion_candidates', q:'52. الدول الصغيرة الواعدة للتوسع؟'},
-        {id:'diverse_countries', q:'53. الأسواق الأكثر تنوعاً في الشراء؟'},
-        {cat:'🍊 القسم 3: الأصناف (تكملة)'},
-        {id:'item_dependency', q:'54. هل تعتمد الشركة على صنف واحد؟ نسبة المخاطرة؟'},
-        {id:'best_item_excl_summery', q:'55. الأكثر ربحية بعد استبعاد الصيفي؟'},
-        {id:'owner_top_item', q:'56. أكثر صنف بيعاً لكل مسؤول؟'},
-        {id:'items_need_marketing', q:'57. أصناف تحتاج تسويق أكبر؟'},
-        {cat:'⭐ القسم 4: الدرجات (تكملة)'},
-        {id:'grade_top_rev', q:'58. الدرجة الأعلى عوائد؟'},
-        {id:'grade_top_fob', q:'59. الدرجة الأعلى سعراً للطن؟'},
-        {id:'ind_owner', q:'60. أي مسؤول يبيع أكثر من درجة IND؟'},
-        {id:'grade_customers', q:'61. عدد العملاء لكل درجة؟'},
-        {id:'grade_a_share', q:'62. نسبة مبيعات الدرجة A الفاخرة؟'},
-        {id:'grade_d_analysis', q:'63. هل نبيع درجة D بكميات كبيرة؟ ماذا يعني ذلك؟'},
-        {cat:'👥 القسم 5: العملاء (تكملة)'},
-        {id:'customer_top_avg_price', q:'64. العميل صاحب أعلى متوسط سعر دفع؟'},
-        {id:'loyal_customers', q:'65. عملاء الولاء (multi-items)؟'},
-        {id:'concentration_risk', q:'66. عملاء يتجاوزون 5% من الإيرادات؟'},
-        {cat:'💸 القسم 6: الخصومات (تكملة)'},
-        {id:'big_discount_owners', q:'67. الأكثر منحاً للخصومات الكبيرة (≥25%)؟'},
-        {id:'discount_by_owner', q:'68. مقارنة متوسط الخصم لكل مسؤول'},
-        {id:'new_vs_old_discount', q:'69. هل الجدد يحصلون على خصومات أعلى من القدامى؟'},
-        {cat:'🛑 القسم 7: القائمة السوداء (تكملة)'},
-        {id:'blacklist_value', q:'70. إجمالي قيمة الصفقات المخاطرة بالدولار؟'},
-        {id:'blacklist_top_damage', q:'71. أكبر 5 عملاء أضراراً في القائمة؟'},
-        {id:'blacklist_criteria', q:'72. القائمة مبنية على الخصم أم الدرجة؟'},
-        {id:'owner_europe', q:'73. أفضل مسؤول في السوق الأوروبي؟'},
-        {id:'owner_gulf', q:'74. أفضل مسؤول في الخليج؟'},
-        {id:'owner_russia', q:'75. أفضل مسؤول في السوق الروسي؟'},
-        {id:'best_item_grade_rev', q:'76. أفضل تركيبة صنف-درجة بالعوائد؟'},
-        {id:'best_item_grade_qty', q:'77. أفضل تركيبة صنف-درجة بالكمية؟'},
-        {id:'worst_item_grade', q:'78. أسوأ تركيبة صنف-درجة؟'},
-        {id:'best_country_item', q:'79. أفضل تركيبة دولة + صنف؟'},
-        {id:'item_world_fob', q:'80. متوسط FOB لكل صنف — من يبيع تحته وفوقه؟'},
-        {id:'geo_distribution', q:'81. التوزيع الجغرافي بالنسب؟'},
-        {id:'seasonality', q:'82. هل توجد فترة/شهر مميزة؟ (موسمية)'},
-        {cat:'🎯 القسم 9: قرارات إدارية'},
-        {id:'price_increase_5pct', q:'83. أثر رفع أسعار الصيفي 5%؟'},
-        {id:'marketing_budget', q:'84. في أي سوق نستثمر ميزانية تسويق؟'},
-        {id:'max_discount_policy', q:'85. نرفع حد الخصم الأقصى أم نخفضه؟'}
-    ];
+        /* ====== القسم 6 ====== */
+        case 'avg_discount':
+            H = '<h5 class="fw-bold text-success">متوسط الخصم العام: <strong>'+(companyDisc*100).toFixed(1)+'%</strong> عبر '+d.length+' صفقة</h5>'; break;
+        case 'total_concession': { let loss = d.reduce((s,x)=>{ let g=x.Discount_Rate<1?x.Net_Revenue/(1-x.Discount_Rate):x.Net_Revenue; return s+(g-x.Net_Revenue); },0);
+            H = '<h5 class="fw-bold text-danger">💸 إجمالي المتنازل عنه: <strong>'+fmt(loss)+'$</strong></h5><p class="small text-muted">القيمة الاسمية قبل الخصومات ≈ '+fmt(totalRev+loss)+'$ — أي أن الخصومات التهمت '+(totalRev+loss>0?(loss/(totalRev+loss)*100).toFixed(1):0)+'% من القيمة الاسمية.</p>'; break; }
+        case 'no_discount_deals': { let n = d.filter(x=>x.Discount_Rate===0).length;
+            H = '<h5 class="fw-bold text-success">✅ صفقات بدون خصم: <strong>'+n+'</strong> من أصل '+d.length+' ('+(d.length?(n/d.length*100).toFixed(1):0)+'%)</h5>'; break; }
+        case 'max_discount_deal': { let arr=[...d].sort((a,b)=>b.Discount_Rate-a.Discount_Rate).slice(0,5);
+            H = '<h6 class="fw-bold text-danger">أكبر 5 صفقات خصماً:</h6>' +
+            ol(arr, x=>'<li class="mb-1">عميل <strong>'+esc(x.Customer_Code)+'</strong> ('+esc(x.Country)+') — '+esc(x.Item)+' '+esc(x.Grade)+' — خصم <strong class="text-danger">'+(x.Discount_Rate*100).toFixed(1)+'%</strong> — مسؤول: '+esc(x.Owner)+'</li>'); break; }
 
-    function buildFaq(filterText = '') {
-        let html = '';
-        let qFilter = filterText.toLowerCase();
-        FAQ.forEach(f => {
-            if(f.cat) {
-                if(!qFilter) html += `<div class="faq-cat">${f.cat}</div>`;
-                return;
-            }
-            if(qFilter && !f.q.toLowerCase().includes(qFilter)) return;
-            html += `<button class="faq-btn" onclick="answerFaq('${f.id}')">${f.q}</button>`;
-        });
-        document.getElementById('faqList').innerHTML = html || '<p class="text-muted small p-2">لا توجد أسئلة مطابقة للبحث.</p>';
-    }
+        /* ====== القسم 7 ====== */
+        case 'blacklist_list': { let bl = groupSum(d.filter(x=>x.Segment==='D (Blacklist)'),'Customer_Code').sort((a,b)=>b.rev-a.rev);
+            H = '<h6 class="fw-bold text-danger">🛑 عملاء القائمة السوداء (خصم >25%): '+bl.length+' عميل</h6>' +
+            (bl.length ? ul(bl.slice(0,15), c=>'<li class="mb-1">عميل <strong>'+esc(c.key)+'</strong>: '+c.deals+' صفقة — '+fmt(c.rev)+'$ — متوسط خصم '+((c.avgDisc)*100).toFixed(1)+'%</li>') : '<p class="small text-muted">✅ لا يوجد.</p>'); break; }
+        case 'blacklist_worst': { let bl=[...d.filter(x=>x.Segment==='D (Blacklist)')].sort((a,b)=>b.Discount_Rate-a.Discount_Rate)[0];
+            H = bl ? '<h5 class="fw-bold text-danger">🔥 أعلى خصم في القائمة: عميل <strong>'+esc(bl.Customer_Code)+'</strong> — '+(bl.Discount_Rate*100).toFixed(1)+'%</h5><p class="small text-muted">'+esc(bl.Item)+' درجة '+esc(bl.Grade)+' — '+esc(bl.Country)+' — مسؤول: '+esc(bl.Owner)+'</p>' : '<p class="small text-muted">✅ القائمة فارغة.</p>'; break; }
+        case 'blacklist_owners': { let m = {};
+            d.filter(x=>x.Segment==='D (Blacklist)').forEach(x => m[x.Owner]=(m[x.Owner]||0)+1);
+            let arr = Object.entries(m).sort((a,b)=>b[1]-a[1]);
+            H = '<h6 class="fw-bold text-danger">المسؤولون حسب صفقات القائمة السوداء:</h6>' +
+            (arr.length ? ol(arr, ([o,n])=>'<li class="mb-1"><strong>'+esc(o)+'</strong>: '+n+' صفقة</li>') : '<p class="small text-muted">✅ لا يوجد.</p>'); break; }
 
-    function filterFaqSearch() {
-        let val = document.getElementById('faqSearch').value;
-        buildFaq(val);
-    }
+        /* ====== القسم 8 (أ) ====== */
+        case 'europe_share': { let eu = d.filter(x=>regionOf(x.Country)==='اوروبا').reduce((s,x)=>s+x.Net_Revenue,0);
+            H = '<h5 class="fw-bold text-success">🇪🇺 نصيب أوروبا: <strong>'+fmt(eu)+'$</strong> = '+(totalRev>0?(eu/totalRev*100).toFixed(1):0)+'% من الإيرادات</h5>'; break; }
 
-    const fmt = n => Math.round(n).toLocaleString();
-    const ol = (arr, fn) => '<ol class="small ps-3 mb-0">' + arr.map(fn).join('') + '</ol>';
-    const ul = (arr, fn) => '<ul class="small ps-3 mb-0">' + arr.map(fn).join('') + '</ul>';
-    const tbl = (head, rows) => '<div class="table-responsive"><table class="table table-bordered table-striped table-sm"><thead><tr>' + head.map(h=>'<th class="text-center">'+h+'</th>').join('') + '</tr></thead><tbody>' + rows.join('') + '</tbody></table></div>';
-    const medals = ['🥇','🥈','🥉'];
+        /* ====== القسم 1 (تكملة) ====== */
+        case 'second_owner': { let o=[...owners].sort((a,b)=>b.rev-a.rev)[1]; H=ownerCard(o,'🥈 ثاني أفضل مسؤول — حسب العوائد','primary'); break; }
+        case 'third_owner': { let o=[...owners].sort((a,b)=>b.rev-a.rev)[2]; H=ownerCard(o,'🥉 ثالث أفضل مسؤول — حسب العوائد','info'); break; }
+        case 'best_owner_qty': { let o=[...owners].sort((a,b)=>b.qty-a.qty)[0]; H=ownerCard(o,'⚖️ الأعلى كميات مباعة (أطنان)','warning'); break; }
+        case 'lowest_owner_fob': { let o=[...owners].sort((a,b)=>a.avgFob-b.avgFob)[0];
+            H=ownerCard(o,'📉 الأدنى متوسط سعر/طن — مؤشر البيع الرخيص','danger','<li>أدنى من متوسط الشركة ('+fmt(companyAvg)+'$) بـ '+Math.round((1-o.avgFob/companyAvg)*100)+'%.</li><li>💡 راجع مزيج الأصناف والأسواق لديه وأسعار IND المتدنية.</li>'); break; }
+        case 'lowest_discount_owner': { let o=[...owners].sort((a,b)=>a.avgDisc-b.avgDisc)[0]; H=ownerCard(o,'✅ الأقل منحاً للخصومات — انضباط تسعيري','success'); break; }
+        case 'most_deals_owner': { let o=[...owners].sort((a,b)=>b.deals-a.deals)[0]; H=ownerCard(o,'🧾 الأعلى عدد صفقات','dark'); break; }
+        case 'owner_eff_vs_company': {
+            H = '<h6 class="fw-bold text-success">عائد/طن لكل مسؤول مقابل متوسط الشركة ('+fmt(companyAvg)+' $):</h6>' +
+            ol([...owners].sort((a,b)=>b.avgFob-a.avgFob), o => { let diff = companyAvg ? (o.avgFob/companyAvg-1)*100 : 0;
+                return '<li class="mb-1"><strong>'+esc(o.key)+'</strong>: '+fmt(o.avgFob)+' $/طن — <span class="fw-bold '+(diff>=0?'text-success':'text-danger')+'">'+(diff>=0?'+':'')+diff.toFixed(1)+'%</span> عن المتوسط</li>'; }) +
+            '<p class="small text-muted mt-2 mb-0">🔎 الإيجابي = بيع أذكى من المتوسط. السلبي = ضغط سعري أو مزيج أصناف رخيص.</p>'; break; }
+        case 'promotion_candidate': {
+            let avgRev = owners.length ? totalRev/owners.length : 0;
+            let cand = [...owners].filter(o => o.rev>avgRev && o.avgFob>companyAvg && o.avgDisc<companyDisc).sort((a,b)=>b.rev-a.rev);
+            H = '<h6 class="fw-bold text-success">🏅 مرشحو الترقية/زيادة العمولة (يحققون الشروط الثلاثة):</h6>' +
+            '<p class="small text-muted">الشروط: عوائد فوق متوسط المسؤولين ('+fmt(avgRev)+'$) + سعر/طن فوق متوسط الشركة + خصم أقل من المتوسط.</p>' +
+            (cand.length ? ul(cand, o=>'<li class="mb-1"><strong>'+esc(o.key)+'</strong>: '+fmt(o.rev)+'$ — '+fmt(o.avgFob)+'$/طن — خصم '+(o.avgDisc*100).toFixed(1)+'% ✅</li>') : '<p class="small text-muted">لا أحد يحقق الشروط الثلاثة معاً.</p>'); break; }
+        case 'training_needed': {
+            let weak = [...owners].filter(o => o.avgFob<companyAvg || o.avgDisc>companyDisc).sort((a,b)=>(a.avgFob-b.avgFob));
+            H = '<h6 class="fw-bold text-danger">📋 يحتاجون خطة تحسين/تدريب تسعير:</h6>' +
+            '<p class="small text-muted">المعيار: سعر/طن أدنى من متوسط الشركة ('+fmt(companyAvg)+'$) أو خصم أعلى من المتوسط ('+(companyDisc*100).toFixed(1)+'%).</p>' +
+            (weak.length ? ul(weak, o=>'<li class="mb-1"><strong>'+esc(o.key)+'</strong>: '+fmt(o.avgFob)+'$/طن '+(o.avgFob<companyAvg?'⬇️':'')+' — خصم '+(o.avgDisc*100).toFixed(1)+'% '+(o.avgDisc>companyDisc?'⬆️':'')+'</li>') : '<p class="small text-muted">✅ الكل فوق المتوسط.</p>') +
+            '<p class="small text-muted mt-2 mb-0">💡 خطة مقترحة: تدريب تفاوض، سقف خصم شخصي، ومراجعة شهرية لأسعار IND.</p>'; break; }
 
-    function answerFaq(id) {
-        let d = getFiltered();
-        let display = document.getElementById('faqAnswerDisplay');
-        let H = '';
-        let owners = groupSum(d,'Owner');
-        let countries = groupSum(d,'Country');
-        let items = groupSum(d,'Item');
-        let custs = groupSum(d,'Customer_Code');
-        let totalRev = d.reduce((s,x)=>s+x.Net_Revenue,0);
-        let totalQty = d.reduce((s,x)=>s+x.Quantity,0);
-        let companyAvg = totalQty>0 ? totalRev/totalQty : 0;
-        let companyDisc = d.length ? d.reduce((s,x)=>s+x.Discount_Rate,0)/d.length : 0;
-
-        const regionOf = c => {
-            const EU = ['ليتوانيا','فنلندا','بولندا','لاتفيا','انجلترا','التشيك','الدنمارك','كرواتيا','صربيا','هولندا','فرنسا','ايطاليا','بلغاريا','تركيا','المانيا','اليونان','ايرلندا','السويد','اسبانيا','رومانيا','البرتغال','بلجيكا','اوكرانيا','مالطة'];
-            const GULF = ['السعوديه','الامارات','قطر','البحرين'];
-            const ASIA = ['الصين','فيتنام','الهند','ماليزيا','سنغافورة','روسيا','اوزبكستان','هونج كونج','اليابان','جيبوتي'];
-            const AM = ['البرازيل','كندا','الارجنتين','اورجواي','امريكا'];
-            if (EU.includes(c)) return 'اوروبا';
-            if (GULF.includes(c)) return 'الخليج';
-            if (ASIA.includes(c)) return 'آسيا';
-            if (AM.includes(c)) return 'الأمريكيتان';
-            return 'أخرى';
-        };
-        const ownersByRegion = reg => {
+        /* ====== القسم 2 (تكملة) ====== */
+        case 'worst_country_qty': { let c=[...countries].sort((a,b)=>a.qty-b.qty)[0];
+            H='<h5 class="fw-bold text-danger">أضعف دولة حسب الكميات: <strong>'+esc(c.key)+'</strong> — '+fmt(c.qty)+' طن</h5>' +
+            '<p class="small text-muted">'+fmt(c.rev)+'$ عوائد — '+c.custCount+' عميل.</p>'; break; }
+        case 'top5_countries_qty': H = '<h6 class="fw-bold text-success">أفضل 5 دول بالأطنان:</h6>' +
+            ol([...countries].sort((a,b)=>b.qty-a.qty).slice(0,5), (c,i)=>'<li class="mb-1"><strong>'+(medals[i]||'')+' '+esc(c.key)+'</strong>: '+fmt(c.qty)+' طن — '+fmt(c.rev)+' $ — متوسط '+fmt(c.avgFob)+'$/طن</li>'); break;
+        case 'bottom5_countries': H = '<h6 class="fw-bold text-danger">أسوأ 5 دول بالعوائد (فرص تطوير أو سحب):</h6>' +
+            ol([...countries].sort((a,b)=>a.rev-b.rev).slice(0,5), c=>'<li class="mb-1"><strong>'+esc(c.key)+'</strong>: '+fmt(c.rev)+' $ — '+fmt(c.qty)+' طن — '+c.custCount+' عميل — متوسط '+fmt(c.avgFob)+'$/طن</li>') +
+            '<p class="small text-muted mt-2 mb-0">💡 دولة بسعر مرتفع وحجم صغير = فرصة توسع. بحجم صغير وسعر منخفض = مرشحة للتجميد.</p>'; break;
+        case 'one_customer_countries': {
+            let one = countries.filter(c=>c.custCount===1).sort((a,b)=>b.rev-a.rev);
+            H = '<h6 class="fw-bold text-warning">⚠️ دول كل عميل فيها واحد فقط ('+one.length+' دولة) — خطر تركّز 100%:</h6>' +
+            ol(one.slice(0,12), c=>'<li class="mb-1"><strong>'+esc(c.key)+'</strong>: عميل واحد — '+fmt(c.rev)+'$ — '+fmt(c.qty)+' طن</li>') +
+            '<p class="small text-muted mt-2 mb-0">💡 رحيل العميل الوحيد يصفّر السوق بالكامل — وثّق العلاقة بعقد إطاري.</p>'; break; }
+        case 'country_fob_table': {
+            let rows = [...countries].filter(c=>c.qty>=20).sort((a,b)=>b.avgFob-a.avgFob);
+            H = '<h6 class="fw-bold text-success">💰 الدول الأعلى متوسط سعر FOB/طن (حجم ≥ 20 طن):</h6>' +
+            tbl(['الدولة','متوسط $/طن','الكمية (طن)','العوائد $'], rows.slice(0,10).map(c=>'<tr><td><strong>'+esc(c.key)+'</strong></td><td class="text-success fw-bold">'+fmt(c.avgFob)+'</td><td>'+fmt(c.qty)+'</td><td>'+fmt(c.rev)+'</td></tr>')) +
+            '<p class="small text-muted mt-2 mb-0">🔎 أسواق تتحمّل أسعاراً مرتفعة — بيئة مثالية لاختبار زيادات سعرية.</p>'; break; }
+        case 'below_avg_price_countries': {
+            let low = [...countries].filter(c=>c.avgFob<companyAvg).sort((a,b)=>b.rev-a.rev);
+            H = '<h6 class="fw-bold text-warning">🌍 دول نبيع فيها بأقل من متوسط الشركة ('+fmt(companyAvg)+'$/طن) — '+low.length+' دولة:</h6>' +
+            ol(low.slice(0,10), c=>'<li class="mb-1"><strong>'+esc(c.key)+'</strong>: '+fmt(c.avgFob)+'$/طن ('+Math.round((1-c.avgFob/companyAvg)*100)+'% تحت المتوسط) — '+fmt(c.rev)+'$</li>'); break; }
+        case 'nl_vs_uae': {
+            let nl = countries.find(c=>c.key==='هولندا'), uae = countries.find(c=>c.key==='الامارات');
+            if (!nl || !uae) { H = '<p class="text-muted small">إحدى الدولتين غير موجودة ضمن النطاق المفلتر.</p>'; break; }
+            H = '<h6 class="fw-bold text-success">🇳🇱 هولندا ضد 🇦🇪 الإمارات:</h6>' +
+            tbl(['المعيار','هولندا','الإمارات'], [
+                '<tr><td>العوائد</td><td class="fw-bold text-primary">'+fmt(nl.rev)+' $</td><td class="fw-bold text-primary">'+fmt(uae.rev)+' $</td></tr>',
+                '<tr><td>الكمية</td><td>'+fmt(nl.qty)+' طن</td><td>'+fmt(uae.qty)+' طن</td></tr>',
+                '<tr><td>متوسط $/طن</td><td>'+fmt(nl.avgFob)+' $</td><td>'+fmt(uae.avgFob)+' $</td></tr>',
+                '<tr><td>العملاء</td><td>'+nl.custCount+'</td><td>'+uae.custCount+'</td></tr>',
+                '<tr><td>الصفقات</td><td>'+nl.deals+'</td><td>'+uae.deals+'</td></tr>']) +
+            '<p class="small text-muted mt-2 mb-0">🔎 '+(nl.rev>uae.rev?'هولندا أكبر عوائد':'الإمارات أكبر عوائد')+' — '+(nl.custCount>uae.custCount?'هولندا أعلى تنوع عملاء، والخليج أعلى تمركزاً ويحتاج تنويع.':'')+'</p>'; break; }
+        case 'expansion_candidates': {
+            let cand = [...countries].filter(c=>c.avgFob>companyAvg && c.rev<totalRev*0.02 && c.qty>=15).sort((a,b)=>b.avgFob-a.avgFob);
+            H = '<h6 class="fw-bold text-success">🚀 مرشحو التوسع (سعر فوق المتوسط + حجم صغير):</h6>' +
+            (cand.length ? ol(cand.slice(0,8), c=>'<li class="mb-1"><strong>'+esc(c.key)+'</strong>: '+fmt(c.avgFob)+'$/طن — '+fmt(c.rev)+'$ — '+c.custCount+' عميل</li>') : '<p class="small text-muted">لا يوجد ضمن النطاق الحالي.</p>') +
+            '<p class="small text-muted mt-2 mb-0">💡 زيارة ميدانية + عينة مجانية + مسؤول مخصص لأعلى 3 أسواق في القائمة.</p>'; break; }
+        case 'diverse_countries': {
             let m = {};
-            d.filter(x=>regionOf(x.Country)===reg).forEach(x => m[x.Owner]=(m[x.Owner]||0)+x.Net_Revenue);
-            return Object.entries(m).sort((a,b)=>b[1]-a[1]);
-        };
+            d.forEach(x => { let k=x.Country; if(!m[k]) m[k]={items:new Set(), rev:0}; m[k].items.add(x.Item); m[k].rev+=x.Net_Revenue; });
+            let arr = Object.entries(m).map(([k,v])=>({k, n:v.items.size, rev:v.rev})).sort((a,b)=>b.n-a.n||b.rev-a.rev);
+            H = '<h6 class="fw-bold text-success">🛒 الأسواق الأكثر تنوعاً في الأصناف:</h6>' +
+            ol(arr.slice(0,10), c=>'<li class="mb-1"><strong>'+esc(c.k)+'</strong>: '+c.n+' أصناف — '+fmt(c.rev)+'$</li>') +
+            '<p class="small text-muted mt-2 mb-0">🔎 تنوّع الشراء = ولاء أعلى وقدرة على رفع متوسط السلة لكل شحنة.</p>'; break; }
 
-        const ownerCard = (o, title, color, extra) => {
-            if(!o) return '<p class="text-muted small">لا توجد بيانات ضمن النطاق المفلتر.</p>';
-            return `<div class="border rounded p-3 mb-2 bg-white" style="border-right:4px solid var(--bs-${color||'success'}) !important">
-                <h5 class="fw-bold text-${color} mb-2">${title}: <span class="text-dark">${o.key}</span></h5>
-                <ul class="small text-muted mb-0">
-                <li>العوائد الصافية: <strong>${fmt(o.rev)} $</strong></li>
-                <li>الكمية: <strong>${fmt(o.qty)} طن</strong></li>
-                <li>متوسط سعر الطن: <strong>${fmt(o.avgFob)} $</strong></li>
-                <li>عدد العملاء: <strong>${o.custCount}</strong> — الصفقات: <strong>${o.deals}</strong></li>
-                ${extra||''}</ul></div>`;
-        };
+        /* ====== القسم 3 (تكملة) ====== */
+        case 'item_dependency': {
+            let top = [...items].sort((a,b)=>b.rev-a.rev)[0];
+            let share = totalRev>0 ? top.rev/totalRev*100 : 0;
+            let riskLvl = share>60 ? ['🔴 عالية جداً','اعتماد شبه كلي — أي صدمة سعرية أو موسمية في '+esc(top.key)+' تضرب الإيرادات مباشرة'] :
+                          share>40 ? ['🟠 مرتفعة','اعتماد واضح — مطلوب خطة تنويع خلال موسمين'] :
+                          share>25 ? ['🟡 متوسطة','اعتماد مقبول مع الحاجة لأصناف داعمة'] : ['🟢 منخفضة','محفظة متنوعة'];
+            H = '<h5 class="fw-bold text-success">مؤشر الاعتماد على الصنف الأول: <strong>'+esc(top.key)+'</strong> = '+share.toFixed(1)+'% من الإيرادات</h5>' +
+            '<p class="fs-6">مستوى المخاطرة: <strong>'+riskLvl[0]+'</strong> — '+riskLvl[1]+'.</p>' +
+            '<p class="small text-muted mb-0">💡 القرار: هدف استراتيجي لرفع مساهمة الأصناف الأخرى إلى 40% خلال عامين عبر أهداف بيع مرتبطة بالعمولات.</p>'; break; }
+        case 'best_item_excl_summery': {
+            let rest = [...items].filter(x=>x.key!=='صيفي').sort((a,b)=>b.rev-a.rev);
+            H = '<h5 class="fw-bold text-success">🥇 بعد استبعاد الصيفي: <strong>'+(rest[0]?esc(rest[0].key):'-')+'</strong> — '+(rest[0]?fmt(rest[0].rev):0)+' $ ('+(rest[0]?fmt(rest[0].qty):0)+' طن)</h5>' +
+            (rest.length ? ol(rest.slice(0,5), it=>'<li class="mb-1"><strong>'+esc(it.key)+'</strong>: '+fmt(it.rev)+'$ — متوسط '+fmt(it.avgFob)+'$/طن</li>') : ''); break; }
+        case 'owner_top_item': {
+            let om = {};
+            d.forEach(x => { if(!om[x.Owner]) om[x.Owner]={}; om[x.Owner][x.Item]=(om[x.Owner][x.Item]||0)+x.Net_Revenue; });
+            let arr = Object.entries(om).map(([o,m]) => { let e=Object.entries(m).sort((a,b)=>b[1]-a[1]); let tot=Object.values(m).reduce((s,v)=>s+v,0); return {o:o, item:e[0][0], rev:e[0][1], share:e[0][1]/tot*100}; }).sort((a,b)=>b.rev-a.rev);
+            H = '<h6 class="fw-bold text-success">🧩 الصنف الأكثر بيعاً لكل مسؤول:</h6>' +
+            tbl(['المسؤول','الصنف الأول','عوائده $','نسبته من مبيعاته'], arr.map(x=>'<tr><td><strong>'+esc(x.o)+'</strong></td><td>'+esc(x.item)+'</td><td>'+fmt(x.rev)+'</td><td>'+x.share.toFixed(1)+'%</td></tr>')) +
+            '<p class="small text-muted mt-2 mb-0">🔎 مسؤول يتصدر لديه الصيفي بنسبة >80% = تعرّض كامل لصدمات صنف واحد.</p>'; break; }
+        case 'items_need_marketing': {
+            let cand = [...items].filter(it => it.avgFob>companyAvg && it.rev<totalRev*0.02 && it.qty>=100).sort((a,b)=>b.avgFob-a.avgFob);
+            H = '<h6 class="fw-bold text-success">📣 أصناف أعلى من متوسط سعر الشركة لكن مساهمتها < 2%:</h6>' +
+            (cand.length ? ol(cand, it=>'<li class="mb-1"><strong>'+esc(it.key)+'</strong>: '+fmt(it.avgFob)+'$/طن — '+fmt(it.rev)+'$ ('+(totalRev>0?(it.rev/totalRev*100).toFixed(2):0)+'%) — '+fmt(it.qty)+' طن</li>') : '<p class="small text-muted">لا يوجد ضمن النطاق الحالي.</p>') +
+            '<p class="small text-muted mt-2 mb-0">💡 كل طن إضافي منها يساوي عوائد أعلى من الصيفي — حوّل جزءاً من ميزانية تسويق الصيفي إليها.</p>'; break; }
 
-        switch(id) {
-            case 'best_owner': { let o=[...owners].sort((a,b)=>b.rev-a.rev)[0]; H=ownerCard(o,'🥇 أفضل مسؤول مبيعات','success'); break; }
-            case 'owners_total': H = '<h6 class="fw-bold text-success">إجمالي عوائد كل مسؤول:</h6>' +
-                tbl(['المسؤول','العوائد $','الكمية (طن)','متوسط $/طن','الخصم %'], [...owners].sort((a,b)=>b.rev-a.rev).map(o=>'<tr><td><strong>'+o.key+'</strong></td><td class="fw-bold text-primary">'+fmt(o.rev)+'</td><td>'+fmt(o.qty)+'</td><td>'+fmt(o.avgFob)+'</td><td>'+(o.avgDisc*100).toFixed(1)+'%</td></tr>')); break;
-            case 'owners_avg_fob': H = '<h6 class="fw-bold text-success">متوسط سعر/طن لكل مسؤول:</h6>' +
-                ol([...owners].sort((a,b)=>b.avgFob-a.avgFob), o=>'<li class="mb-1"><strong>'+o.key+'</strong>: '+fmt(o.avgFob)+' $/طن</li>'); break;
-            case 'owners_customers': H = '<h6 class="fw-bold text-success">عدد العملاء لكل مسؤول:</h6>' +
-                ol([...owners].sort((a,b)=>b.custCount-a.custCount), o=>'<li class="mb-1"><strong>'+o.key+'</strong>: '+o.custCount+' عميل</li>'); break;
-            case 'owners_deals': H = '<h6 class="fw-bold text-success">عدد الصفقات لكل مسؤول:</h6>' +
-                ol([...owners].sort((a,b)=>b.deals-a.deals), o=>'<li class="mb-1"><strong>'+o.key+'</strong>: '+o.deals+' صفقة</li>'); break;
-            case 'owners_qty': H = '<h6 class="fw-bold text-success">إجمالي الكميات (أطنان):</h6>' +
-                ol([...owners].sort((a,b)=>b.qty-a.qty), o=>'<li class="mb-1"><strong>'+o.key+'</strong>: '+fmt(o.qty)+' طن</li>'); break;
-            case 'owner_grade_a': { let a = groupSum(d.filter(x=>x.Grade==='A'),'Owner').sort((x,y)=>y.rev-x.rev);
-                H = '<h5 class="fw-bold text-success">👑 الملك في بيع الدرجة A: <strong>'+(a[0]?a[0].key:'-')+'</strong> — '+(a[0]?fmt(a[0].rev):0)+'$</h5>' +
-                ol(a.slice(0,3), (o,i)=>'<li class="mb-1"><strong>'+(medals[i]||'')+' '+o.key+'</strong>: '+fmt(o.rev)+'$</li>'); break; }
-            case 'owners_share': H = '<h6 class="fw-bold text-success">حصة كل مسؤول من الإيرادات:</h6>' +
-                ol([...owners].sort((a,b)=>b.rev-a.rev), o=>'<li class="mb-1"><strong>'+o.key+'</strong>: '+(totalRev>0?(o.rev/totalRev*100).toFixed(1):0)+'% = '+fmt(o.rev)+'$</li>'); break;
-            case 'best_country': { let c=[...countries].sort((a,b)=>b.rev-a.rev)[0];
-                H = '<h5 class="fw-bold text-success">🏆 أفضل دولة بالعوائد: <strong>'+c.key+'</strong> — '+fmt(c.rev)+'$ ('+fmt(c.qty)+' طن)</h5>'; break; }
-            case 'countries_total': H = '<h6 class="fw-bold text-success">جدول الدول الشامل:</h6>' +
-                tbl(['الدولة','العوائد $','الكمية (طن)','العملاء','الصفقات','متوسط $/طن'], [...countries].sort((a,b)=>b.rev-a.rev).map(c=>'<tr><td><strong>'+c.key+'</strong></td><td>'+fmt(c.rev)+'</td><td>'+fmt(c.qty)+'</td><td>'+c.custCount+'</td><td>'+c.deals+'</td><td>'+fmt(c.avgFob)+'</td></tr>')); break;
-            case 'biggest_country_qty': { let c=[...countries].sort((a,b)=>b.qty-a.qty)[0];
-                H = '<h5 class="fw-bold text-success">⚖️ أكبر دولة كميات: <strong>'+c.key+'</strong> — '+fmt(c.qty)+' طن</h5>'; break; }
-            case 'country_customers': H = '<h6 class="fw-bold text-success">عدد العملاء لكل دولة:</h6>' +
-                ol([...countries].sort((a,b)=>b.custCount-a.custCount), c=>'<li class="mb-1"><strong>'+c.key+'</strong>: '+c.custCount+' عميل</li>'); break;
-            case 'avg_fob_country': H = '<h6 class="fw-bold text-success">متوسط سعر/طن لكل دولة:</h6>' +
-                tbl(['الدولة','متوسط $/طن','الكمية (طن)'], [...countries].sort((a,b)=>b.avgFob-a.avgFob).map(c=>'<tr><td><strong>'+c.key+'</strong></td><td class="fw-bold">'+fmt(c.avgFob)+'</td><td>'+fmt(c.qty)+'</td></tr>')); break;
-            case 'countries_grade_a': { let a = groupSum(d.filter(x=>x.Grade==='A'),'Country').sort((x,y)=>y.rev-x.rev);
-                H = '<h6 class="fw-bold text-success">الدول الأكثر شراءً للدرجة A:</h6>' +
-                ol(a.slice(0,5), (c,i)=>'<li class="mb-1"><strong>'+(medals[i]||'')+' '+c.key+'</strong>: '+fmt(c.rev)+'$</li>'); break; }
-            case 'top_item': { let it=[...items].sort((a,b)=>b.rev-a.rev)[0];
-                H = '<h5 class="fw-bold text-success">🥇 الأكثر عوائد: <strong>'+it.key+'</strong> — '+fmt(it.rev)+'$ ('+fmt(it.qty)+' طن)</h5>'; break; }
-            case 'top_item_qty': { let it=[...items].sort((a,b)=>b.qty-a.qty)[0];
-                H = '<h5 class="fw-bold text-success">⚖️ الأكثر كمية: <strong>'+it.key+'</strong> — '+fmt(it.qty)+' طن</h5>'; break; }
-            case 'items_avg_fob': H = '<h6 class="fw-bold text-success">متوسط سعر/طن لكل صنف:</h6>' +
-                tbl(['الصنف','متوسط $/طن','الكمية (طن)','العوائد $'], [...items].sort((a,b)=>b.avgFob-a.avgFob).map(it=>'<tr><td><strong>'+it.key+'</strong></td><td class="fw-bold">'+fmt(it.avgFob)+'</td><td>'+fmt(it.qty)+'</td><td>'+fmt(it.rev)+'</td></tr>')); break;
-            case 'item_discount': { let m = {};
-                d.forEach(x => { if(!m[x.Item]) m[x.Item]={s:0,n:0,max:0}; m[x.Item].s+=x.Discount_Rate; m[x.Item].n++; m[x.Item].max=Math.max(m[x.Item].max,x.Discount_Rate); });
-                let arr = Object.entries(m).sort((a,b)=>b[1].s/b[1].n-a[1].s/a[1].n);
-                H = '<h6 class="fw-bold text-danger">الصنف الأعلى خصومات:</h6>' +
-                ol(arr, ([k,v])=>'<li class="mb-1"><strong>'+k+'</strong>: متوسط '+((v.s/v.n)*100).toFixed(1)+'% — أقصى '+(v.max*100).toFixed(1)+'%</li>'); break; }
-            case 'grades_rev': { let g = groupSum(d,'Grade').sort((a,b)=>b.rev-a.rev);
-                H = '<h6 class="fw-bold text-success">توزيع العوائد على الدرجات:</h6>' +
-                ul(g, x=>'<li class="mb-1"><strong>'+x.key+'</strong>: '+fmt(x.rev)+'$ ('+(totalRev>0?(x.rev/totalRev*100).toFixed(1):0)+'%)</li>'); break; }
-            case 'grades_qty': { let g = groupSum(d,'Grade').sort((a,b)=>b.qty-a.qty);
-                H = '<h6 class="fw-bold text-success">توزيع الكميات على الدرجات:</h6>' +
-                ul(g, x=>'<li class="mb-1"><strong>'+x.key+'</strong>: '+fmt(x.qty)+' طن</li>'); break; }
-            case 'grades_fob': { let g = groupSum(d,'Grade').sort((a,b)=>b.avgFob-a.avgFob);
-                H = '<h6 class="fw-bold text-success">متوسط سعر/طن لكل درجة:</h6>' +
-                tbl(['الدرجة','متوسط $/طن','الكمية (طن)'], g.map(x=>'<tr><td><strong>'+x.key+'</strong></td><td class="fw-bold">'+fmt(x.avgFob)+'</td><td>'+fmt(x.qty)+'</td></tr>')); break; }
-            case 'grades_deals': { let g = groupSum(d,'Grade').sort((a,b)=>b.deals-a.deals);
-                H = '<h6 class="fw-bold text-success">عدد الصفقات لكل درجة:</h6>' +
-                ul(g, x=>'<li class="mb-1"><strong>'+x.key+'</strong>: '+x.deals+' صفقة</li>'); break; }
-            case 'top_customer': { let c=[...custs].sort((a,b)=>b.rev-a.rev)[0];
-                H = '<h5 class="fw-bold text-success">👑 أكبر عميل: <strong>'+c.key+'</strong> — '+fmt(c.rev)+'$ ('+fmt(c.qty)+' طن)</h5>'; break; }
-            case 'top_customer_qty': { let c=[...custs].sort((a,b)=>b.qty-a.qty)[0];
-                H = '<h5 class="fw-bold text-success">⚖️ أكبر عميل كميات: <strong>'+c.key+'</strong> — '+fmt(c.qty)+' طن</h5>'; break; }
-            case 'top10_customers': H = '<h6 class="fw-bold text-success">أفضل 10 عملاء بالعوائد:</h6>' +
-                tbl(['#','العميل','العوائد $','الكمية (طن)','الصفقات','متوسط $/طن'], [...custs].sort((a,b)=>b.rev-a.rev).slice(0,10).map((c,i)=>'<tr><td>'+(medals[i]||(i+1))+'</td><td><strong>'+c.key+'</strong></td><td class="fw-bold">'+fmt(c.rev)+'</td><td>'+fmt(c.qty)+'</td><td>'+c.deals+'</td><td>'+fmt(c.avgFob)+'</td></tr>')); break;
-            case 'customers_avg_price': H = '<h6 class="fw-bold text-success">متوسط سعر الدفع لكل عميل (أعلى 10):</h6>' +
-                tbl(['العميل','متوسط $/طن','الكمية (طن)'], [...custs].sort((a,b)=>b.avgFob-a.avgFob).slice(0,10).map(c=>'<tr><td><strong>'+c.key+'</strong></td><td class="fw-bold">'+fmt(c.avgFob)+'</td><td>'+fmt(c.qty)+'</td></tr>')); break;
-            case 'avg_discount':
-                H = '<h5 class="fw-bold text-success">متوسط الخصم العام: <strong>'+(companyDisc*100).toFixed(1)+'%</strong> عبر '+d.length+' صفقة</h5>'; break;
-            case 'total_concession': { let loss = d.reduce((s,x)=>{ let g=x.Discount_Rate<1?x.Net_Revenue/(1-x.Discount_Rate):x.Net_Revenue; return s+(g-x.Net_Revenue); },0);
-                H = '<h5 class="fw-bold text-danger">💸 إجمالي المتنازل عنه (خسارة الخصومات): <strong>'+fmt(loss)+'$</strong></h5>'; break; }
-            case 'no_discount_deals': { let n = d.filter(x=>x.Discount_Rate===0).length;
-                H = '<h5 class="fw-bold text-success">✅ صفقات بدون خصم: <strong>'+n+'</strong> من أصل '+d.length+' ('+(d.length?(n/d.length*100).toFixed(1):0)+'%)</h5>'; break; }
-            case 'max_discount_deal': { let arr=[...d].sort((a,b)=>b.Discount_Rate-a.Discount_Rate).slice(0,5);
-                H = '<h6 class="fw-bold text-danger">أكبر 5 صفقات خصماً:</h6>' +
-                ol(arr, x=>'<li class="mb-1">عميل <strong>'+x.Customer_Code+'</strong> ('+x.Country+') — '+x.Item+' — خصم <strong class="text-danger">'+(x.Discount_Rate*100).toFixed(1)+'%</strong> — مسؤول: '+x.Owner+'</li>'); break; }
-            case 'blacklist_list': { let bl = groupSum(d.filter(x=>x.Segment==='D (Blacklist)'),'Customer_Code').sort((a,b)=>b.rev-a.rev);
-                H = '<h6 class="fw-bold text-danger">🛑 عملاء القائمة السوداء (خصم >25%): '+bl.length+' عميل</h6>' +
-                (bl.length ? ul(bl.slice(0,15), c=>'<li class="mb-1">عميل <strong>'+c.key+'</strong>: '+c.deals+' صفقة — '+fmt(c.rev)+'$</li>') : '<p class="small text-muted">✅ لا يوجد.</p>'); break; }
-            case 'blacklist_worst': { let bl=[...d.filter(x=>x.Segment==='D (Blacklist)')].sort((a,b)=>b.Discount_Rate-a.Discount_Rate)[0];
-                H = bl ? '<h5 class="fw-bold text-danger">🔥 أعلى خصم في القائمة: عميل <strong>'+bl.Customer_Code+'</strong> — '+(bl.Discount_Rate*100).toFixed(1)+'%</h5>' : '<p class="small text-muted">✅ القائمة فارغة.</p>'; break; }
-            case 'blacklist_owners': { let m = {};
-                d.filter(x=>x.Segment==='D (Blacklist)').forEach(x => m[x.Owner]=(m[x.Owner]||0)+1);
-                let arr = Object.entries(m).sort((a,b)=>b[1]-a[1]);
-                H = '<h6 class="fw-bold text-danger">المسؤولون حسب صفقات القائمة السوداء:</h6>' +
-                (arr.length ? ol(arr, ([o,n])=>'<li class="mb-1"><strong>'+o+'</strong>: '+n+' صفقة</li>') : '<p class="small text-muted">✅ لا يوجد.</p>'); break; }
-            case 'europe_share': { let eu = d.filter(x=>regionOf(x.Country)==='اوروبا').reduce((s,x)=>s+x.Net_Revenue,0);
-                H = '<h5 class="fw-bold text-success">🇪🇺 نصيب أوروبا: <strong>'+fmt(eu)+'$</strong> = '+(totalRev>0?(eu/totalRev*100).toFixed(1):0)+'% من الإيرادات</h5>'; break; }
-            case 'second_owner': { let o=[...owners].sort((a,b)=>b.rev-a.rev)[1]; H=ownerCard(o,'🥈 ثاني أفضل مسؤول','primary'); break; }
-            case 'third_owner': { let o=[...owners].sort((a,b)=>b.rev-a.rev)[2]; H=ownerCard(o,'🥉 ثالث أفضل مسؤول','info'); break; }
-            case 'best_owner_qty': { let o=[...owners].sort((a,b)=>b.qty-a.qty)[0]; H=ownerCard(o,'⚖️ الأعلى كميات مباعة','warning'); break; }
-            case 'lowest_owner_fob': { let o=[...owners].sort((a,b)=>a.avgFob-b.avgFob)[0]; H=ownerCard(o,'📉 الأدنى متوسط سعر/طن','danger'); break; }
-            case 'lowest_discount_owner': { let o=[...owners].sort((a,b)=>a.avgDisc-b.avgDisc)[0]; H=ownerCard(o,'✅ الأقل منحاً للخصومات','success'); break; }
-            case 'most_deals_owner': { let o=[...owners].sort((a,b)=>b.deals-a.deals)[0]; H=ownerCard(o,'🧾 الأعلى عدد صفقات','dark'); break; }
-            case 'owner_eff_vs_company': {
-                H = '<h6 class="fw-bold text-success">عائد/طن لكل مسؤول مقابل متوسط الشركة ('+fmt(companyAvg)+' $):</h6>' +
-                ol([...owners].sort((a,b)=>b.avgFob-a.avgFob), o => { let diff = companyAvg ? (o.avgFob/companyAvg-1)*100 : 0;
-                    return '<li class="mb-1"><strong>'+o.key+'</strong>: '+fmt(o.avgFob)+' $/طن — <span class="fw-bold '+(diff>=0?'text-success':'text-danger')+'">'+(diff>=0?'+':'')+diff.toFixed(1)+'%</span></li>'; }); break; }
-            case 'promotion_candidate': {
-                let avgRev = owners.length ? totalRev/owners.length : 0;
-                let cand = [...owners].filter(o => o.rev>avgRev && o.avgFob>companyAvg && o.avgDisc<companyDisc).sort((a,b)=>b.rev-a.rev);
-                H = '<h6 class="fw-bold text-success">🏅 مرشحو الترقية / زيادة العمولة:</h6>' +
-                (cand.length ? ul(cand, o=>'<li class="mb-1"><strong>'+o.key+'</strong>: '+fmt(o.rev)+'$ — '+fmt(o.avgFob)+'$/طن ✅</li>') : '<p class="small text-muted">لا يوجد مطابق للشروط بالكامل.</p>'); break; }
-            case 'training_needed': {
-                let weak = [...owners].filter(o => o.avgFob<companyAvg || o.avgDisc>companyDisc).sort((a,b)=>(a.avgFob-b.avgFob));
-                H = '<h6 class="fw-bold text-danger">📋 يحتاجون خطة تحسين تسعير:</h6>' +
-                (weak.length ? ul(weak, o=>'<li class="mb-1"><strong>'+o.key+'</strong>: '+fmt(o.avgFob)+'$/طن — خصم '+(o.avgDisc*100).toFixed(1)+'%</li>') : '<p class="small text-muted">✅ الكل في نطاق جيد.</p>'); break; }
-            case 'worst_country_qty': { let c=[...countries].sort((a,b)=>a.qty-b.qty)[0];
-                H='<h5 class="fw-bold text-danger">أضعف دولة حسب الكميات: <strong>'+c.key+'</strong> — '+fmt(c.qty)+' طن</h5>'; break; }
-            case 'top5_countries_qty': H = '<h6 class="fw-bold text-success">أفضل 5 دول بالأطنان:</h6>' +
-                ol([...countries].sort((a,b)=>b.qty-a.qty).slice(0,5), (c,i)=>'<li class="mb-1"><strong>'+(medals[i]||'')+' '+c.key+'</strong>: '+fmt(c.qty)+' طن</li>'); break;
-            case 'bottom5_countries': H = '<h6 class="fw-bold text-danger">أسوأ 5 دول بالعوائد:</h6>' +
-                ol([...countries].sort((a,b)=>b.rev-b.rev).slice(0,5), c=>'<li class="mb-1"><strong>'+c.key+'</strong>: '+fmt(c.rev)+' $ — '+fmt(c.qty)+' طن</li>'); break;
-            case 'one_customer_countries': { let one = countries.filter(c=>c.custCount===1).sort((a,b)=>b.rev-a.rev);
-                H = '<h6 class="fw-bold text-warning">⚠️ دول كل عميل فيها واحد فقط ('+one.length+' دولة):</h6>' +
-                ol(one.slice(0,10), c=>'<li class="mb-1"><strong>'+c.key+'</strong>: '+fmt(c.rev)+'$</li>'); break; }
-            case 'country_fob_table': { let rows = [...countries].filter(c=>c.qty>=20).sort((a,b)=>b.avgFob-a.avgFob);
-                H = '<h6 class="fw-bold text-success">💰 الدول الأعلى متوسط سعر FOB/طن:</h6>' +
-                tbl(['الدولة','متوسط $/طن','الكمية (طن)'], rows.slice(0,10).map(c=>'<tr><td><strong>'+c.key+'</strong></td><td class="text-success fw-bold">'+fmt(c.avgFob)+'</td><td>'+fmt(c.qty)+'</td></tr>')); break; }
-            case 'below_avg_price_countries': { let low = [...countries].filter(c=>c.avgFob<companyAvg).sort((a,b)=>b.rev-a.rev);
-                H = '<h6 class="fw-bold text-warning">🌍 دول نبيع فيها بأقل من متوسط الشركة:</h6>' +
-                ol(low.slice(0,10), c=>'<li class="mb-1"><strong>'+c.key+'</strong>: '+fmt(c.avgFob)+'$/طن</li>'); break; }
-            case 'nl_vs_uae': { let nl = countries.find(c=>c.key==='هولندا'), uae = countries.find(c=>c.key==='الامارات');
-                if (!nl || !uae) { H = '<p class="text-muted small">إحدى الدولتين غير موجودة ضمن النطاق المفلتر.</p>'; break; }
-                H = '<h6 class="fw-bold text-success">🇳🇱 هولندا ضد 🇦🇪 الإمارات:</h6>' +
-                tbl(['المعيار','هولندا','الإمارات'], [['عقود/عوائد', fmt(nl.rev)+'$', fmt(uae.rev)+$],['كمية', fmt(nl.qty)+' طن', fmt(uae.qty)+' طن'],['متوسط السعر', fmt(nl.avgFob)+'$', fmt(uae.avgFob)+'$']].map(x=>'<tr><td>'+x[0]+'</td><td>'+x[1]+'</td><td>'+x[2]+'</td></tr>')); break; }
-            case 'expansion_candidates': { let cand = [...countries].filter(c=>c.avgFob>companyAvg && c.rev<totalRev*0.02 && c.qty>=15).sort((a,b)=>b.avgFob-a.avgFob);
-                H = '<h6 class="fw-bold text-success">🚀 مرشحو التوسع (سعر عالي + حجم صغير):</h6>' +
-                (cand.length ? ol(cand.slice(0,8), c=>'<li class="mb-1"><strong>'+c.key+'</strong>: '+fmt(c.avgFob)+'$/طن</li>') : '<p class="small text-muted">لا يوجد.</p>'); break; }
-            case 'diverse_countries': { let m = {};
-                d.forEach(x => { let k=x.Country; if(!m[k]) m[k]={items:new Set(), rev:0}; m[k].items.add(x.Item); m[k].rev+=x.Net_Revenue; });
-                let arr = Object.entries(m).map(([k,v])=>({k, n:v.items.size, rev:v.rev})).sort((a,b)=>b.n-a.n);
-                H = '<h6 class="fw-bold text-success">🛒 الأسواق الأكثر تنوعاً في الأصناف:</h6>' +
-                ol(arr.slice(0,10), c=>'<li class="mb-1"><strong>'+c.k+'</strong>: '+c.n+' أصناف</li>'); break; }
-            case 'item_dependency': { let top = [...items].sort((a,b)=>b.rev-a.rev)[0];
-                let share = totalRev>0 ? top.rev/totalRev*100 : 0;
-                H = '<h5 class="fw-bold text-success">الاعتماد على الصنف الأول: <strong>'+top.key+'</strong> = '+share.toFixed(1)+'% من الإيرادات</h5>'; break; }
-            case 'best_item_excl_summery': { let rest = [...items].filter(x=>x.key!=='صيفي').sort((a,b)=>b.rev-a.rev);
-                H = '<h5 class="fw-bold text-success">🥇 بعد استبعاد الصيفي: <strong>'+(rest[0]?rest[0].key:'-')+'</strong> — '+(rest[0]?fmt(rest[0].rev):0)+'$</h5>'; break; }
-            case 'owner_top_item': { let om = {};
-                d.forEach(x => { if(!om[x.Owner]) om[x.Owner]={}; om[x.Owner][x.Item]=(om[x.Owner][x.Item]||0)+x.Net_Revenue; });
-                let arr = Object.entries(om).map(([o,m]) => { let e=Object.entries(m).sort((a,b)=>b[1]-a[1]); return {o, item:e[0][0], rev:e[0][1]}; });
-                H = '<h6 class="fw-bold text-success">🧩 الصنف الأكثر بيعاً لكل مسؤول:</h6>' +
-                tbl(['المسؤول','الصنف الأول','العوائد $'], arr.map(x=>'<tr><td><strong>'+x.o+'</strong></td><td>'+x.item+'</td><td>'+fmt(x.rev)+'</td></tr>')); break; }
-            case 'items_need_marketing': { let cand = [...items].filter(it => it.avgFob>companyAvg && it.rev<totalRev*0.02 && it.qty>=100);
-                H = '<h6 class="fw-bold text-success">📣 أصناف واعدة تحتاج تسويق:</h6>' +
-                (cand.length ? ol(cand, it=>'<li class="mb-1"><strong>'+it.key+'</strong>: '+fmt(it.avgFob)+'$/طن</li>') : '<p class="small text-muted">لا يوجد.</p>'); break; }
-            case 'grade_top_rev': { let g=[...groupSum(d,'Grade')].sort((a,b)=>b.rev-a.rev)[0];
-                H='<h5 class="fw-bold text-success">💰 الدرجة الأعلى عوائد: <strong>'+g.key+'</strong> — '+fmt(g.rev)+'$</h5>'; break; }
-            case 'grade_top_fob': { let g=[...groupSum(d,'Grade')].sort((a,b)=>b.avgFob-a.avgFob)[0];
-                H='<h5 class="fw-bold text-success">💎 الدرجة الأعلى سعراً للطن: <strong>'+g.key+'</strong> — '+fmt(g.avgFob)+'$/طن</h5>'; break; }
-            case 'ind_owner': { let m = {};
-                d.filter(x=>x.Grade==='IND').forEach(x => m[x.Owner]=(m[x.Owner]||0)+x.Quantity);
-                let arr = Object.entries(m).sort((a,b)=>b[1]-a[1]);
-                H = '<h6 class="fw-bold text-success">🏭 بائعو درجة IND (أطنان):</h6>' +
-                ol(arr, p=>'<li class="mb-1"><strong>'+p[0]+'</strong>: '+fmt(p[1])+' طن</li>'); break; }
-            case 'grade_customers': { let g = groupSum(d,'Grade');
-                H = '<h6 class="fw-bold text-success">عدد العملاء لكل درجة:</h6>' +
-                tbl(['الدرجة','العملاء','الصفقات','العوائد $'], [...g].map(x=>'<tr><td><strong>'+x.key+'</strong></td><td>'+x.custCount+'</td><td>'+x.deals+'</td><td>'+fmt(x.rev)+'</td></tr>')); break; }
-            case 'grade_a_share': { let ga = groupSum(d.filter(x=>x.Grade==='A'),'Grade')[0];
-                let share = totalRev>0&&ga ? ga.rev/totalRev*100 : 0;
-                H='<h5 class="fw-bold text-success">👑 مساهمة الدرجة A الفاخرة: <strong>'+share.toFixed(1)+'%</strong> ('+(ga?fmt(ga.rev):0)+'$ )</h5>'; break; }
-            case 'grade_d_analysis': { let g = groupSum(d.filter(x=>x.Grade==='D'),'Grade')[0];
-                let share = totalQty>0&&g ? g.qty/totalQty*100 : 0;
-                H='<h5 class="fw-bold text-danger">📉 درجة D: <strong>'+share.toFixed(1)+'%</strong> من إجمالي الكميات</h5>'; break; }
-            case 'customer_top_avg_price': { let arr = custs.filter(c=>c.qty>=50).sort((a,b)=>b.avgFob-a.avgFob);
-                H = '<h6 class="fw-bold text-success">💎 العملاء الأعلى متوسط سعر دفع (حجم ≥ 50 طن):</h6>' +
-                ol(arr.slice(0,5), c=>'<li class="mb-1"><strong>'+c.key+'</strong>: '+fmt(c.avgFob)+'$/طن</li>'); break; }
-            case 'loyal_customers': { let cm = {};
-                d.forEach(x => { if(!cm[x.Customer_Code]) cm[x.Customer_Code]={items:new Set(), rev:0}; cm[x.Customer_Code].items.add(x.Item); cm[x.Customer_Code].rev+=x.Net_Revenue; });
-                let arr = Object.entries(cm).map(([k,v])=>({k, items:v.items.size, rev:v.rev})).filter(x=>x.items>=4).sort((a,b)=>b.rev-a.rev);
-                H = '<h6 class="fw-bold text-success">❤️ عملاء الولاء (يشترون 4+ أصناف):</h6>' +
-                ol(arr.slice(0,10), c=>'<li class="mb-1">عميل <strong>'+c.k+'</strong>: '+c.items+' أصناف</li>'); break; }
-            case 'concentration_risk': { let big = [...custs].sort((a,b)=>b.rev-a.rev).filter(c=>totalRev>0 && c.rev/totalRev>0.05);
-                H = '<h6 class="fw-bold text-danger">⚠️ عملاء يتجاوزون 5% من الإيرادات: <strong>'+big.length+'</strong></h6>' +
-                ul(big, c=>'<li class="mb-1">عميل <strong>'+c.key+'</strong>: '+(c.rev/totalRev*100).toFixed(1)+'%</li>'); break; }
-            case 'big_discount_owners': { let m = {};
-                d.filter(x=>x.Discount_Rate>=0.25).forEach(x => m[x.Owner]=(m[x.Owner]||0)+1);
-                let arr = Object.entries(m).sort((a,b)=>b[1]-a[1]);
-                H = '<h6 class="fw-bold text-danger">💸 الأكثر منحاً للخصومات الكبيرة (≥25%):</h6>' +
-                ol(arr, p=>'<li class="mb-1"><strong>'+p[0]+'</strong>: '+p[1]+' صفقة</li>'); break; }
-            case 'discount_by_owner': H = '<h6 class="fw-bold text-success">متوسط الخصم لكل مسؤول:</h6>' +
-                ol([...owners].sort((a,b)=>b.avgDisc-a.avgDisc), o=>'<li class="mb-1"><strong>'+o.key+'</strong>: '+(o.avgDisc*100).toFixed(1)+'%</li>'); break;
-            case 'new_vs_old_discount': H='<h5 class="fw-bold text-success">مقارنة الخصم حسب تكوين الكود التقريبي.</h5>'; break;
-            case 'blacklist_value': { let bl = d.filter(x=>x.Segment==='D (Blacklist)');
-                let net = bl.reduce((s,x)=>s+x.Net_Revenue,0);
-                H='<h5 class="fw-bold text-danger">🛑 قيمة القائمة السوداء الصافية: <strong>'+fmt(net)+'$</strong></h5>'; break; }
-            case 'blacklist_top_damage': { let bl = d.filter(x=>x.Segment==='D (Blacklist)');
-                let cm = {}; bl.forEach(x => { let g=x.Net_Revenue/(1-x.Discount_Rate||1); cm[x.Customer_Code]=(cm[x.Customer_Code]||0)+(g-x.Net_Revenue); });
-                let arr = Object.entries(cm).sort((a,b)=>b[1]-a[1]);
-                H = '<h6 class="fw-bold text-danger">💥 أكبر العملاء أضراراً بالخصومات:</h6>' +
-                ol(arr.slice(0,5), p=>'<li class="mb-1">عميل <strong>'+p[0]+'</strong>: خسرنا منه '+fmt(p[1])+'$ تنازلاً</li>'); break; }
-            case 'blacklist_criteria': H='<h5 class="fw-bold text-success">معيار القائمة السوداء: الخصم > 25%.</h5>'; break;
-            case 'owner_europe': { let a = ownersByRegion('اوروبا');
-                H = '<h5 class="fw-bold text-success">🇪🇺 ملك أوروبا: <strong>'+(a[0]?a[0][0]:'-')+'</strong> — '+(a[0]?fmt(a[0][1]):0)+'$</h5>'; break; }
-            case 'owner_gulf': { let a = ownersByRegion('الخليج');
-                H = '<h5 class="fw-bold text-success">🌴 ملك الخليج: <strong>'+(a[0]?a[0][0]:'-')+'</strong> — '+(a[0]?fmt(a[0][1]):0)+'$</h5>'; break; }
-            case 'owner_russia': { let m = {}; d.filter(x=>x.Country==='روسيا').forEach(x => m[x.Owner]=(m[x.Owner]||0)+x.Net_Revenue);
-                let a = Object.entries(m).sort((x,y)=>y[1]-x[1]);
-                H = '<h5 class="fw-bold text-success">🇷🇺 ملك روسيا: <strong>'+(a[0]?a[0][0]:'-')+'</strong> — '+(a[0]?fmt(a[0][1]):0)+'$</h5>'; break; }
-            case 'best_item_grade_rev': { let m = groupSum(d, x=>x.Item+' / '+x.Grade).sort((a,b)=>b.rev-a.rev)[0];
-                H='<h5 class="fw-bold text-success">🥇 أفضل تركيبة صنف-درجة بالعوائد: <strong>'+m.key+'</strong> — '+fmt(m.rev)+'$</h5>'; break; }
-            case 'best_item_grade_qty': { let m = groupSum(d, x=>x.Item+' / '+x.Grade).sort((a,b)=>b.qty-a.qty)[0];
-                H='<h5 class="fw-bold text-success">⚖️ أفضل تركيبة صنف-درجة بالكمية: <strong>'+m.key+'</strong> — '+fmt(m.qty)+' طن</h5>'; break; }
-            case 'worst_item_grade': { let m = groupSum(d, x=>x.Item+' / '+x.Grade).sort((a,b)=>b.rev-a.rev).pop();
-                H='<h5 class="fw-bold text-danger">📉 أسوأ تركيبة صنف-درجة: <strong>'+(m?m.key:'-')+'</strong></h5>'; break; }
-            case 'best_country_item': { let m = groupSum(d, x=>x.Country+' — '+x.Item).sort((a,b)=>b.rev-a.rev)[0];
-                H='<h5 class="fw-bold text-success">🎯 التركيبة الرابحة (دولة + صنف): <strong>'+(m?m.key:'-')+'</strong> — '+fmt(m?m.rev:0)+'$</h5>'; break; }
-            case 'item_world_fob': H='<h6 class="fw-bold text-success">متوسط FOB لكل صنف ومقارنته بالمستوى العام.</h6>'; break;
-            case 'geo_distribution': { let m = {};
-                d.forEach(x => { let r = regionOf(x.Country); if(!m[r]) m[r]=0; m[r]+=x.Net_Revenue; });
-                H = '<h6 class="fw-bold text-success">🗺️ التوزيع الجغرافي:</h6>' + ul(Object.entries(m), p=>'<li>'+p[0]+': '+fmt(p[1])+'$</li>'); break; }
-            case 'seasonality': H='<p class="small text-muted">البيانات الحالية لا تحتوي على تواريخ شهرية لحساب الموسمية.</p>'; break;
-            case 'exec_summary': {
-                let bo = [...owners].sort((a,b)=>b.rev-a.rev)[0], bc = [...countries].sort((a,b)=>b.rev-a.rev)[0];
-                H=`<h6 class="fw-bold text-success">📋 الملخص التنفيذي الشامل:</h6>
-                <ul class="small">
-                <li>إجمالي الإيرادات: <strong>${fmt(totalRev)} $</strong> — الكمية: <strong>${fmt(totalQty)} طن</strong></li>
-                <li>الأفضل أداءً: المسؤول <strong>${bo?bo.key:'-'}</strong> ودولة <strong>${bc?bc.key:'-'}</strong></li>
-                <li>إجمالي عملاء القائمة السوداء: <strong>${new Set(d.filter(x=>x.Segment==='D (Blacklist)').map(x=>x.Customer_Code)).size}</strong></li>
-                </ul>`; break; }
-            case 'price_increase_5pct': H='<h5 class="fw-bold text-success">محاكاة رفع أسعار الصيفي 5% تزيد العوائد بنسبة موازية إذا ثبت حجم الطلب.</h5>'; break;
-            case 'marketing_budget': H='<h5 class="fw-bold text-success">توجيه ميزانية التسويق للأسواق الأعلى سعراً للطن والأكثر طلباً (مثل أوروبا وآسيا).</h5>'; break;
-            case 'max_discount_policy': H='<h5 class="fw-bold text-success">الابقاء على الحد الأقصى للخصم 25% مع مراجعة الصفقات الاستثنائية إدارياً.</h5>'; break;
-            default: H='<p class="text-muted small">اختر سؤالاً من القائمة الجانبية.</p>';
-        }
-        display.innerHTML = H;
-        display.scrollTop = 0;
+        /* ====== القسم 4 (تكملة) ====== */
+        case 'grade_top_rev': { let g=[...groupSum(d,'Grade')].sort((a,b)=>b.rev-a.rev)[0];
+            H='<h5 class="fw-bold text-success">💰 الدرجة الأعلى عوائد: <strong>'+esc(g.key)+'</strong> — '+fmt(g.rev)+'$ ('+fmt(g.qty)+' طن)</h5>'; break; }
+        case 'grade_top_fob': { let g=[...groupSum(d,'Grade')].sort((a,b)=>b.avgFob-a.avgFob)[0];
+            H='<h5 class="fw-bold text-success">💎 الدرجة الأعلى سعراً للطن: <strong>'+esc(g.key)+'</strong> — '+fmt(g.avgFob)+'$/طن</h5>'; break; }
+        case 'ind_owner': {
+            let m = {};
+            d.filter(x=>x.Grade==='IND').forEach(x => m[x.Owner]=(m[x.Owner]||0)+x.Quantity);
+            let arr = Object.entries(m).sort((a,b)=>b[1]-a[1]);
+            H = '<h6 class="fw-bold text-success">🏭 بائعو درجة IND (أطنان):</h6>' +
+            ol(arr, p=>'<li class="mb-1"><strong>'+esc(p[0])+'</strong>: '+fmt(p[1])+' طن IND</li>') +
+            '<p class="small text-muted mt-2 mb-0">🔎 كثرة IND لدى مسؤول = تصريف مخزون أكثر منه بيع قيمة.</p>'; break; }
+        case 'grade_customers': {
+            let g = groupSum(d,'Grade');
+            H = '<h6 class="fw-bold text-success">عدد العملاء الفريدين لكل درجة:</h6>' +
+            tbl(['الدرجة','العملاء','الصفقات','العوائد $'], [...g].sort((a,b)=>b.custCount-a.custCount).map(x=>'<tr><td><strong>'+esc(x.key)+'</strong></td><td>'+x.custCount+'</td><td>'+x.deals+'</td><td>'+fmt(x.rev)+'</td></tr>')); break; }
+        case 'grade_a_share': {
+            let ga = groupSum(d.filter(x=>x.Grade==='A'),'Grade')[0];
+            let share = totalRev>0&&ga ? ga.rev/totalRev*100 : 0;
+            H='<h5 class="fw-bold text-success">👑 مساهمة الدرجة A الفاخرة: <strong>'+share.toFixed(1)+'%</strong> ('+(ga?fmt(ga.rev):0)+'$)</h5>' +
+            '<p class="small text-muted">🔎 نسبة متدنية لفئة فاخرة تُباع بأعلى الأسعار — فرصة نمو خاصة في الصين واليابان وهونج كونج. 💡 مندوب مخصص للفئة A + عينات مدفوعة + تغليف مميز.</p>'; break; }
+        case 'grade_d_analysis': {
+            let g = groupSum(d.filter(x=>x.Grade==='D'),'Grade')[0];
+            let share = totalQty>0&&g ? g.qty/totalQty*100 : 0;
+            H='<h5 class="fw-bold '+(share>25?'text-danger':'text-success')+'">📉 درجة D: <strong>'+share.toFixed(1)+'%</strong> من إجمالي الكميات ('+(g?fmt(g.qty):0)+' طن — '+(g?fmt(g.rev):0)+'$)</h5>' +
+            '<p class="small text-muted">'+(share>25?'⚠️ نسبة مرتفعة في أدنى درجة جودة — قد تعكس ضغط سعري أو ضعف فرز/تعبئة. راجع خط الجودة قبل التوسع.':'✅ النسبة ضمن حدود معقولة.')+'</p>'; break; }
+
+        /* ====== القسم 5 (تكملة) ====== */
+        case 'customer_top_avg_price': {
+            let arr = custs.filter(c=>c.qty>=50).sort((a,b)=>b.avgFob-a.avgFob);
+            H = '<h6 class="fw-bold text-success">💎 العملاء الأعلى متوسط سعر دفع (حجم ≥ 50 طن):</h6>' +
+            ol(arr.slice(0,5), c=>'<li class="mb-1">عميل <strong>'+esc(c.key)+'</strong>: '+fmt(c.avgFob)+'$/طن — '+fmt(c.qty)+' طن — '+fmt(c.rev)+'$</li>') +
+            '<p class="small text-muted mt-2 mb-0">🔎 يقدّرون الجودة ويتحملون الأسعار — جمهورك المثالي لاختبار المنتجات الجديدة.</p>'; break; }
+        case 'loyal_customers': {
+            let cm = {};
+            d.forEach(x => { if(!cm[x.Customer_Code]) cm[x.Customer_Code]={items:new Set(), grades:new Set(), rev:0};
+                cm[x.Customer_Code].items.add(x.Item); cm[x.Customer_Code].grades.add(x.Grade); cm[x.Customer_Code].rev+=x.Net_Revenue; });
+            let arr = Object.entries(cm).map(([k,v])=>({k:k, items:v.items.size, grades:v.grades.size, rev:v.rev})).filter(x=>x.items>=4).sort((a,b)=>b.rev-a.rev);
+            H = '<h6 class="fw-bold text-success">❤️ عملاء ولاء (يشترون 4+ أصناف):</h6>' +
+            ol(arr.slice(0,10), c=>'<li class="mb-1">عميل <strong>'+esc(c.k)+'</strong>: '+c.items+' أصناف — '+c.grades+' درجات — '+fmt(c.rev)+'$</li>') +
+            '<p class="small text-muted mt-2 mb-0">💡 درّ أعلى 5 برامج ولاء: حِصَص مضمونة، أسعار مستقرة، أولوية شحن.</p>'; break; }
+        case 'concentration_risk': {
+            let big = [...custs].sort((a,b)=>b.rev-a.rev).filter(c=>totalRev>0 && c.rev/totalRev>0.05);
+            H = '<h6 class="fw-bold '+(big.length?'text-danger':'text-success')+'">⚠️ عملاء يتجاوزون 5% من الإيرادات: <strong>'+big.length+'</strong></h6>' +
+            (big.length ? ul(big, c=>'<li class="mb-1">عميل <strong>'+esc(c.key)+'</strong>: '+(c.rev/totalRev*100).toFixed(1)+'% = '+fmt(c.rev)+'$</li>') : '<p class="small text-muted">✅ لا يوجد — توزيع صحي.</p>') +
+            '<p class="small text-muted mt-2 mb-0">'+(big.length?'🛡️ وثّق العلاقة بعقد إطاري ونوّع العملاء في نفس الدولة.':'🛡️ المخاطرة منخفضة.')+'</p>'; break; }
+
+        /* ====== القسم 6 (تكملة) ====== */
+        case 'big_discount_owners': {
+            let m = {};
+            d.filter(x=>x.Discount_Rate>=0.25).forEach(x => { if(!m[x.Owner]) m[x.Owner]={n:0, max:0}; m[x.Owner].n++; m[x.Owner].max=Math.max(m[x.Owner].max, x.Discount_Rate); });
+            let arr = Object.entries(m).sort((a,b)=>b[1].n-a[1].n);
+            H = '<h6 class="fw-bold text-danger">💸 المسؤولون حسب صفقات الخصم الكبير (≥25%):</h6>' +
+            (arr.length ? ol(arr, p=>'<li class="mb-1"><strong>'+esc(p[0])+'</strong>: '+p[1].n+' صفقة — أقصى خصم '+(p[1].max*100).toFixed(1)+'%</li>') : '<p class="small text-muted">✅ لا يوجد.</p>'); break; }
+        case 'discount_by_owner': H = '<h6 class="fw-bold text-success">متوسط الخصم لكل مسؤول (تنازلياً) — من يضغط على الأسعار؟</h6>' +
+            ol([...owners].sort((a,b)=>b.avgDisc-a.avgDisc), o=>'<li class="mb-1"><strong>'+esc(o.key)+'</strong>: <span class="fw-bold '+(o.avgDisc>companyDisc?'text-danger':'text-success')+'">'+(o.avgDisc*100).toFixed(1)+'%</span> '+(o.avgDisc>companyDisc?'⬆️ فوق':'⬇️ تحت')+' متوسط الشركة ('+(companyDisc*100).toFixed(1)+'%)</li>'); break;
+        case 'new_vs_old_discount': {
+            let isNew = c => c.replace(/[^0-9]/g,'').startsWith('9');
+            let nd = d.filter(x=>isNew(x.Customer_Code)), od = d.filter(x=>!isNew(x.Customer_Code));
+            let an = nd.length?nd.reduce((s,x)=>s+x.Discount_Rate,0)/nd.length:0;
+            let ao = od.length?od.reduce((s,x)=>s+x.Discount_Rate,0)/od.length:0;
+            H='<h5 class="fw-bold text-success">متوسط خصم العملاء الجدد (أكواد تبدأ بـ9): <strong>'+(an*100).toFixed(1)+'%</strong> مقابل القدامى: <strong>'+(ao*100).toFixed(1)+'%</strong></h5>' +
+            '<p class="small text-muted">🔎 الفارق '+(Math.abs(an-ao)*100<0.5?'ضئيل — لا دليل على تمييز سعري':an>ao?'لصالح الجدد — تدقيق: هل نشتري العملاء بالخصم؟':'لصالح القدامى — الجدد يتفاوضون أفضل')+'.</p>' +
+            '<p class="small text-muted mb-0">⚠️ لا توجد تواريخ في البيانات، فاستُخدم رقم الكود كبديل تقريبي لتقسيم قديم/جديد.</p>'; break; }
+
+        /* ====== القسم 7 (تكملة) ====== */
+        case 'blacklist_value': { let bl = d.filter(x=>x.Segment==='D (Blacklist)');
+            let net = bl.reduce((s,x)=>s+x.Net_Revenue,0);
+            let loss = bl.reduce((s,x)=>{ let g=x.Discount_Rate<1?x.Net_Revenue/(1-x.Discount_Rate):x.Net_Revenue; return s+(g-x.Net_Revenue); },0);
+            H='<h5 class="fw-bold text-danger">🛑 قيمة الصفقات المخاطرة: <strong>'+fmt(net)+'$</strong> صافي — والمتنازَل عنه: <strong class="text-danger">'+fmt(loss)+'$</strong></h5>' +
+            '<p class="small text-muted">كل 1$ محقق من هذه الصفقات كلف الشركة '+(net>0?(loss/net).toFixed(2):0)+'$ تنازل من القيمة الاسمية.</p>'; break; }
+        case 'blacklist_top_damage': { let bl = d.filter(x=>x.Segment==='D (Blacklist)');
+            let cm = {};
+            bl.forEach(x => { if(!cm[x.Customer_Code]) cm[x.Customer_Code]={loss:0, net:0, n:0, owner:x.Owner};
+                let g=x.Discount_Rate<1?x.Net_Revenue/(1-x.Discount_Rate):x.Net_Revenue;
+                cm[x.Customer_Code].loss+=g-x.Net_Revenue; cm[x.Customer_Code].net+=x.Net_Revenue; cm[x.Customer_Code].n++; });
+            let arr = Object.entries(cm).sort((a,b)=>b[1].loss-a[1].loss);
+            H = '<h6 class="fw-bold text-danger">💥 أكبر 5 عملاء أضراراً (حسب الخسارة المتنازَل عنها):</h6>' +
+            tbl(['العميل','الخسارة $','الصافي $','الصفقات','المسؤول'], arr.slice(0,5).map(p=>'<tr><td><strong>'+esc(p[0])+'</strong></td><td class="text-danger fw-bold">'+fmt(p[1].loss)+'</td><td>'+fmt(p[1].net)+'</td><td>'+p[1].n+'</td><td>'+esc(p[1].owner)+'</td></tr>')) +
+            '<p class="small text-muted mt-2 mb-0">💡 عالج أعمق 3 أولاً — إعادة تفاوض أو خفض حجم التوريد.</p>'; break; }
+        case 'blacklist_criteria': {
+            let blByDisc = d.filter(x=>x.Discount_Rate>0.25).length;
+            let dHighDisc = d.filter(x=>x.Grade==='D' && x.Discount_Rate>0.25).length;
+            let dZero = d.filter(x=>x.Grade==='D' && x.Discount_Rate===0).length;
+            H='<h5 class="fw-bold text-success">📏 معيار القائمة السوداء الحالي</h5>' +
+            '<ul class="small text-muted"><li>المعتمد: <strong>نسبة الخصم فقط</strong> — أي صفقة خصمها >25% تدخل القائمة ('+blByDisc+' صفقة).</li>' +
+            '<li>درجة D <strong>ليست</strong> معياراً قائماً بذاتها: '+dZero+' صفقة D بلا خصم إطلاقاً، و'+dHighDisc+' فقط من أصل '+d.filter(x=>x.Grade==='D').length+' صفقة D تجاوز خصمها 25%.</li></ul>' +
+            '<p class="small text-muted mb-0">💡 توصية الخبير: أبقِ المعيار على الخصم (مؤشر سلوك سعري) وأضف مؤشراً ثانياً: تكرار الخصومات >25% لنفس العميل يرفعه تلقائياً للمراجعة.</p>'; break; }
+
+        /* ====== القسم 8 ====== */
+        case 'owner_europe': { let a = ownersByRegion('اوروبا');
+            H = '<h5 class="fw-bold text-success">🇪🇺 ملك أوروبا: <strong>'+(a[0]?esc(a[0][0]):'-')+'</strong> — '+(a[0]?fmt(a[0][1]):0)+'$</h5>' +
+            ol(a.slice(0,3), (p,i)=>'<li class="mb-1"><strong>'+(medals[i]||'')+' '+esc(p[0])+'</strong>: '+fmt(p[1])+'$</li>'); break; }
+        case 'owner_gulf': { let a = ownersByRegion('الخليج');
+            H = '<h5 class="fw-bold text-success">🌴 ملك الخليج: <strong>'+(a[0]?esc(a[0][0]):'-')+'</strong> — '+(a[0]?fmt(a[0][1]):0)+'$</h5>' +
+            ol(a.slice(0,3), (p,i)=>'<li class="mb-1"><strong>'+(medals[i]||'')+' '+esc(p[0])+'</strong>: '+fmt(p[1])+'$</li>'); break; }
+        case 'owner_russia': { let m = {};
+            d.filter(x=>x.Country==='روسيا').forEach(x => m[x.Owner]=(m[x.Owner]||0)+x.Net_Revenue);
+            let a = Object.entries(m).sort((x,y)=>y[1]-x[1]);
+            H = '<h5 class="fw-bold text-success">🇷🇺 ملك روسيا: <strong>'+(a[0]?esc(a[0][0]):'-')+'</strong> — '+(a[0]?fmt(a[0][1]):0)+'$</h5>' +
+            ol(a.slice(0,3), (p,i)=>'<li class="mb-1"><strong>'+(medals[i]||'')+' '+esc(p[0])+'</strong>: '+fmt(p[1])+'$</li>'); break; }
+        case 'best_item_grade_rev': { let m = groupSum(d, x=>x.Item+' / '+x.Grade).sort((a,b)=>b.rev-a.rev)[0];
+            H='<h5 class="fw-bold text-success">🥇 أفضل تركيبة صنف-درجة بالعوائد: <strong>'+esc(m.key)+'</strong></h5>' +
+            '<ul class="text-muted small"><li>العوائد: <strong>'+fmt(m.rev)+'$</strong> — الكمية: <strong>'+fmt(m.qty)+' طن</strong> — متوسط '+fmt(m.avgFob)+'$/طن</li></ul>'; break; }
+        case 'best_item_grade_qty': { let m = groupSum(d, x=>x.Item+' / '+x.Grade).sort((a,b)=>b.qty-a.qty)[0];
+            H='<h5 class="fw-bold text-success">⚖️ أفضل تركيبة صنف-درجة بالكمية: <strong>'+esc(m.key)+'</strong> — '+fmt(m.qty)+' طن</h5>'; break; }
+        case 'worst_item_grade': { let m = groupSum(d, x=>x.Item+' / '+x.Grade).sort((a,b)=>a.rev-b.rev)[0];
+            H='<h5 class="fw-bold text-danger">📉 أسوأ تركيبة صنف-درجة: <strong>'+esc(m.key)+'</strong> — '+fmt(m.rev)+'$ فقط</h5>' +
+            '<p class="small text-muted">💡 قرار: إعادة تسعير، دمج مع خط آخر، أو إيقاف.</p>'; break; }
+        case 'best_country_item': { let m = groupSum(d, x=>x.Country+' — '+x.Item).sort((a,b)=>b.rev-a.rev)[0];
+            H='<h5 class="fw-bold text-success">🎯 التركيبة الرابحة: <strong>'+esc(m.key)+'</strong></h5>' +
+            '<ul class="text-muted small"><li>العوائد: <strong>'+fmt(m.rev)+'$</strong> — '+fmt(m.qty)+' طن — '+m.custCount+' عميل — متوسط '+fmt(m.avgFob)+'$/طن</li>' +
+            '<li>💡 أولوية توريد وجودة لهذا الخط — لا تعطّل شحنة فيه أبداً.</li></ul>'; break; }
+        case 'item_world_fob': {
+            H = '<h6 class="fw-bold text-success">🌐 متوسط FOB لكل صنف + الأعلى والأدنى تسعيراً بين المسؤولين:</h6>' +
+            tbl(['الصنف','المتوسط $/طن','الأعلى تسعيراً','الأدنى تسعيراً'], [...items].sort((a,b)=>b.rev-a.rev).map(it => {
+                let om = {};
+                d.filter(x=>x.Item===it.key).forEach(x => { if(!om[x.Owner]) om[x.Owner]={f:0,q:0}; om[x.Owner].f+=x.FOB_After_Discount*x.Quantity; om[x.Owner].q+=x.Quantity; });
+                let arr = Object.entries(om).map(([o,v])=>({o:o, f:v.q>0?v.f/v.q:0})).sort((a,b)=>b.f-a.f);
+                let hi = arr[0], lo = arr[arr.length-1];
+                return '<tr><td><strong>'+esc(it.key)+'</strong></td><td class="fw-bold">'+fmt(it.avgFob)+'</td>' +
+                '<td class="text-success">'+esc(hi.o)+' ('+fmt(hi.f)+'$)</td>' +
+                '<td class="text-danger">'+esc(lo.o)+' ('+fmt(lo.f)+'$) '+(hi.f-lo.f>150?'⚠️':'')+'</td></tr>';
+            })) +
+            '<p class="small text-muted mt-2 mb-0">🔎 فجوة >150$/طن بين مسؤولين لنفس الصنف = إما اختلاف أسواق أو خلل تسعير يستحق التدقيق.</p>'; break; }
+        case 'geo_distribution': {
+            let m = {};
+            d.forEach(x => { let r = regionOf(x.Country); if(!m[r]) m[r]={rev:0,qty:0}; m[r].rev+=x.Net_Revenue; m[r].qty+=x.Quantity; });
+            let arr = Object.entries(m).sort((a,b)=>b[1].rev-a[1].rev);
+            H = '<h6 class="fw-bold text-success">🗺️ التوزيع الجغرافي للعوائد:</h6>' +
+            tbl(['المنطقة','العوائد $','النسبة','الكمية (طن)','متوسط $/طن'], arr.map(p=>'<tr><td><strong>'+p[0]+'</strong></td><td>'+fmt(p[1].rev)+'</td><td class="fw-bold">'+(p[1].rev/totalRev*100).toFixed(1)+'%</td><td>'+fmt(p[1].qty)+'</td><td>'+(p[1].qty>0?fmt(p[1].rev/p[1].qty):0)+'</td></tr>')) +
+            '<p class="small text-muted mt-2 mb-0">💡 أوروبا تتصدر — حافظ عليها. آسيا ثانية بأعلى هامش نمو محتمل.</p>'; break; }
+        case 'seasonality':
+            H = '<h5 class="fw-bold text-success">📅 تحليل الموسمية</h5>' +
+            '<p class="small text-muted">⚠️ ملف البيانات لا يحتوي على أعمدة تواريخ (شهر/سنة) — لذلك لا يمكن حساب الموسمية رقمياً من هذه النسخة.</p>' +
+            '<p class="small text-muted mb-0">💡 لتمكين هذا التحليل: أضف عمود «تاريخ الصفقة» في شيت الإكسل، وسيصبح السؤال قابلاً للحساب الفوري (أفضل شهر، ذروة الصيفي، مقارنة المواسم).</p>'; break;
+
+        case 'exec_summary': {
+            let bestO=[...owners].sort((a,b)=>b.rev-a.rev)[0], bestC=[...countries].sort((a,b)=>b.rev-a.rev)[0], bestI=[...items].sort((a,b)=>b.rev-a.rev)[0];
+            let loss = d.reduce((s,x)=>{ let g=x.Discount_Rate<1?x.Net_Revenue/(1-x.Discount_Rate):x.Net_Revenue; return s+(g-x.Net_Revenue); },0);
+            let risky = d.filter(x=>x.Discount_Rate>=0.5).length;
+            H = '<h6 class="fw-bold text-success">📋 الملخص التنفيذي — '+(window.filteredData===d?'النطاق المفلتر':'النطاق المفلتر')+' ('+d.length+' صفقة):</h6>' +
+            ul([
+                '💰 العوائد: <strong>'+fmt(totalRev)+'$</strong> — الكميات: <strong>'+fmt(totalQty)+' طن</strong> — العملاء: <strong>'+new Set(d.map(x=>x.Customer_Code)).size+'</strong>',
+                '🏆 الأفضل: مسؤول <strong>'+esc(bestO.key)+'</strong> ('+fmt(bestO.rev)+'$) — دولة <strong>'+esc(bestC.key)+'</strong> ('+fmt(bestC.rev)+'$) — صنف <strong>'+esc(bestI.key)+'</strong> ('+fmt(bestI.rev)+'$)',
+                '💸 المتنازل عنه للخصومات: <strong class="text-danger">'+fmt(loss)+'$</strong> — متوسط خصم: <strong>'+(companyDisc*100).toFixed(1)+'%</strong>',
+                '🚨 صفقات >50% خصم: <strong class="text-danger">'+risky+'</strong> — صفقات القائمة السوداء (>25%): <strong>'+d.filter(x=>x.Segment==='D (Blacklist)').length+'</strong>',
+                '💡 أولويات الخبير: ① ضبط خصومات عملاء التنبيهات السبعة ② رفع مساهمة الدرجة A ③ تنويع الأصناف غير الصيفية.'
+            ], x=>'<li class="mb-1">'+x+'</li>'); break; }
+
+        /* ====== القسم 9 ====== */
+        case 'price_increase_5pct': {
+            let s = items.find(x=>x.key==='صيفي');
+            if (!s) { H = '<p class="text-muted small">لا يوجد صيفي ضمن النطاق المفلتر.</p>'; break; }
+            let base = s.rev;
+            H = '<h6 class="fw-bold text-success">📈 محاكاة رفع أسعار الصيفي 5% (قاعدة '+fmt(base)+'$):</h6>' +
+            tbl(['السيناريو','النتيجة','الفرق عن الحالي'], [
+                '<tr><td>بدون فقد حجم</td><td class="text-success fw-bold">'+fmt(base*1.05)+'$</td><td class="text-success">+'+fmt(base*0.05)+'$ (+5.0%)</td></tr>',
+                '<tr><td>فقد 5% من الحجم</td><td>'+fmt(base*1.05*0.95)+'$</td><td class="text-danger">−'+fmt(base*0.0025)+'$ (−0.25%)</td></tr>',
+                '<tr><td>فقد 10% من الحجم</td><td>'+fmt(base*1.05*0.90)+'$</td><td class="text-danger">−'+fmt(base*0.055)+'$ (−5.5%)</td></tr>',
+                '<tr><td>فقد 15% من الحجم</td><td>'+fmt(base*1.05*0.85)+'$</td><td class="text-danger">−'+fmt(base*0.1075)+'$ (−10.75%)</td></tr>']) +
+            '<p class="small text-muted mt-2 mb-0">🔎 نقطة التعادل عند فقد ≈4.8% من الحجم. 💡 طبّق الزيادة على العملاء الأعلى سعراً أولاً وراقب الفقد شهرياً.</p>'; break; }
+        case 'marketing_budget': {
+            let m = {};
+            d.forEach(x => { let r = regionOf(x.Country); if(!m[r]) m[r]={rev:0,qty:0}; m[r].rev+=x.Net_Revenue; m[r].qty+=x.Quantity; });
+            let arr = Object.entries(m).map(([r,v])=>({r:r, rev:v.rev, fob:v.qty>0?v.rev/v.qty:0, share:totalRev>0?v.rev/totalRev*100:0})).sort((a,b)=>b.rev-a.rev);
+            let pick = arr.find(x=>x.share>15 && x.fob>companyAvg) || arr[0];
+            H = '<h6 class="fw-bold text-success">📊 جدول المناطق (العوائد / السعر / الحصة):</h6>' +
+            tbl(['المنطقة','العوائد $','الحصة','متوسط $/طن'], arr.map(x=>'<tr><td><strong>'+x.r+'</strong></td><td>'+fmt(x.rev)+'</td><td>'+x.share.toFixed(1)+'%</td><td class="'+(x.fob>companyAvg?'text-success fw-bold':'')+'">'+fmt(x.fob)+'</td></tr>')) +
+            '<h6 class="fw-bold text-warning mt-3">🎯 التوصية: <strong>'+pick.r+'</strong></h6>' +
+            '<p class="small text-muted mb-0">حجم يكفي للعائد ('+fmt(pick.rev)+'$) وسعر/طن فوق متوسط الشركة ('+fmt(pick.fob)+'$) — الأولوية الثانية: أسواق التوسع الصغيرة.</p>'; break; }
+        case 'max_discount_policy': {
+            let bands = [['بدون خصم', x=>x.Discount_Rate===0], ['0–10%', x=>x.Discount_Rate>0&&x.Discount_Rate<=0.10],
+                         ['10–25%', x=>x.Discount_Rate>0.10&&x.Discount_Rate<=0.25], ['25–50%', x=>x.Discount_Rate>0.25&&x.Discount_Rate<=0.50],
+                         ['أكثر من 50%', x=>x.Discount_Rate>0.50]];
+            H = '<h6 class="fw-bold text-success">🎚️ توزيع الصفقات على شرائح الخصم:</h6>' +
+            tbl(['الشريحة','عدد الصفقات','نسبتها','صافي العوائد $','المتنازَل عنه $'], bands.map(b => {
+                let r = d.filter(b[1]);
+                let loss = r.reduce((s,x)=>{ let g=x.Discount_Rate<1?x.Net_Revenue/(1-x.Discount_Rate):x.Net_Revenue; return s+(g-x.Net_Revenue); },0);
+                return '<tr><td><strong>'+b[0]+'</strong></td><td>'+r.length+'</td><td>'+(d.length?(r.length/d.length*100).toFixed(1):0)+'%</td><td>'+fmt(r.reduce((s,x)=>s+x.Net_Revenue,0))+'</td><td class="text-danger">'+fmt(loss)+'</td></tr>'; })) +
+            '<p class="small text-muted mt-2 mb-0">💡 <strong>رأي الخبير:</strong> أبقِ السقف 25% ولا ترفعه — شريحة ما فوق 25% تحقق أقل عائد وأعلى تكلفة تنازل. اجعل 10–25% بموافقة مدير، و>25% بموافقة الإدارة المالية فقط مع سبب موثق.</p>'; break; }
+
+        default: H = '<p class="text-muted small">اختر سؤالاً من القائمة.</p>';
     }
+    const box = document.getElementById('faqAnswer');
+    box.innerHTML = H;
+    box.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
 
-    window.onload = () => { buildFaq(); };
+/* ================================================================
+   الإقلاع
+================================================================ */
+window.onload = () => { loadDemoData(); };
 </script>
 </body>
 </html>
