@@ -208,7 +208,7 @@
         </div>
 
 
-        <!-- ===== شات بوت AGREEN AI (Gemini) ===== -->
+        <!-- ===== شات بوت AGREEN AI (OpenAI) ===== -->
         <button id="cbFab" class="no-print" title="اسأل المساعد الذكي" onclick="cbToggle()"><i class="fas fa-robot"></i></button>
         <div id="cbPanel" class="no-print">
             <div class="cb-head">
@@ -220,11 +220,11 @@
                 </span>
             </div>
             <div id="cbSettings">
-                <label class="fw-bold">Gemini API Key:</label>
-                <input type="password" id="cbKey" placeholder="AIza..." autocomplete="off">
+                <label class="fw-bold">OpenAI API Key:</label>
+                <input type="password" id="cbKey" placeholder="sk-..." autocomplete="off">
                 <label class="fw-bold">الموديل:</label>
-                <input type="text" id="cbModel" placeholder="gemini-2.5-flash">
-                <label class="fw-bold">Proxy URL (اختياري — بدل المفتاح المباشر):</label>
+                <input type="text" id="cbModel" placeholder="gpt-4o-mini">
+                <label class="fw-bold">Proxy URL (اختياري — بدل المفتاح المباشر، بصيغة OpenAI):</label>
                 <input type="text" id="cbProxy" placeholder="https://your-worker.workers.dev">
                 <button class="btn btn-success btn-sm w-100" onclick="cbSaveSettings()">حفظ</button>
             </div>
@@ -1018,13 +1018,13 @@ window.onload = () => {
 };
 </script>
 <script>
-/* ================= AGREEN AI Chatbot (Gemini) =================
+/* ================= AGREEN AI Chatbot (OpenAI) =================
    إضافة مستقلة: لا تعدّل أي دالة أو متغير في الداشبورد، فقط تقرأ rawData / filteredData / groupSum.
    الحسابات تتم بالكود (Function Calling) ولا يحسبها النموذج بنفسه => دقة عالية. */
-const CB_DEFAULTS = { apiKey:'', model:'gemini-2.5-flash', proxyUrl:'' };   // يمكن تعبئتها هنا أو من ⚙️ داخل الشات
+const CB_DEFAULTS = { apiKey:'', model:'gpt-4o-mini', proxyUrl:'https://agreen-chat.bikheet.workers.dev' };   // يمكن تعبئتها هنا أو من ⚙️ داخل الشات
 const CB = { history:[], busy:false };
-const cbGet = k => { try { return localStorage.getItem('cb_'+k) || CB_DEFAULTS[k] || ''; } catch(e){ return CB_DEFAULTS[k]||''; } };
-const cbSet = (k,v) => { try { localStorage.setItem('cb_'+k, v); } catch(e){} };
+const cbGet = k => { try { return localStorage.getItem('cbo_'+k) || CB_DEFAULTS[k] || ''; } catch(e){ return CB_DEFAULTS[k]||''; } };
+const cbSet = (k,v) => { try { localStorage.setItem('cbo_'+k, v); } catch(e){} };
 const cbNorm = s => String(s==null?'':s).toLowerCase().replace(/[أإآ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه').replace(/\s+/g,' ').trim();
 
 /* ---------- UI ---------- */
@@ -1038,7 +1038,7 @@ function cbToggle(){
 }
 function cbSaveSettings(){
     cbSet('apiKey',document.getElementById('cbKey').value.trim());
-    cbSet('model',document.getElementById('cbModel').value.trim()||'gemini-2.5-flash');
+    cbSet('model',document.getElementById('cbModel').value.trim()||'gpt-4o-mini');
     cbSet('proxyUrl',document.getElementById('cbProxy').value.trim());
     document.getElementById('cbSettings').classList.remove('open'); cbAdd('sys','✅ تم حفظ الإعدادات.');
 }
@@ -1119,13 +1119,15 @@ const CB_FILTER_PROPS = {
     customer_code:{type:'STRING',description:'كود العميل'}, min_discount_pct:{type:'NUMBER',description:'أدنى نسبة خصم (0-100)'}, max_discount_pct:{type:'NUMBER',description:'أعلى نسبة خصم (0-100)'},
     scope:{type:'STRING',description:'all = كل البيانات (الافتراضي) ، filtered = فقط ما هو مفلتر حالياً في الداشبورد'}, limit:{type:'INTEGER',description:'عدد النتائج (افتراضي 10، أقصى 50)'},
     order:{type:'STRING',description:'desc (افتراضي) أو asc'} };
-const CB_TOOLS=[{functionDeclarations:[
+const CB_DECLS=[
     {name:'query_sales',description:'تجميع المبيعات حسب بُعد معين (مسؤول/دولة/صنف/درجة/عميل/تصنيف) مع فلاتر اختيارية. يرجع العوائد والكميات والصفقات والعملاء ومتوسط السعر والخصم.',
      parameters:{type:'OBJECT',properties:Object.assign({group_by:{type:'STRING',description:'owner | country | item | grade | segment | customer_code | none'},
         sort_by:{type:'STRING',description:'revenue | quantity | deals | customers | avg_price | avg_discount'}},CB_FILTER_PROPS),required:['group_by']}},
     {name:'list_deals',description:'عرض الصفقات الفردية (صف بصف) مع فلاتر وترتيب، مثل أكبر الصفقات أو أعلى الخصومات.',
      parameters:{type:'OBJECT',properties:Object.assign({sort_by:{type:'STRING',description:'revenue | quantity | discount | price'}},CB_FILTER_PROPS)}}
-]}];
+];
+const cbLower=o=>Array.isArray(o)?o.map(cbLower):(o&&typeof o==='object')?Object.fromEntries(Object.entries(o).map(([k,v])=>[k,(k==='type'&&typeof v==='string')?v.toLowerCase():cbLower(v)])):o;
+const CB_TOOLS=CB_DECLS.map(f=>({type:'function',function:{name:f.name,description:f.description,parameters:cbLower(f.parameters)}}));
 function cbSystem(){
     const u=f=>[...new Set(rawData.map(x=>x[f]))].sort();
     return 'أنت "مساعد AGREEN" داخل لوحة تحليل مبيعات شركة تصدير حمضيات/فاكهة. أجب دائماً بالعربية (بلهجة مهنية مبسطة) وبشكل مختصر ومباشر.\n'
@@ -1137,56 +1139,58 @@ function cbSystem(){
     +'\nالفلاتر الحالية في الداشبورد: '+filteredData.length+' صفقة من '+rawData.length+' (استخدم scope=filtered فقط لو المستخدم قال "الحالي/المفلتر").';
 }
 
-/* ---------- الاتصال بـ Gemini (Streaming + Function Calling) ---------- */
-async function cbCall(contents, onText){
-    const proxy=cbGet('proxyUrl'), key=cbGet('apiKey'), model=cbGet('model')||'gemini-2.5-flash';
+/* ---------- الاتصال بـ OpenAI (Streaming + Function Calling) ---------- */
+async function cbCall(history, onText){
+    const proxy=cbGet('proxyUrl'), key=cbGet('apiKey'), model=cbGet('model')||'gpt-4o-mini';
     if(!proxy && !key) throw new Error('NOKEY');
-    const url = proxy ? proxy.replace(/\/$/,'') : 'https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(model)+':streamGenerateContent?alt=sse';
-    const headers={'Content-Type':'application/json'}; if(!proxy) headers['x-goog-api-key']=key;
-    const body={systemInstruction:{parts:[{text:cbSystem()}]}, contents, tools:CB_TOOLS, generationConfig:{temperature:0.2}};
-    if(proxy) body.model=model;
+    const url = proxy ? proxy.replace(/\/$/,'') : 'https://api.openai.com/v1/chat/completions';
+    const headers={'Content-Type':'application/json'}; if(!proxy) headers['Authorization']='Bearer '+key;
+    const body={model, stream:true, messages:[{role:'system',content:cbSystem()}].concat(history), tools:CB_TOOLS};
     const res=await fetch(url,{method:'POST',headers,body:JSON.stringify(body)});
     if(!res.ok){ let t=''; try{ t=(await res.json()).error.message; }catch(e){} throw new Error('HTTP '+res.status+(t?': '+t:'')); }
-    const parts=[], reader=res.body.getReader(), dec=new TextDecoder(); let buf='';
+    const msg={content:'',tool_calls:[]}, reader=res.body.getReader(), dec=new TextDecoder(); let buf='';
     while(true){
         const {done,value}=await reader.read(); if(done) break;
         buf+=dec.decode(value,{stream:true});
         let idx; while((idx=buf.search(/\r?\n\r?\n/))>=0){
             const ev=buf.slice(0,idx); buf=buf.slice(idx).replace(/^\r?\n\r?\n/,'');
-            ev.split(/\r?\n/).forEach(line=>{ if(!line.startsWith('data:')) return;
-                try{ const j=JSON.parse(line.slice(5).trim()); (j.candidates&&j.candidates[0]&&j.candidates[0].content&&j.candidates[0].content.parts||[]).forEach(p=>{
-                    if(p.thought) return; parts.push(p); if(p.text) onText(p.text); }); }catch(e){} }); }
+            ev.split(/\r?\n/).forEach(line=>{ if(!line.startsWith('data:')) return; const d=line.slice(5).trim(); if(d==='[DONE]') return;
+                try{ const dl=JSON.parse(d).choices[0].delta||{};
+                    if(dl.content){ msg.content+=dl.content; onText(dl.content); }
+                    (dl.tool_calls||[]).forEach(tc=>{ const t=msg.tool_calls[tc.index]||(msg.tool_calls[tc.index]={id:'',type:'function',function:{name:'',arguments:''}});
+                        if(tc.id) t.id=tc.id; if(tc.function){ if(tc.function.name) t.function.name+=tc.function.name; if(tc.function.arguments) t.function.arguments+=tc.function.arguments; } });
+                }catch(e){} }); }
     }
-    return parts;
+    msg.tool_calls=msg.tool_calls.filter(Boolean);
+    return msg;
 }
 async function cbSend(){
     if(CB.busy) return;
     const ta=document.getElementById('cbText'), q=ta.value.trim(); if(!q) return;
     ta.value=''; cbAdd('user',q); CB.busy=true; document.getElementById('cbSend').disabled=true;
     const startLen=CB.history.length;
-    CB.history.push({role:'user',parts:[{text:q}]});
+    CB.history.push({role:'user',content:q});
     const bubble=cbAdd('bot',''); bubble.classList.add('cb-typing'); let shown='';
     try{
         for(let round=0; round<6; round++){
-            let roundText='';
-            const parts=await cbCall(CB.history, t=>{ roundText+=t; shown+=t; bubble.innerHTML=cbMd(shown); const m=document.getElementById('cbMsgs'); m.scrollTop=m.scrollHeight; });
-            const calls=parts.filter(p=>p.functionCall);
-            CB.history.push({role:'model',parts:parts.length?parts:[{text:''}]});
-            if(!calls.length) break;
-            if(roundText) shown+='\n';
-            const resp=calls.map(c=>({functionResponse:{name:c.functionCall.name,response:{result:cbTool(c.functionCall.name,c.functionCall.args)}}}));
-            CB.history.push({role:'user',parts:resp});
+            const msg=await cbCall(CB.history, t=>{ shown+=t; bubble.innerHTML=cbMd(shown); const m=document.getElementById('cbMsgs'); m.scrollTop=m.scrollHeight; });
+            const am={role:'assistant',content:msg.content||null}; if(msg.tool_calls.length) am.tool_calls=msg.tool_calls;
+            CB.history.push(am);
+            if(!msg.tool_calls.length) break;
+            if(msg.content) shown+='\n';
+            msg.tool_calls.forEach(tc=>{ let args={}; try{ args=JSON.parse(tc.function.arguments||'{}'); }catch(e){}
+                CB.history.push({role:'tool',tool_call_id:tc.id,content:JSON.stringify(cbTool(tc.function.name,args))}); });
         }
         if(!shown.trim()) shown='لم أستطع تكوين إجابة، جرّب إعادة صياغة السؤال.';
         bubble.innerHTML=cbMd(shown);
     }catch(e){
         CB.history.length=startLen;
         bubble.classList.remove('cb-typing');
-        bubble.innerHTML = e.message==='NOKEY' ? '🔑 أدخل مفتاح Gemini API من أيقونة ⚙️ بأعلى الشات أولاً.'
-            : '⚠️ تعذّر الاتصال: '+esc(e.message)+(/429/.test(e.message)?'<br>تم تجاوز حد الاستخدام، حاول بعد قليل.':/40[013]/.test(e.message)?'<br>تأكد من صحة المفتاح والموديل في ⚙️.':'');
+        bubble.innerHTML = e.message==='NOKEY' ? '🔑 أدخل مفتاح OpenAI API من أيقونة ⚙️ بأعلى الشات أولاً.'
+            : '⚠️ تعذّر الاتصال: '+esc(e.message)+(/429/.test(e.message)?'<br>لا يوجد رصيد كافٍ أو تم تجاوز الحد — راجع الـ Billing في platform.openai.com.':/40[13]/.test(e.message)?'<br>تأكد من صحة المفتاح في ⚙️.':/404/.test(e.message)?'<br>تأكد من اسم الموديل في ⚙️.':'');
     }
     bubble.classList.remove('cb-typing');
-    if(CB.history.length>40) CB.history=CB.history.slice(-30);
+    if(CB.history.length>60){ CB.history=CB.history.slice(-40); while(CB.history.length && CB.history[0].role!=='user') CB.history.shift(); }
     CB.busy=false; document.getElementById('cbSend').disabled=false; ta.focus();
 }
 document.addEventListener('DOMContentLoaded',()=>{ const t=document.getElementById('cbText');
