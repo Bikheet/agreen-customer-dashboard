@@ -37,6 +37,39 @@
         .toggle-btn.active { background:#059669; color:#fff; }
         .table-wrap { max-height:400px; overflow:auto; }
         @media print { .no-print { display:none !important; } body { background:#fff; } }
+    
+/* ===== AGREEN AI Chatbot (إضافة — لا تؤثر على باقي التصميم) ===== */
+#cbFab{position:fixed;bottom:22px;left:22px;z-index:1050;width:58px;height:58px;border-radius:50%;border:none;background:linear-gradient(135deg,#059669,#065f46);color:#fff;font-size:1.5rem;box-shadow:0 6px 20px rgba(0,0,0,.35);cursor:pointer}
+#cbFab:hover{transform:scale(1.07)}
+#cbPanel{position:fixed;bottom:92px;left:22px;z-index:1050;width:400px;max-width:calc(100vw - 24px);height:600px;max-height:calc(100vh - 110px);background:#fff;border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.4);display:none;flex-direction:column;overflow:hidden;direction:rtl;font-family:'Cairo',sans-serif}
+#cbPanel.open{display:flex}
+.cb-head{background:linear-gradient(135deg,#065f46,#047857);color:#fff;padding:10px 14px;display:flex;align-items:center;justify-content:space-between}
+.cb-head b{font-size:.95rem}
+.cb-head button{background:none;border:none;color:#fff;font-size:1rem;margin-right:8px;opacity:.85;cursor:pointer}
+.cb-head button:hover{opacity:1}
+#cbSettings{display:none;background:#f0fdf4;border-bottom:1px solid #bbf7d0;padding:10px 14px;font-size:.8rem}
+#cbSettings.open{display:block}
+#cbSettings input{width:100%;direction:ltr;font-size:.8rem;padding:4px 8px;border:1px solid #cbd5e1;border-radius:6px;margin-bottom:6px}
+#cbMsgs{flex:1;overflow-y:auto;padding:12px;background:#f8fafc;display:flex;flex-direction:column;gap:10px}
+.cb-msg{max-width:92%;padding:8px 12px;border-radius:12px;font-size:.85rem;line-height:1.8;word-wrap:break-word}
+.cb-user{align-self:flex-start;background:#059669;color:#fff;border-bottom-right-radius:3px}
+.cb-bot{align-self:flex-end;background:#fff;border:1px solid #e2e8f0;color:#1e293b;border-bottom-left-radius:3px}
+.cb-bot table{width:100%;border-collapse:collapse;font-size:.78rem;margin:6px 0}
+.cb-bot th{background:#065f46;color:#fff;padding:3px 6px;text-align:center}
+.cb-bot td{border:1px solid #e2e8f0;padding:3px 6px;text-align:center}
+.cb-bot ul{padding-right:18px;margin:4px 0}
+.cb-bot p{margin:0 0 6px}
+.cb-sys{align-self:center;font-size:.75rem;color:#64748b}
+.cb-chips{display:flex;flex-wrap:wrap;gap:6px}
+.cb-chip{background:#f0fdf4;border:1px solid #bbf7d0;color:#065f46;border-radius:14px;font-size:.76rem;padding:3px 10px;cursor:pointer}
+.cb-chip:hover{background:#059669;color:#fff}
+.cb-input{display:flex;gap:6px;padding:10px;border-top:1px solid #e2e8f0;background:#fff}
+.cb-input textarea{flex:1;resize:none;border:1px solid #cbd5e1;border-radius:10px;padding:6px 10px;font-size:.85rem;height:40px;font-family:inherit}
+.cb-input button{background:#059669;color:#fff;border:none;border-radius:10px;padding:0 14px;cursor:pointer}
+.cb-input button:disabled{opacity:.5}
+.cb-typing::after{content:'▍';animation:cbblink 1s infinite}
+@keyframes cbblink{50%{opacity:0}}
+@media print{#cbFab,#cbPanel{display:none!important}}
     </style>
 </head>
 <body>
@@ -172,6 +205,34 @@
                 <input type="text" id="searchBox" class="form-control form-control-sm w-auto no-print" style="min-width:250px;" placeholder="بحث برقم العميل، الدولة، أو المسؤول..." onkeyup="applyFilters()">
             </div>
             <div class="table-wrap"><table class="table table-hover table-bordered align-middle small"><thead><tr><th>#</th><th>العميل</th><th>المسؤول</th><th>الدولة</th><th>الصنف</th><th>الدرجة</th><th>الكمية</th><th>FOB/طن</th><th>الخصم</th><th>صافي العائد</th><th>التصنيف</th></tr></thead><tbody id="tableBody"></tbody></table></div>
+        </div>
+
+
+        <!-- ===== شات بوت AGREEN AI (Gemini) ===== -->
+        <button id="cbFab" class="no-print" title="اسأل المساعد الذكي" onclick="cbToggle()"><i class="fas fa-robot"></i></button>
+        <div id="cbPanel" class="no-print">
+            <div class="cb-head">
+                <b><i class="fas fa-robot me-2"></i> مساعد AGREEN الذكي</b>
+                <span>
+                    <button title="الإعدادات" onclick="document.getElementById('cbSettings').classList.toggle('open')"><i class="fas fa-gear"></i></button>
+                    <button title="محادثة جديدة" onclick="cbClear()"><i class="fas fa-rotate-right"></i></button>
+                    <button title="إغلاق" onclick="cbToggle()"><i class="fas fa-xmark"></i></button>
+                </span>
+            </div>
+            <div id="cbSettings">
+                <label class="fw-bold">Gemini API Key:</label>
+                <input type="password" id="cbKey" placeholder="AIza..." autocomplete="off">
+                <label class="fw-bold">الموديل:</label>
+                <input type="text" id="cbModel" placeholder="gemini-2.5-flash">
+                <label class="fw-bold">Proxy URL (اختياري — بدل المفتاح المباشر):</label>
+                <input type="text" id="cbProxy" placeholder="https://your-worker.workers.dev">
+                <button class="btn btn-success btn-sm w-100" onclick="cbSaveSettings()">حفظ</button>
+            </div>
+            <div id="cbMsgs"></div>
+            <div class="cb-input">
+                <textarea id="cbText" placeholder="اسأل عن المسؤولين، الدول، الأصناف، الخصومات..." rows="1"></textarea>
+                <button id="cbSend" onclick="cbSend()"><i class="fas fa-paper-plane"></i></button>
+            </div>
         </div>
 
         <div class="text-center small text-white-50 mt-3 mb-2">AGREEN Analytics © 2026 — كل الأرقام تُحسب لحظياً من البيانات المفلترة.</div>
@@ -956,5 +1017,181 @@ window.onload = () => {
     renderFaqList();
 };
 </script>
+<script>
+/* ================= AGREEN AI Chatbot (Gemini) =================
+   إضافة مستقلة: لا تعدّل أي دالة أو متغير في الداشبورد، فقط تقرأ rawData / filteredData / groupSum.
+   الحسابات تتم بالكود (Function Calling) ولا يحسبها النموذج بنفسه => دقة عالية. */
+const CB_DEFAULTS = { apiKey:'', model:'gemini-2.5-flash', proxyUrl:'' };   // يمكن تعبئتها هنا أو من ⚙️ داخل الشات
+const CB = { history:[], busy:false };
+const cbGet = k => { try { return localStorage.getItem('cb_'+k) || CB_DEFAULTS[k] || ''; } catch(e){ return CB_DEFAULTS[k]||''; } };
+const cbSet = (k,v) => { try { localStorage.setItem('cb_'+k, v); } catch(e){} };
+const cbNorm = s => String(s==null?'':s).toLowerCase().replace(/[أإآ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه').replace(/\s+/g,' ').trim();
+
+/* ---------- UI ---------- */
+function cbToggle(){
+    const p=document.getElementById('cbPanel'); p.classList.toggle('open');
+    if(p.classList.contains('open')){
+        document.getElementById('cbKey').value=cbGet('apiKey'); document.getElementById('cbModel').value=cbGet('model'); document.getElementById('cbProxy').value=cbGet('proxyUrl');
+        if(!document.getElementById('cbMsgs').children.length) cbWelcome();
+        document.getElementById('cbText').focus();
+    }
+}
+function cbSaveSettings(){
+    cbSet('apiKey',document.getElementById('cbKey').value.trim());
+    cbSet('model',document.getElementById('cbModel').value.trim()||'gemini-2.5-flash');
+    cbSet('proxyUrl',document.getElementById('cbProxy').value.trim());
+    document.getElementById('cbSettings').classList.remove('open'); cbAdd('sys','✅ تم حفظ الإعدادات.');
+}
+function cbWelcome(){
+    const m=document.getElementById('cbMsgs');
+    cbAdd('bot','أهلاً 👋 أنا مساعد AGREEN. اسألني أي سؤال عن بيانات المبيعات وهجاوبك بالأرقام من الشيت مباشرة.');
+    const d=document.createElement('div'); d.className='cb-chips';
+    ['من أفضل مسؤول مبيعات؟','أعلى 5 دول بالعوائد','أكتر صنف عليه خصومات','الصفقات اللي خصمها فوق 50%','قارن هولندا بالإمارات'].forEach(q=>{
+        const c=document.createElement('span'); c.className='cb-chip'; c.textContent=q; c.onclick=()=>{document.getElementById('cbText').value=q; cbSend();}; d.appendChild(c); });
+    m.appendChild(d);
+}
+function cbClear(){ CB.history=[]; document.getElementById('cbMsgs').innerHTML=''; cbWelcome(); }
+function cbAdd(role, text){
+    const el=document.createElement('div'); el.className='cb-msg '+(role==='user'?'cb-user':role==='bot'?'cb-bot':'cb-sys');
+    if(role==='bot') el.innerHTML=cbMd(text); else el.textContent=text;
+    const m=document.getElementById('cbMsgs'); m.appendChild(el); m.scrollTop=m.scrollHeight; return el;
+}
+/* Markdown مبسّط (آمن: يتم escape أولاً) */
+function cbMd(t){
+    let s=esc(t||''); const lines=s.split('\n'); let out='',i=0;
+    const inl=x=>x.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/`(.+?)`/g,'<code>$1</code>');
+    while(i<lines.length){
+        const L=lines[i];
+        if(/^\s*\|.*\|\s*$/.test(L) && i+1<lines.length && /^\s*\|?[\s:|-]+\|[\s:|-]*$/.test(lines[i+1])){
+            const row=r=>r.trim().replace(/^\||\|$/g,'').split('|').map(c=>inl(c.trim()));
+            out+='<table><thead><tr>'+row(L).map(c=>'<th>'+c+'</th>').join('')+'</tr></thead><tbody>'; i+=2;
+            while(i<lines.length && /^\s*\|.*\|\s*$/.test(lines[i])){ out+='<tr>'+row(lines[i]).map(c=>'<td>'+c+'</td>').join('')+'</tr>'; i++; }
+            out+='</tbody></table>'; continue; }
+        if(/^\s*([-*•]|\d+\.)\s+/.test(L)){ out+='<ul>'; while(i<lines.length && /^\s*([-*•]|\d+\.)\s+/.test(lines[i])){ out+='<li>'+inl(lines[i].replace(/^\s*([-*•]|\d+\.)\s+/,''))+'</li>'; i++; } out+='</ul>'; continue; }
+        if(/^#{1,4}\s+/.test(L)){ out+='<p><strong>'+inl(L.replace(/^#{1,4}\s+/,''))+'</strong></p>'; i++; continue; }
+        if(L.trim()===''){ i++; continue; }
+        out+='<p>'+inl(L)+'</p>'; i++;
+    }
+    return out;
+}
+
+/* ---------- أدوات البيانات (تُنفَّذ محلياً) ---------- */
+const CB_FIELD = { owner:'Owner', country:'Country', item:'Item', grade:'Grade', segment:'Segment', customer_code:'Customer_Code' };
+function cbSelect(a){
+    let d = (a.scope==='filtered') ? filteredData : rawData;
+    for(const k in CB_FIELD){ if(a[k]!==undefined && a[k]!==null && String(a[k]).trim()!==''){
+        const want=cbNorm(a[k]), f=CB_FIELD[k];
+        const exact=d.filter(x=>cbNorm(x[f])===want);
+        d = exact.length ? exact : d.filter(x=>cbNorm(x[f]).includes(want)); } }
+    if(typeof a.min_discount_pct==='number') d=d.filter(x=>x.Discount_Rate*100>=a.min_discount_pct);
+    if(typeof a.max_discount_pct==='number') d=d.filter(x=>x.Discount_Rate*100<=a.max_discount_pct);
+    return d;
+}
+const cbR = (n,p=2) => Math.round(n*Math.pow(10,p))/Math.pow(10,p);
+function cbTool(name, a){
+    a=a||{};
+    if(!rawData.length) return {error:'لم يتم تحميل البيانات بعد. حمّل ملف الإكسل في الداشبورد أولاً.'};
+    const d=cbSelect(a), limit=Math.min(Math.max(parseInt(a.limit)||10,1),50);
+    if(name==='query_sales'){
+        const gb=a.group_by||'none';
+        let rows;
+        if(gb==='none') rows=groupSum(d,()=>'الإجمالي');
+        else if(CB_FIELD[gb]) rows=groupSum(d,CB_FIELD[gb]);
+        else return {error:'group_by غير صالح'};
+        const total=d.reduce((s,x)=>s+x.Net_Revenue,0);
+        const sk={revenue:'rev',quantity:'qty',deals:'deals',customers:'custCount',avg_price:'avgFob',avg_discount:'avgDisc'}[a.sort_by||'revenue']||'rev';
+        rows.sort((x,y)=> a.order==='asc' ? x[sk]-y[sk] : y[sk]-x[sk]);
+        return { matched_deals:d.length, total_revenue_usd:cbR(total,0), groups_count:rows.length,
+            rows: rows.slice(0,limit).map(r=>({name:r.key, revenue_usd:cbR(r.rev,0), share_of_matched_pct:total?cbR(r.rev/total*100,1):0,
+                quantity_tons:cbR(r.qty,1), deals:r.deals, customers:r.custCount, avg_price_usd_per_ton:cbR(r.avgFob,0), avg_discount_pct:cbR(r.avgDisc*100,1)})) };
+    }
+    if(name==='list_deals'){
+        const sk={revenue:'Net_Revenue',quantity:'Quantity',discount:'Discount_Rate',price:'FOB_After_Discount'}[a.sort_by||'revenue']||'Net_Revenue';
+        const s=[...d].sort((x,y)=> a.order==='asc' ? x[sk]-y[sk] : y[sk]-x[sk]);
+        return { matched_deals:d.length, deals:s.slice(0,limit).map(x=>({customer_code:x.Customer_Code,owner:x.Owner,country:x.Country,item:x.Item,grade:x.Grade,
+            quantity_tons:cbR(x.Quantity,1), fob_usd_per_ton:cbR(x.FOB_After_Discount,0), discount_pct:cbR(x.Discount_Rate*100,1), net_revenue_usd:cbR(x.Net_Revenue,0), segment:x.Segment})) };
+    }
+    return {error:'أداة غير معروفة'};
+}
+const CB_FILTER_PROPS = {
+    owner:{type:'STRING',description:'اسم المسؤول'}, country:{type:'STRING',description:'اسم الدولة'}, item:{type:'STRING',description:'اسم الصنف'},
+    grade:{type:'STRING',description:'الدرجة: A/B/C/D/IND'}, segment:{type:'STRING',description:'التصنيف: A أو B أو C أو D (Blacklist)'},
+    customer_code:{type:'STRING',description:'كود العميل'}, min_discount_pct:{type:'NUMBER',description:'أدنى نسبة خصم (0-100)'}, max_discount_pct:{type:'NUMBER',description:'أعلى نسبة خصم (0-100)'},
+    scope:{type:'STRING',description:'all = كل البيانات (الافتراضي) ، filtered = فقط ما هو مفلتر حالياً في الداشبورد'}, limit:{type:'INTEGER',description:'عدد النتائج (افتراضي 10، أقصى 50)'},
+    order:{type:'STRING',description:'desc (افتراضي) أو asc'} };
+const CB_TOOLS=[{functionDeclarations:[
+    {name:'query_sales',description:'تجميع المبيعات حسب بُعد معين (مسؤول/دولة/صنف/درجة/عميل/تصنيف) مع فلاتر اختيارية. يرجع العوائد والكميات والصفقات والعملاء ومتوسط السعر والخصم.',
+     parameters:{type:'OBJECT',properties:Object.assign({group_by:{type:'STRING',description:'owner | country | item | grade | segment | customer_code | none'},
+        sort_by:{type:'STRING',description:'revenue | quantity | deals | customers | avg_price | avg_discount'}},CB_FILTER_PROPS),required:['group_by']}},
+    {name:'list_deals',description:'عرض الصفقات الفردية (صف بصف) مع فلاتر وترتيب، مثل أكبر الصفقات أو أعلى الخصومات.',
+     parameters:{type:'OBJECT',properties:Object.assign({sort_by:{type:'STRING',description:'revenue | quantity | discount | price'}},CB_FILTER_PROPS)}}
+]}];
+function cbSystem(){
+    const u=f=>[...new Set(rawData.map(x=>x[f]))].sort();
+    return 'أنت "مساعد AGREEN" داخل لوحة تحليل مبيعات شركة تصدير حمضيات/فاكهة. أجب دائماً بالعربية (بلهجة مهنية مبسطة) وبشكل مختصر ومباشر.\n'
+    +'قواعد صارمة:\n- لا تحسب أرقاماً من ذاكرتك أبداً. استدعِ الأدوات (query_sales / list_deals) لكل سؤال رقمي، وانقل الأرقام كما رجعت منها.\n'
+    +'- إن كان السؤال غامضاً في الاسم (مثل "محمود") فاستخدم الأداة وسيتم المطابقة الجزئية، ونبّه إن ظهرت نتائج متعددة.\n- لا تخترع بيانات غير موجودة؛ إن لم تجد قل ذلك.\n- العملة دولار أمريكي، الكميات بالطن، والسعر FOB دولار/طن.\n- استخدم جداول Markdown للمقارنات وقوائم قصيرة للباقي، ثم أضف توصية/ملاحظة تحليلية من سطر واحد عند اللزوم.\n'
+    +'تعريفات: العوائد (Net_Revenue) كما تحسبها اللوحة. التصنيف Segment: A=بدون خصم، B=خصم حتى 10%، C=خصم 10%-25%، D (Blacklist)=خصم فوق 25%.\n'
+    +'حجم البيانات: '+rawData.length+' صفقة، '+new Set(rawData.map(x=>x.Customer_Code)).size+' عميل.\n'
+    +'المسؤولون: '+u('Owner').join('، ')+'\nالدول: '+u('Country').join('، ')+'\nالأصناف: '+u('Item').join('، ')+'\nالدرجات: '+u('Grade').join('، ')
+    +'\nالفلاتر الحالية في الداشبورد: '+filteredData.length+' صفقة من '+rawData.length+' (استخدم scope=filtered فقط لو المستخدم قال "الحالي/المفلتر").';
+}
+
+/* ---------- الاتصال بـ Gemini (Streaming + Function Calling) ---------- */
+async function cbCall(contents, onText){
+    const proxy=cbGet('proxyUrl'), key=cbGet('apiKey'), model=cbGet('model')||'gemini-2.5-flash';
+    if(!proxy && !key) throw new Error('NOKEY');
+    const url = proxy ? proxy.replace(/\/$/,'') : 'https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(model)+':streamGenerateContent?alt=sse';
+    const headers={'Content-Type':'application/json'}; if(!proxy) headers['x-goog-api-key']=key;
+    const body={systemInstruction:{parts:[{text:cbSystem()}]}, contents, tools:CB_TOOLS, generationConfig:{temperature:0.2}};
+    if(proxy) body.model=model;
+    const res=await fetch(url,{method:'POST',headers,body:JSON.stringify(body)});
+    if(!res.ok){ let t=''; try{ t=(await res.json()).error.message; }catch(e){} throw new Error('HTTP '+res.status+(t?': '+t:'')); }
+    const parts=[], reader=res.body.getReader(), dec=new TextDecoder(); let buf='';
+    while(true){
+        const {done,value}=await reader.read(); if(done) break;
+        buf+=dec.decode(value,{stream:true});
+        let idx; while((idx=buf.search(/\r?\n\r?\n/))>=0){
+            const ev=buf.slice(0,idx); buf=buf.slice(idx).replace(/^\r?\n\r?\n/,'');
+            ev.split(/\r?\n/).forEach(line=>{ if(!line.startsWith('data:')) return;
+                try{ const j=JSON.parse(line.slice(5).trim()); (j.candidates&&j.candidates[0]&&j.candidates[0].content&&j.candidates[0].content.parts||[]).forEach(p=>{
+                    if(p.thought) return; parts.push(p); if(p.text) onText(p.text); }); }catch(e){} }); }
+    }
+    return parts;
+}
+async function cbSend(){
+    if(CB.busy) return;
+    const ta=document.getElementById('cbText'), q=ta.value.trim(); if(!q) return;
+    ta.value=''; cbAdd('user',q); CB.busy=true; document.getElementById('cbSend').disabled=true;
+    const startLen=CB.history.length;
+    CB.history.push({role:'user',parts:[{text:q}]});
+    const bubble=cbAdd('bot',''); bubble.classList.add('cb-typing'); let shown='';
+    try{
+        for(let round=0; round<6; round++){
+            let roundText='';
+            const parts=await cbCall(CB.history, t=>{ roundText+=t; shown+=t; bubble.innerHTML=cbMd(shown); const m=document.getElementById('cbMsgs'); m.scrollTop=m.scrollHeight; });
+            const calls=parts.filter(p=>p.functionCall);
+            CB.history.push({role:'model',parts:parts.length?parts:[{text:''}]});
+            if(!calls.length) break;
+            if(roundText) shown+='\n';
+            const resp=calls.map(c=>({functionResponse:{name:c.functionCall.name,response:{result:cbTool(c.functionCall.name,c.functionCall.args)}}}));
+            CB.history.push({role:'user',parts:resp});
+        }
+        if(!shown.trim()) shown='لم أستطع تكوين إجابة، جرّب إعادة صياغة السؤال.';
+        bubble.innerHTML=cbMd(shown);
+    }catch(e){
+        CB.history.length=startLen;
+        bubble.classList.remove('cb-typing');
+        bubble.innerHTML = e.message==='NOKEY' ? '🔑 أدخل مفتاح Gemini API من أيقونة ⚙️ بأعلى الشات أولاً.'
+            : '⚠️ تعذّر الاتصال: '+esc(e.message)+(/429/.test(e.message)?'<br>تم تجاوز حد الاستخدام، حاول بعد قليل.':/40[013]/.test(e.message)?'<br>تأكد من صحة المفتاح والموديل في ⚙️.':'');
+    }
+    bubble.classList.remove('cb-typing');
+    if(CB.history.length>40) CB.history=CB.history.slice(-30);
+    CB.busy=false; document.getElementById('cbSend').disabled=false; ta.focus();
+}
+document.addEventListener('DOMContentLoaded',()=>{ const t=document.getElementById('cbText');
+    t.addEventListener('keydown',e=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); cbSend(); } }); });
+</script>
+
 </body>
 </html>
