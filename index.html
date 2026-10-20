@@ -12,6 +12,8 @@
     <style>
         body { font-family:'Cairo',sans-serif; background-color:#042f2e; color:#2c3e50; margin:0; overflow-x:hidden; }
         .video-background { position:fixed; top:0; left:0; width:100%; height:100%; object-fit:cover; z-index:-2; }
+        #loginOverlay { position:fixed; top:0; left:0; width:100%; height:100%; display:flex; justify-content:center; align-items:center; z-index:9999; padding:15px; }
+        .login-card { background:rgba(255,255,255,.95); backdrop-filter:blur(10px); padding:40px; border-radius:16px; box-shadow:0 20px 40px rgba(0,0,0,.4); width:100%; max-width:400px; text-align:center; border:1px solid rgba(255,255,255,.3); }
         .video-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(4,47,46,.78); backdrop-filter:blur(3px); z-index:-1; }
         .header-section { background:linear-gradient(135deg,#065f46 0%,#047857 100%); color:#fff; border-radius:12px; box-shadow:0 4px 15px rgba(0,0,0,.1); }
         .kpi-card,.filter-box,.ai-insights-box,.panel-box,.table-box,.alert-box,.source-box { background:#fff; border-radius:10px; box-shadow:0 2px 10px rgba(0,0,0,.03); padding:18px; margin-bottom:18px; }
@@ -44,7 +46,26 @@
     </video>
     <div class="video-overlay"></div>
 
-    <div class="container-fluid py-4 px-4" id="dashboardContent">
+
+    <!-- شاشة تسجيل الدخول -->
+    <div id="loginOverlay">
+        <div class="login-card">
+            <h3 class="fw-bold text-success mb-2"><i class="fas fa-leaf me-2"></i> AGREEN</h3>
+            <p class="text-muted small fw-bold mb-3">GO Digital - GO Paperless</p>
+            <div id="loginError" class="alert alert-danger d-none py-2 small">اسم المستخدم أو كلمة المرور غير صحيحة</div>
+            <div class="mb-3 text-end">
+                <label class="form-label fw-bold small">اسم المستخدم:</label>
+                <input type="text" id="username" class="form-control" placeholder="أدخل اسم المستخدم" autocomplete="username">
+            </div>
+            <div class="mb-4 text-end">
+                <label class="form-label fw-bold small">كلمة المرور:</label>
+                <input type="password" id="password" class="form-control" placeholder="أدخل كلمة المرور" autocomplete="current-password">
+            </div>
+            <button class="btn btn-success w-100 fw-bold py-2 shadow-sm" onclick="checkLogin()">دخول النظام</button>
+        </div>
+    </div>
+
+    <div class="container-fluid py-4 px-4 d-none" id="dashboardContent">
 
         <!-- الترويسة -->
         <div class="header-section p-3 mb-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
@@ -54,6 +75,7 @@
             </div>
             <div class="d-flex gap-2 no-print">
                 <button class="btn btn-warning btn-sm fw-bold text-dark shadow-sm" onclick="window.print()"><i class="fas fa-file-pdf me-1"></i> تصدير PDF</button>
+                <button class="btn btn-light btn-sm fw-bold text-danger" onclick="logout()"><i class="fas fa-sign-out-alt me-1"></i> خروج</button>
                 <div class="small text-white-50 align-self-center">آخر تحديث: <span id="lastUpdate">—</span></div>
             </div>
         </div>
@@ -195,6 +217,25 @@ function ownerCard(o, title, color, extra) {
         + '<li>الصفقات: <strong>'+o.deals+'</strong> — العملاء: <strong>'+o.custCount+'</strong></li>'
         + (extra || '') + '</ul></div>';
 }
+
+/* ================= تسجيل الدخول ================= */
+function checkLogin() {
+    if(document.getElementById('username').value.trim() === 'khaled' && document.getElementById('password').value.trim() === '1235') {
+        document.getElementById('loginOverlay').style.display = 'none';
+        document.getElementById('dashboardContent').classList.remove('d-none');
+        autoLoadExcel();
+    } else {
+        document.getElementById('loginError').classList.remove('d-none');
+    }
+}
+function logout() {
+    document.getElementById('loginOverlay').style.display = 'flex';
+    document.getElementById('dashboardContent').classList.add('d-none');
+    document.getElementById('password').value = '';
+}
+document.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && document.getElementById('loginOverlay') && document.getElementById('loginOverlay').style.display !== 'none') checkLogin();
+});
 
 /* ================= حالة عامة ================= */
 let rawData = [], filteredData = [], ownerMetric = 'rev';
@@ -913,7 +954,6 @@ function answerFaq(id, btn) {
 window.onload = () => {
     buildFilters();
     renderFaqList();
-    autoLoadExcel();
 };
 </script>
 </body>
