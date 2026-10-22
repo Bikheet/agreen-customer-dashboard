@@ -149,6 +149,7 @@
 
         <!-- KPI -->
         <div class="row g-2 mb-3" id="kpiRow"></div>
+        <div id="blacklistBox"></div>
 
         <!-- التنبيهات مع رأي الخبير -->
         <div class="alert-box" style="border-right:4px solid #dc2626;">
@@ -474,6 +475,38 @@ function chartArgs(arr, n) {
     return [sorted.map(x=>x.key), sorted.map(x=>Math.round(x.rev))];
 }
 
+/* ===== تفاصيل عملاء القائمة السوداء (حسب الفلاتر الحالية) ===== */
+let blOpen = true;
+function blackCodesLine(d) {
+    const codes = [...new Set(d.filter(x=>x.Segment==='D (Blacklist)').map(x=>x.Customer_Code))];
+    if(!codes.length) return '<div class="kpi-lbl text-success">✅ لا يوجد</div>';
+    return '<div class="kpi-lbl text-danger fw-bold" style="font-size:.72rem">كود: '+codes.slice(0,3).map(esc).join('، ')+(codes.length>3?' +'+(codes.length-3):'')+'</div>';
+}
+function toggleBlacklist() { blOpen = !blOpen; renderBlacklistBox(filteredData); }
+function renderBlacklistBox(d) {
+    const box = document.getElementById('blacklistBox'); if(!box) return;
+    const bd = d.filter(x=>x.Segment==='D (Blacklist)');
+    if(!bd.length || !blOpen) { box.innerHTML = ''; return; }
+    const codes = [...new Set(bd.map(x=>x.Customer_Code))];
+    const uniq = a => [...new Set(a)].map(esc).join('، ');
+    const sumRows = codes.map(c => {
+        const mine = bd.filter(x=>x.Customer_Code===c), all = d.filter(x=>x.Customer_Code===c);
+        return {c, countries:uniq(mine.map(x=>x.Country)), owners:uniq(mine.map(x=>x.Owner)), bl:mine.length, all:all.length,
+                maxD:Math.max(...mine.map(x=>x.Discount_Rate)), rev:mine.reduce((s,x)=>s+x.Net_Revenue,0)};
+    }).sort((a,b)=>b.rev-a.rev);
+    const dealRows = [...bd].sort((a,b)=>b.Discount_Rate-a.Discount_Rate).map(x =>
+        '<tr><td><strong>'+esc(x.Customer_Code)+'</strong></td><td>'+esc(x.Country)+'</td><td>'+esc(x.Owner)+'</td><td>'+esc(x.Item)+'</td><td>'+esc(x.Grade)+'</td><td>'+fmtFull(x.Quantity)+'</td><td>'+fmtFull(x.FOB_After_Discount)+' $</td><td class="text-danger fw-bold">'+(x.Discount_Rate*100).toFixed(1)+'%</td><td>'+fmtFull(x.Net_Revenue)+' $</td></tr>');
+    box.innerHTML = '<div class="alert-box" style="border-right:5px solid #dc3545">'
+        + '<div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2"><h6 class="fw-bold text-danger mb-0"><i class="fas fa-ban me-2"></i> عملاء القائمة السوداء ضمن الفلاتر الحالية: '+codes.length+' عميل</h6>'
+        + '<button class="btn btn-sm btn-outline-secondary no-print" onclick="toggleBlacklist()"><i class="fas fa-xmark"></i> إخفاء</button></div>'
+        + '<p class="small text-muted mb-2">يدخل العميل القائمة السوداء إذا كان لديه صفقة واحدة على الأقل بخصم أكبر من 25% — والأرقام التالية محسوبة على الفلاتر المختارة فقط.</p>'
+        + tbl(['كود العميل','الدولة','المسؤول','صفقات القائمة / كل صفقاته','أعلى خصم','عائد صفقات القائمة'],
+            sumRows.map(r=>'<tr><td><strong class="text-danger">'+esc(r.c)+'</strong></td><td>'+r.countries+'</td><td>'+r.owners+'</td><td>'+r.bl+' / '+r.all+'</td><td class="text-danger fw-bold">'+(r.maxD*100).toFixed(1)+'%</td><td>'+fmtFull(r.rev)+' $</td></tr>'))
+        + '<div class="small fw-bold mt-2 mb-1">تفاصيل الصفقات التي تجاوز خصمها 25%:</div>'
+        + tbl(['العميل','الدولة','المسؤول','الصنف','الدرجة','الكمية (طن)','FOB/طن','الخصم','صافي العائد'], dealRows)
+        + '</div>';
+}
+
 function updateDashboard() {
     const d = filteredData;
     const totalRev = d.reduce((s,x)=>s+x.Net_Revenue,0);
@@ -492,8 +525,8 @@ function updateDashboard() {
         ['متوسط FOB/طن', fmt(avgFob)+'$', 'dark', 'fa-tag'],
         ['متوسط الخصم', (avgDisc*100).toFixed(1)+'%', 'danger', 'fa-percent'],
         ['المتنازل عنه', fmt(totalDisc)+'$', 'danger', 'fa-arrow-trend-down'],
-        ['القائمة السوداء', blackCount+' عميل', 'danger', 'fa-ban']
-    ].map(k=>'<div class="col"><div class="kpi-card border-start border-4 border-'+k[2]+'"><div class="kpi-val text-'+k[2]+'"><i class="fas '+k[3]+' me-1"></i>'+k[1]+'</div><div class="kpi-lbl">'+k[0]+'</div></div></div>').join('');
+        ['القائمة السوداء', blackCount+' عميل', 'danger', 'fa-ban', blackCodesLine(d), 'toggleBlacklist()']
+    ].map(k=>'<div class="col"><div class="kpi-card border-start border-4 border-'+k[2]+'"'+(k[5]?' onclick="'+k[5]+'" style="cursor:pointer" title="اضغط لعرض التفاصيل"':'')+'><div class="kpi-val text-'+k[2]+'"><i class="fas '+k[3]+' me-1"></i>'+k[1]+'</div><div class="kpi-lbl">'+k[0]+'</div>'+(k[4]||'')+'</div></div>').join('');
 
     const owners = groupSum(d,'Owner');
     let oData = ownerMetric==='rev' ? owners.map(o=>Math.round(o.rev)) : ownerMetric==='fob' ? owners.map(o=>Math.round(o.avgFob)) : owners.map(o=>o.custCount);
@@ -511,6 +544,7 @@ function updateDashboard() {
             backgroundColor:['#059669','#0ea5e9','#f59e0b','#ef4444','#8b5cf6','#ec4899','#14b8a6','#84cc16']}]},
         options:{plugins:{legend:{position:'left', labels:{boxWidth:12, font:{size:11}}}}}});
 
+    renderBlacklistBox(d);
     renderAlerts(d);
     renderCountryTable(d);
     renderOwnerTable(d);
